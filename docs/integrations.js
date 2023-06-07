@@ -1,5 +1,3 @@
-const PLACEHOLDER_ICON = "https://bitrise.io/integrations/assets/placeholders/default-app-icon.png";  // TODO: move to webflow
-
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -22,7 +20,7 @@ function Step(key, data)
   this.getCategories = () => this.versions[this.latestVersion].type_tags ? this.versions[this.latestVersion].type_tags : ['other'];
   this.getPlatforms = () => this.versions[this.latestVersion].project_type_tags;
 
-  this.getSVGIcon = () => this.versions[this.latestVersion].asset_urls ? this.versions[this.latestVersion].asset_urls['icon.svg'] : PLACEHOLDER_ICON;
+  this.getSVGIcon = () => this.versions[this.latestVersion].asset_urls ? this.versions[this.latestVersion].asset_urls['icon.svg'] : null;
   this.getDescription = () => this.versions[this.latestVersion].description;
   this.getSummary = () => this.versions[this.latestVersion].summary;
   this.getTitle = () => this.versions[this.latestVersion].title;
@@ -85,10 +83,7 @@ function ContentComponent()
   this.templateGrid.insertBefore(document.createElement("h3"), this.templateGrid.querySelector(".step-list-wrapper"));
   
   this.templateStep = document.querySelector(".step-card").cloneNode(true);
-  this.templateStep.querySelector("img").src = "";
-  this.templateStep.querySelector("a").href = "";
-  this.templateStep.querySelector("h2").innerHTML = "";
-  this.templateStep.querySelector("p").innerHTML = "";
+  this.placeholderIcon = this.templateStep.querySelector("img").src;
 
   this.md = markdownit();
 
@@ -106,18 +101,16 @@ function ContentComponent()
 
         const newGrid = this.templateGrid.cloneNode(true);
         newGrid.querySelector("h3").innerHTML = category.getName();
-        newGrid.querySelector("h3").style.marginBottom = "1rem";  // TODO: move to webflow
-        newGrid.style.marginBottom = "2rem";  // TODO: move to webflow
 
         matchingSteps.forEach(slug => {
           const step = integrations.steps[slug];
           const newStep = this.templateStep.cloneNode(true);
           newStep.id = "step-" + slug;
-          newStep.querySelector("img").src = step.getSVGIcon();
+          if (step.getSVGIcon()) newStep.querySelector("img").src = step.getSVGIcon();
 
-          const cardHeaderContainer = newStep.querySelector("a").parentNode;
-          const categoryLinkTemplate = newStep.querySelector("a").cloneNode(true);
-          newStep.querySelector("a").remove();
+          const cardHeaderContainer = newStep.querySelector("h2 + a").parentNode;
+          const categoryLinkTemplate = newStep.querySelector("h2 + a").cloneNode(true);
+          newStep.querySelector("h2 + a").remove();
           let categoryCounter = 0;
           step.getCategories().forEach(category => {
             if (categoryCounter > 0) {
@@ -132,14 +125,9 @@ function ContentComponent()
             categoryCounter++;
           });
 
-          const stepLink = document.createElement("a");  // TODO: move to webflow
-          stepLink.innerHTML = step.getTitle();
-          stepLink.title = step.getTitle();
-          stepLink.style.fontWeight = "700";
-          stepLink.style.color = "inherit";
-          stepLink.href = "/integrations/step/" + slug;
-
-          newStep.querySelector("h2").appendChild(stepLink);
+          newStep.querySelector("h2 a").innerHTML = step.getTitle();
+          newStep.querySelector("h2 a").title = step.getTitle();
+          newStep.querySelector("h2 a").href = "/integrations/step/" + slug;
           newStep.querySelector("p").innerHTML = this.md.render(step.getSummary());
   
           newGrid.querySelector(".step-list").appendChild(newStep);
