@@ -1,0 +1,8 @@
+{
+  "name": "webflow-scripts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/bitrise-io/webflow-scripts.git",
+  "author": "Antal Orcsik <antal.orcsik@bitrise.io>",
+  "license": "MIT"
+}
