@@ -1,14 +1,6 @@
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+import { icaseEqual, icaseIncludes, capitalize } from "./common";
+import MarkdownIt from "markdown-it";
 
-function icaseEqual(str1, str2) {
-  return str1.search(new RegExp("^" + str2 + "$", "i")) > -1;
-}
-
-function icaseIncludes(str1, str2) {
-  return str1.search(new RegExp(str2, "i")) > -1;
-}
 
 function Step(key, data)
 {
@@ -85,7 +77,7 @@ function ContentComponent()
   this.templateStep = document.querySelector(".step-card").cloneNode(true);
   this.placeholderIcon = this.templateStep.querySelector("img").src;
 
-  this.md = markdownit();
+  this.md = MarkdownIt();
 
   this.render = (integrations, platformFilter, categoryFilter, queryFilter) => {
     this.gridContainer.innerHTML = "";
