@@ -36,7 +36,7 @@ class HeaderSection
       }
       const newCategoryLink = this.headerCategoryLinkTemplate.cloneNode(true);
       newCategoryLink.innerHTML = integrations.categories.getItem(category).getName();
-      newCategoryLink.href = "/integrations?category=" + category;
+      newCategoryLink.href = "/integrations#category-" + category;
       this.headerCategoriesContainer.appendChild(newCategoryLink);
       categoryCounter++;
     });
