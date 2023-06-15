@@ -24,4 +24,12 @@ IntegrationsService.loadIntegrations().then(integrations => {
     content.render(integrations, platformFilter, categoryFilter, event.target.value);
   });
 
+  const match = window.location.hash.match(/category-(.*)/);
+  if (match) {
+    window.location.hash = "";
+    window.setTimeout(() => {
+      window.location.hash = "category-" + match[1];
+    }, 500);  
+  }
+
 });
