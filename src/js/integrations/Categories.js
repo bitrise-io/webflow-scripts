@@ -1,21 +1,45 @@
 import Category from "./Category";
 
-function Categories(title) {
-  this.title = title;
-  this.items = {};
 
-  this.addStep = (key, slug) => {
+class Categories
+{
+  /** @param {string} title */
+  constructor(title) {
+    /** @type {string} */
+    this.title = title;
+
+    /** @type {{[key: string]: Category}} */
+    this.items = {};
+  }
+  
+  /**
+   * @param {string} key 
+   * @param {string} slug 
+   */
+  addStep(key, slug) {
     if (!(key in this.items)) {
       this.items[key] = new Category(key);
     }
     this.items[key].add(slug);
   }
 
-  this.getItems = () => this.getKeys().map(key => this.items[key]);
+  /** @returns {Category[]} */
+  getItems() {
+    return this.getKeys().map(key => this.items[key]);
+  }
 
-  this.getKeys = () => Object.keys(this.items).sort();
+  /** @returns {string[]} */
+  getKeys() {
+    return Object.keys(this.items).sort();
+  }
 
-  this.getItem = (key) => this.items[key];
+  /** 
+   * @param {string} key
+   * @returns {Category}
+   */
+  getItem(key) {
+    return this.items[key];
+  }
 }
 
 export default Categories;

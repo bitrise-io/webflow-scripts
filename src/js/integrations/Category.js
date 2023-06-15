@@ -1,19 +1,31 @@
 import { capitalize } from "../common";
 
 
-function Category(name)
+class Category
 {
-  this.name = name;
-  this.steps = [];
+  /** @param {string} name */
+  constructor(name) {
+    /** @type {string} */
+    this.name = name;
 
-  this.add = slug => {
+    /** @type {string[]} */
+    this.steps = [];
+  }
+
+  /** @param {string} slug */
+  add(slug) {
     this.steps.push(slug);
-  };
+  }
 
-  this.getName = () => {
+  /** @returns {string} */
+  getName() {
     if (this.name == "ios") return "iOS";
     if (this.name == "macos") return "macOS";
     return capitalize(this.name.replace("-", " "));
+  };
+
+  getSlug() {
+    return this.name;
   }
 }
 

@@ -2,37 +2,105 @@ import { icaseEqual, icaseIncludes } from "../common";
 import MarkdownIt from "markdown-it";
 
 
-function Step(key, data)
+class Step
 {
-  this.key = key;
-  this.info = data.info;
-  this.versions = data.versions;
-  this.latestVersion = Object.keys(this.versions)[0];
+  /**
+   * @param {string} key 
+   * @param {import("./IntegrationsService").StepData} data 
+   */
+  constructor(key, data) {
+    /** @type {string} */
+    this.stepKey = key;
 
-  this.getCategories = () => this.versions[this.latestVersion].type_tags ? this.versions[this.latestVersion].type_tags : ['other'];
-  this.getPlatforms = () => this.versions[this.latestVersion].project_type_tags;
+    /** @type {import("./IntegrationsService").StepInfo} */
+    this.info = data.info;
 
-  this.getSVGIcon = () => this.versions[this.latestVersion].asset_urls ? this.versions[this.latestVersion].asset_urls['icon.svg'] : null;
-  this.getDescription = () => this.versions[this.latestVersion].description;
-  this.getSummary = () => this.versions[this.latestVersion].summary;
-  this.getFormattedSummary = () => MarkdownIt().render(this.getSummary());
-  this.getTitle = () => this.versions[this.latestVersion].title;
-  this.getKey = () => this.key;
+    /** @type {{[key: string]: import("./IntegrationsService").StepVersion}} */
+    this.versions = data.versions;
 
-  this.fitsPlatform = platform => 
-    !platform ||
-    !this.getPlatforms() ||
-    this.getPlatforms().filter(plat => icaseEqual(plat, platform)).length > 0;
+    this.latestVersion = Object.keys(this.versions)[0];
+  }
 
-  this.fitsCategory = category =>
-    !category || 
-    this.getCategories().filter(cat => icaseEqual(cat, category)).length > 0;
+  /** @returns {string[]} */
+  get categories() {
+    return this.versions[this.latestVersion].type_tags || ['other'];
+  }
 
-  this.fitsQuery = query =>
-    !query ||
-    icaseIncludes(this.getKey(), query) ||
-    icaseIncludes(this.getTitle(), query) ||
-    icaseIncludes(this.getSummary(), query);
+  /** @returns {?string[]} */
+  get platforms() {
+    return this.versions[this.latestVersion].project_type_tags || null;
+  }
+
+  /** @returns {?string} */
+  get svgIcon() {
+    return this.versions[this.latestVersion].asset_urls ?
+      this.versions[this.latestVersion].asset_urls['icon.svg'] : 
+      null;
+  }
+
+  /** @returns {string} */
+  get description() {
+    return this.versions[this.latestVersion].description;
+  }
+
+  /** @returns {string} */
+  get formattedDescription() {
+    return MarkdownIt().render(this.versions[this.latestVersion].description);
+  }
+
+  /** @returns {string} */
+  get summary() {
+    return this.versions[this.latestVersion].summary;
+  }
+
+  get formattedSummary() {
+    return MarkdownIt().renderInline(this.versions[this.latestVersion].summary);
+  }
+
+  /** @returns {string} */
+  get title() {
+    return this.versions[this.latestVersion].title;
+  }
+
+  /** @returns {string} */
+  get key() {
+    return this.stepKey;
+  }
+
+  /** @returns {string} */
+  get sourceCodeUrl() {
+    return this.versions[this.latestVersion].source_code_url;
+  }
+
+  /**
+   * @param {?string} platform 
+   * @returns {boolean}
+   */
+  fitsPlatform(platform) {
+    return !platform ||
+      !this.platforms ||
+      this.platforms.filter(plat => icaseEqual(plat, platform)).length > 0;
+  }
+
+  /**
+   * @param {?string} category 
+   * @returns {boolean}
+   */
+  fitsCategory(category) {
+    return !category ||
+      this.categories.filter(cat => icaseEqual(cat, category)).length > 0;
+  }
+
+  /**
+   * @param {?string} query 
+   * @returns {boolean}
+   */
+  fitsQuery(query) {
+    return !query ||
+      icaseIncludes(this.key, query) ||
+      icaseIncludes(this.title, query) ||
+      icaseIncludes(this.summary, query);
+  }
 }
 
 export default Step;

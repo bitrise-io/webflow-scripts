@@ -1,34 +1,73 @@
-import Categories from "./Categories";
+import Integrations from "./Integrations";
 import Step from "./Step";
 
 
-function IntegrationsService() {
-  this.url = "https://bitrise-steplib-collection.s3.amazonaws.com/slim-spec.json.gz";
-  this.loadIntegrations = () => {
-    return fetch(this.url)
-      .then(response => response.json())
-      .then(json => {
-        /** PARSE STEPLIB */
-    
-        const integrations = {
-          categories: new Categories("Category"),
-          platforms: new Categories("Platform"),
-          steps: {}
-        };
-    
-        Object.keys(json.steps).map(slug => {
-          const step = new Step(slug, json.steps[slug]);
-          integrations.steps[slug] = step;
-    
-          step.getCategories().forEach(category => integrations.categories.addStep(category, slug));
-          if (step.getPlatforms()) {
-            step.getPlatforms().forEach(paltform => integrations.platforms.addStep(paltform, slug));
-          }
-        });
-    
-        return integrations;
-      })
+/**
+ * @typedef {object} StepInfo
+ * @property {{"icon.svg": ?string}} asset_urls
+ * @property {string} maintainer
+ */
+
+/**
+ * @typedef {object} StepVersion
+ * @property {{"icon.svg": ?string}} asset_urls
+ * @property {string} description
+ * @property {string[]|undefined} host_os_tags
+ * @property {string[]|undefined} project_type_tags
+ * @property {string} published_at
+ * @property {{"git": string, "commit": string}} source
+ * @property {string} source_code_url
+ * @property {string} summary
+ * @property {string} support_url
+ * @property {string} title
+ * @property {{[key: string]: {"package_name": string}}|undefined} toolkit
+ * @property {string[]|undefined} type_tags
+ * @property {string} website
+ */
+
+/** 
+ * @typedef {object} StepData
+ * @property {StepInfo} info
+ * @property {{[key: string]: StepVersion}} versions
+ */
+
+
+class IntegrationsService
+{
+  constructor() {
+    this.url = "https://bitrise-steplib-collection.s3.amazonaws.com/slim-spec.json.gz";
   }
+
+  /** @returns {Promise<Integrations>} */
+  async loadIntegrations() {
+    const response = await fetch(this.url);
+
+    /** @type {{"steps": {[key: string]: StepData}}} */
+    const json = await response.json();
+    
+    const integrations = new Integrations();
+    
+    Object.keys(json.steps).map(slug => {
+      const step = new Step(slug, json.steps[slug]);
+      integrations.steps[slug] = step;
+
+      step.categories.forEach(category => integrations.categories.addStep(category, slug));
+      if (step.platforms) {
+        step.platforms.forEach(paltform => integrations.platforms.addStep(paltform, slug));
+      }
+    });
+    
+    return integrations;
+  };
+
+  /**
+   * @param {string} slug
+   * @returns {Promise<Step>}
+   */
+  async loadStep(slug) {
+    const integrations = await this.loadIntegrations();
+    return integrations.steps[slug];
+  };
 }
 
 export default new IntegrationsService();
