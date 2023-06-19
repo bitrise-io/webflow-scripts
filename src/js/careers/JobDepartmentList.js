@@ -1,4 +1,5 @@
 import { getFirstElementByClassname } from "../common";
+import { Department } from "./CareersModels";
 
 class JobDepartmentList
 {
@@ -19,22 +20,7 @@ class JobDepartmentList
     Array.from(jobTagElements).forEach(jobTagElement => jobTagElement.parentNode.removeChild(jobTagElement));
   }
 
-  /**
-   * @typedef {{
-   *   name: string,
-   *   isOpen: boolean,
-   *   posts: {
-   *     categories: {
-   *       location: string|undefined,
-   *       team: string|undefined
-   *     },
-   *     text: string,
-   *     hostedUrl: string
-   *   }[]
-   * }} JobDepartment
-   */
-
-  /** @param {JobDepartment[]} jobDepartments */
+  /** @param {Department[]} jobDepartments */
   render(jobDepartments) {
     this.jobDeparmentListElement.replaceChildren();
     this.jobDeparmentListElement.style.display = 'block';
@@ -69,14 +55,14 @@ class JobDepartmentList
           const jobPostElement = this.jobPostElementPrototype.cloneNode(true);
           
           const jobPostLinkElement = getFirstElementByClassname(jobPostElement, 'job-link-wrapper');
-          jobPostLinkElement.setAttribute('href', jobPost.hostedUrl);
+          jobPostLinkElement.setAttribute('href', jobPost.url);
           jobPostLinkElement.setAttribute('target', '_blank');
           
           const jobTitleElement = getFirstElementByClassname(jobPostElement, 'job-title');
-          jobTitleElement.innerHTML = jobPost.text;
+          jobTitleElement.innerHTML = jobPost.title;
           
           const jobCardContentElement = getFirstElementByClassname(jobPostElement, 'job-card-content');
-          [jobPost.categories.team, jobPost.categories.location].forEach(tag => {
+          jobPost.tags.forEach(tag => {
             if (!tag) {
               return;
             }

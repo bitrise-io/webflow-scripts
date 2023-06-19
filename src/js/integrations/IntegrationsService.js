@@ -15,12 +15,12 @@ import Step from "./Step";
  * @property {string[]|undefined} host_os_tags
  * @property {string[]|undefined} project_type_tags
  * @property {string} published_at
- * @property {{"git": string, "commit": string}} source
+ * @property {{git: string, commit: string}} source
  * @property {string} source_code_url
  * @property {string} summary
  * @property {string} support_url
  * @property {string} title
- * @property {{[key: string]: {"package_name": string}}|undefined} toolkit
+ * @property {{[key: string]: {package_name: string}}|undefined} toolkit
  * @property {string[]|undefined} type_tags
  * @property {string} website
  */

@@ -1,41 +1,42 @@
 import { getElementTextContent } from "../common";
-import { BambooDepartment, BambooJobs, BambooPosition } from "./BambooHRModels";
+import { Department, Position } from "./CareersModels";
 
 class BambooHRService
 {
   /** 
    * @param {HTMLElement} board
-   * @returns {BambooJobs}
+   * @returns {Department[]}
    */
   parseBambooJobs(board) {
-    const bambooJobs = new BambooJobs();
+    /** @type {Department[]} */
+    const bambooJobs = [];
 
     const departmentList = board.querySelector(".BambooHR-ATS-Department-List");
     departmentList.querySelectorAll(".BambooHR-ATS-Department-Item").forEach(departmentItem => {
       const departmentHeader = departmentItem.querySelector(".BambooHR-ATS-Department-Header");
 
-      const department = new BambooDepartment(
-        parseInt(departmentHeader.id.split("_")[1]), 
-        getElementTextContent(departmentHeader)
+      const department = new Department(
+        getElementTextContent(departmentHeader),
+        parseInt(departmentHeader.id.split("_")[1]) 
       );
 
       departmentItem.querySelectorAll(".BambooHR-ATS-Jobs-Item").forEach(jobsItem => {
-        department.posts.push(new BambooPosition(
-          parseInt(jobsItem.id.split("_")[1]),
+        department.posts.push(new Position(
           jobsItem.querySelector("a").href,
           getElementTextContent(jobsItem.querySelector("a")),
           getElementTextContent(jobsItem.querySelector(".BambooHR-ATS-Location")),
-          department.name
+          department.name,
+          parseInt(jobsItem.id.split("_")[1])
         ));
       });
 
-      bambooJobs.departments.push(department); 
+      bambooJobs.push(department); 
     });
 
     return bambooJobs;
   }
 
-  /** @returns {Promise<BambooJobs>} */
+  /** @returns {Promise<Department[]>} */
   getJobs() {
     return new Promise((resolve, reject) => {
       var bambooHRContainer = document.createElement("div");

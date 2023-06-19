@@ -18,7 +18,7 @@ if (test == null) {
 
   const bamboo = new BambooHRService();
   bamboo.getJobs().then(bambooJobs => {
-    jobDepartmentList.render(bambooJobs.departments);
+    jobDepartmentList.render(bambooJobs);
   });
 
 }

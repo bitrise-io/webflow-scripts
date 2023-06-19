@@ -1,3 +1,5 @@
+import { Department, Position } from "./CareersModels";
+
 /**
  * @typedef {{
  *  categories: {
@@ -13,17 +15,9 @@
  * }} LeverPost
  */
 
-/**
- * @typedef {{
- *  name: string,
- *  posts: LeverPost[],
- *  isOpen: boolean
- * }} LeverDepartment
- */
-
 class LeverService
 {
-  /** @returns {Promise<LeverDepartment[]>} */
+  /** @returns {Promise<Department[]>} */
   getJobs() {
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
@@ -36,26 +30,28 @@ class LeverService
         
         /** @type {LeverPost[]} */
         const responsePayload = JSON.parse(this.response);
-        /** @type {LeverDepartment[]} */
+        /** @type {Department[]} */
         const jobDepartments = [];
         
         responsePayload.forEach(function (jobPost) {
           const jobDepartmentName = jobPost.categories.team || 'Other';
           
-          let jobDepartment = jobDepartments.find(function (aJobDepartment) {
+          let jobDepartment = jobDepartments.find(aJobDepartment => {
             return aJobDepartment.name === jobDepartmentName;
           });
           
           if (!jobDepartment) {
-            jobDepartment = {
-              name: jobDepartmentName,
-              posts: [],
-              isOpen: false,
-            };
+            jobDepartment = new Department(jobDepartmentName);
             jobDepartments.push(jobDepartment);
           }
           
-          jobDepartment.posts.push(jobPost);
+          jobDepartment.posts.push(new Position(
+            jobPost.hostedUrl,
+            jobPost.text,
+            jobPost.categories.location,
+            jobPost.categories.team,
+            jobPost.id
+          ));
         });
         
         resolve(jobDepartments);
