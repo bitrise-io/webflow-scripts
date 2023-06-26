@@ -38,8 +38,8 @@ class StepListSection
 
         const categoryAnchor = document.createElement("a");
         categoryAnchor.id = "category-" + category.getSlug();
+        categoryAnchor.className = "category-anchor";
         categoryAnchor.style.position = "absolute";
-        categoryAnchor.style.marginTop = "-160px";
         newGrid.querySelector("h3").appendChild(categoryAnchor);
 
         matchingSteps.forEach(slug => {
