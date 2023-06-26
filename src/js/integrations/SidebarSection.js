@@ -1,18 +1,27 @@
 import Integrations from "./Integrations";
 import { icaseEqual } from "../common";
 
-class SidebarSection
+
+/**
+ * @typedef {{
+ *  url: string,
+ *  title: string,
+ *  selected: boolean
+ * }} NavigationItem
+ */
+
+class NavigationList
 {
-  constructor() {
+  /** @param {HTMLElement} container */
+  constructor(container) {
     /** @type {HTMLElement} */
-    this.sidebarContainer = document.querySelector(".step_grid").parentNode.parentNode.firstChild;
+    this.container = container;
+
     /** @type {HTMLElement} */
-    this.platformNavigation = document.querySelectorAll("#" + this.sidebarContainer.id + " nav")[0];
-    /** @type {HTMLElement} */
-    this.categoryNavigation = document.querySelectorAll("#" + this.sidebarContainer.id + " nav")[1];
+    this.navContainer = this.container.querySelector("nav");
 
     /** @type {HTMLAnchorElement} */
-    this.navItemTemplate = this.platformNavigation.querySelector("a").cloneNode(true);
+    this.navItemTemplate = this.navContainer.querySelector("a").cloneNode(true);
     this.navItemTemplate.innerHTML = "";
     this.navItemTemplate.href = "";
   }
@@ -22,44 +31,124 @@ class SidebarSection
     navItem.style.fontWeight = "bold"; // TODO: move to webflow
   };
 
+  /** 
+   * @param {NavigationItem[]} items
+   * @param {{clickHandler: (event: Event, navItem: HTMLElement) => void}|null} options
+   */
+  render(items, options) {
+    this.navContainer.querySelectorAll("a").forEach(el => el.remove());
+
+    items.forEach(item => {
+      const newNavItem = this.navItemTemplate.cloneNode(true);
+      newNavItem.innerHTML = item.title;
+      if (item.selected) {
+        this.markNavItemSelected(newNavItem);
+      }
+      newNavItem.href = item.url;
+      newNavItem.addEventListener("click", event => {
+        options.clickHandler(event, this);
+      });
+      this.navContainer.appendChild(newNavItem);
+    });
+  }
+}
+
+class NavigationDropdown extends NavigationList {
+  /** @param {HTMLElement} container */
+  constructor(container) {
+    super(container);
+
+    /** @type {HTMLElement} */
+    this.dropdownToggle = this.container.querySelector(".w-dropdown-toggle");
+  }
+
+  toggleDropdown() {
+    this.dropdownToggle.click();
+  }
+
+  /** @param {HTMLElement} navItem */
+  markNavItemSelected(navItem) {
+    super.markNavItemSelected(navItem);
+    this.dropdownToggle.querySelectorAll("div")[1].innerHTML += ": <strong>" + navItem.innerHTML + "</strong>";
+  }
+}
+
+class SidebarSection
+{
+  constructor() {
+    /** @type {HTMLElement} */
+    this.sidebarContainer = document.querySelector(".integrations-sidebar");
+
+    this.platformList = new NavigationList(this.sidebarContainer.querySelectorAll(".w-nav")[0]);
+    this.categoryList = new NavigationList(this.sidebarContainer.querySelectorAll(".w-nav")[1]);
+
+    this.platformDropdown = new NavigationDropdown(this.sidebarContainer.querySelectorAll(".w-dropdown")[0]);
+    this.categoryDropdown = new NavigationDropdown(this.sidebarContainer.querySelectorAll(".w-dropdown")[1]);
+  }
+
   /**
    * @param {Integrations} integrations 
    * @param {?string} platformFilter 
    * @param {?string} categoryFilter 
    */
   render(integrations, platformFilter, categoryFilter) {
-    this.platformNavigation.querySelectorAll("a").forEach(el => el.remove());
-    this.categoryNavigation.querySelectorAll("a").forEach(el => el.remove());
+    /** @type {NavigationItem[]} */
+    const platformItems = [];
+
+    /** @type {NavigationItem[]} */
+    const categoryItems = [];
 
     if (platformFilter) {
-      const allPlatformsNavItem = this.navItemTemplate.cloneNode(true);
-      allPlatformsNavItem.innerHTML = "All platforms";
-      allPlatformsNavItem.href = document.location.pathname;
-      this.platformNavigation.appendChild(allPlatformsNavItem);
+      platformItems.push({
+        url: document.location.pathname,
+        title: "All platforms",
+        selected: false
+      });
     }
 
     integrations.platforms.getItems().forEach(platform => {
-      const newNavItem = this.navItemTemplate.cloneNode(true);
-      newNavItem.innerHTML = platform.getName();
-      if (platformFilter && icaseEqual(platform.name, platformFilter)) this.markNavItemSelected(newNavItem);
-      newNavItem.href = "?platform=" + platform.name;
-      this.platformNavigation.appendChild(newNavItem);
+      platformItems.push({
+        url: "?platform=" + platform.name,
+        title: platform.getName(),
+        selected: platformFilter && icaseEqual(platform.name, platformFilter)
+      });
     });
 
+    this.platformList.render(platformItems);
+    this.platformDropdown.render(platformItems);
+
     if (categoryFilter) {
-      const allCategoriesNavItem = this.navItemTemplate.cloneNode(true);
-      allCategoriesNavItem.innerHTML = "All categories";
-      allCategoriesNavItem.href = document.location.pathname;
-      this.categoryNavigation.appendChild(allCategoriesNavItem);
+      categoryItems.push({
+        url: document.location.pathname,
+        title: "All categories",
+        selected: false
+      });
     }
 
     integrations.categories.getItems().forEach(category => {
-      const newNavItem = this.navItemTemplate.cloneNode(true);
-      newNavItem.innerHTML = category.getName();
-      if (categoryFilter && icaseEqual(category.name, categoryFilter)) this.markNavItemSelected(newNavItem);
-      newNavItem.href = "#category-" + category.name;
-      this.categoryNavigation.appendChild(newNavItem);
+      categoryItems.push({
+        url: "#category-" + category.name,
+        title: category.getName(),
+        selected: categoryFilter && icaseEqual(category.name, categoryFilter)
+      });
     });
+
+    this.categoryList.render(categoryItems, {
+      clickHandler: (event, navItem) => {
+        document.querySelectorAll(".category-anchor").forEach(element => {
+          element.style.marginTop = "-" + (120 + 10) + "px";
+        });
+      }
+    });
+
+    this.categoryDropdown.render(categoryItems, {
+      clickHandler: (event, dropdown) => {
+          document.querySelectorAll(".category-anchor").forEach(element => {
+            element.style.marginTop = "-" + (120  + this.sidebarContainer.offsetHeight) + "px";
+          });
+          dropdown.toggleDropdown();
+        }
+    })
   };
 }
 
