@@ -47,4 +47,29 @@ function getFirstElementByClassname(parent, className) {
   return element;
 }
 
-export {capitalize, icaseEqual, icaseIncludes, getElementTextContent, getFirstElementByClassname};
+/**
+ * @param {{name: string, property: string}} options 
+ * @returns {HTMLMetaElement}
+ */
+function getMetaTag(options) {
+  const key = "property" in options ? "property" : "name";
+
+  /** @type {?HTMLMetaElement} */
+  let metaTag = document.querySelector(`meta[${key}="${options[key]}"]`);
+  if (!metaTag) {
+    metaTag = document.createElement("meta");
+    metaTag.setAttribute(key, options[key]);
+    document.querySelector("head").appendChild(metaTag);
+  }
+  return metaTag;
+}
+
+/**
+ * @param {{name: string, property: string}} options 
+ * @param {string} content 
+ */
+function setMetaContent(options, content) {
+  getMetaTag(options).content = content;
+}
+
+export {capitalize, icaseEqual, icaseIncludes, getElementTextContent, getFirstElementByClassname, getMetaTag, setMetaContent};

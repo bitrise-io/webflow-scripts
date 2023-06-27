@@ -1,3 +1,4 @@
+import { setMetaContent } from "./common";
 import DetailsSection from "./integrations/DetailsSection";
 import HeaderSection from "./integrations/HeaderSection";
 import IntegrationsService from "./integrations/IntegrationsService";
@@ -29,7 +30,18 @@ IntegrationsService.loadIntegrations().then(integrations => {
   if (!stepFilter || !(stepFilter in integrations.steps)) {
     window.location.href = "/integrations/steps/not-found";  // 404
   } else {
-    header.render(integrations, integrations.steps[stepFilter]);
-    details.render(integrations, integrations.steps[stepFilter]);
+    const step = integrations.steps[stepFilter];
+
+    document.title = `${step.title} | Bitrise Integration Steps`;
+    setMetaContent({name: "description"}, step.summary.replace(/\s+/g, " "));
+    setMetaContent({property: "og:title"}, `${step.title} | Bitrise Integration Steps`);
+    setMetaContent({property: "og:description"}, step.summary.replace(/\s+/g, " "));
+    setMetaContent({property: "og:image"}, step.svgIcon);
+    setMetaContent({property: "twitter:title"}, `${step.title} | Bitrise Integration Steps`);
+    setMetaContent({property: "twitter:description"}, step.summary.replace(/\s+/g, " "));
+    setMetaContent({property: "twitter:image"}, step.svgIcon);
+
+    header.render(integrations, step);
+    details.render(integrations, step);
   }
 });
