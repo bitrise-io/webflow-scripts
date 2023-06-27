@@ -45,7 +45,7 @@ class Step
 
   /** @returns {string} */
   get formattedDescription() {
-    return MarkdownIt().render(this.versions[this.latestVersion].description);
+    return MarkdownIt().render(this.versions[this.latestVersion].description).replace(/<(\/?)(h1|h2)>/g, "<$1h3>");
   }
 
   /** @returns {string} */
