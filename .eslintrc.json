@@ -22,6 +22,7 @@
           "HTMLElement",
           "HTMLHeadingElement",
           "HTMLImageElement",
+          "HTMLMetaElement",
           "HTMLParagraphElement",
           "HTMLSpanElement",
           "Promise",
