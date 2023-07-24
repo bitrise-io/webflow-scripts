@@ -6,7 +6,8 @@ import { icaseEqual } from "../common";
  * @typedef {{
  *  url: string,
  *  title: string,
- *  selected: boolean
+ *  selected: boolean,
+ *  disabled: boolean
  * }} NavigationItem
  */
 
@@ -44,10 +45,15 @@ class NavigationList
       if (item.selected) {
         this.markNavItemSelected(newNavItem);
       }
+      if (item.disabled) {
+        newNavItem.className += " disabled";
+      }
       newNavItem.href = item.url;
-      newNavItem.addEventListener("click", event => {
-        options.clickHandler(event, this);
-      });
+      if (options && options.clickHandler) {
+        newNavItem.addEventListener("click", event => {
+          options.clickHandler(event, this);
+        });  
+      }
       this.navContainer.appendChild(newNavItem);
     });
   }
@@ -63,6 +69,7 @@ class NavigationDropdown extends NavigationList {
   }
 
   toggleDropdown() {
+    // TODO: doesn't work if resized from desktop to mobile view, maybe Webflow issue
     this.dropdownToggle.click();
   }
 
@@ -86,12 +93,17 @@ class SidebarSection
     this.categoryDropdown = new NavigationDropdown(this.sidebarContainer.querySelectorAll(".w-dropdown")[1]);
   }
 
+  getAnchorMarginTop() {
+    return "-" + (120  + (this.sidebarContainer.offsetHeight > 10000 ? 10 : this.sidebarContainer.offsetHeight)) + "px";
+  }
+
   /**
    * @param {Integrations} integrations 
    * @param {?string} platformFilter 
-   * @param {?string} categoryFilter 
+   * @param {?string} categoryFilter
+   * @param {?string} queryFilter
    */
-  render(integrations, platformFilter, categoryFilter) {
+  render(integrations, platformFilter, categoryFilter, queryFilter) {
     /** @type {NavigationItem[]} */
     const platformItems = [];
 
@@ -126,17 +138,34 @@ class SidebarSection
     }
 
     integrations.categories.getItems().forEach(category => {
-      categoryItems.push({
-        url: "#category-" + category.name,
-        title: category.getName(),
-        selected: categoryFilter && icaseEqual(category.name, categoryFilter)
+      /** @type {string[]} */
+      const matchingSteps = category.steps.filter(slug => {
+        return integrations.steps[slug].fitsCategory(categoryFilter) &&
+          integrations.steps[slug].fitsPlatform(platformFilter) &&
+          integrations.steps[slug].fitsQuery(queryFilter);
       });
+
+      if (matchingSteps.length > 0) {
+        categoryItems.push({
+          url: "#category-" + category.name,
+          title: category.getName(),
+          selected: categoryFilter && icaseEqual(category.name, categoryFilter),
+          disabled: false
+        });
+      } else {
+        categoryItems.push({
+          url: "#category-" + category.name,
+          title: category.getName(),
+          selected: categoryFilter && icaseEqual(category.name, categoryFilter),
+          disabled: true
+        });
+      }
     });
 
     this.categoryList.render(categoryItems, {
       clickHandler: (event, navItem) => {
         document.querySelectorAll(".category-anchor").forEach(element => {
-          element.style.marginTop = "-" + (120 + 10) + "px";
+          element.style.marginTop = this.getAnchorMarginTop();
         });
       }
     });
@@ -144,7 +173,7 @@ class SidebarSection
     this.categoryDropdown.render(categoryItems, {
       clickHandler: (event, dropdown) => {
           document.querySelectorAll(".category-anchor").forEach(element => {
-            element.style.marginTop = "-" + (120  + this.sidebarContainer.offsetHeight) + "px";
+            element.style.marginTop = this.getAnchorMarginTop();
           });
           dropdown.toggleDropdown();
         }

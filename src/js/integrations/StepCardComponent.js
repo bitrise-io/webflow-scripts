@@ -19,6 +19,16 @@ class StepCardComponent
     this.element.querySelector("h2 + a").remove();
     /** @type {HTMLParagraphElement} */
     this.cardSummary = this.element.querySelector("p");
+
+    /** @type {HTMLAnchorElement} */
+    this.cardLink = document.createElement("a");
+    this.cardLink.style.position = "absolute";
+    this.cardLink.style.top = "0px";
+    this.cardLink.style.bottom = "0px";
+    this.cardLink.style.left = "0px";
+    this.cardLink.style.right = "0px";
+    this.cardSummary.parentNode.style.position = "relative";
+    this.cardSummary.parentNode.appendChild(this.cardLink);
   }
 
   /** 
@@ -33,6 +43,8 @@ class StepCardComponent
     this.cardHeaderTitleLink.innerHTML = step.title;
     this.cardHeaderTitleLink.title = step.title;
     this.cardHeaderTitleLink.href = "/integrations/steps/?step=" + step.key;
+    this.cardLink.title = step.title;
+    this.cardLink.href = "/integrations/steps/?step=" + step.key;
 
     this.cardSummary.innerHTML = step.formattedSummary;
 

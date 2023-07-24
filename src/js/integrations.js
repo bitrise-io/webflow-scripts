@@ -2,6 +2,10 @@ import IntegrationsService from "./integrations/IntegrationsService";
 import StepListSection from "./integrations/StepListSection";
 import SidebarSection from "./integrations/SidebarSection";
 
+const style = document.createElement("style");
+document.getElementsByTagName("head")[0].appendChild(style);
+style.appendChild(document.createTextNode(require("../css/integrations.css")));
+
 const url = new URL(document.location.href);
 const platformFilter = url.searchParams.get("platform");
 const categoryFilter = url.searchParams.get("category");
@@ -16,7 +20,7 @@ searchField.value = queryFilter;
 
 IntegrationsService.loadIntegrations().then(integrations => {
 
-  sidebar.render(integrations, platformFilter, categoryFilter);
+  sidebar.render(integrations, platformFilter, categoryFilter, queryFilter);
 
   content.render(integrations, platformFilter, categoryFilter, queryFilter);
   
@@ -25,11 +29,16 @@ IntegrationsService.loadIntegrations().then(integrations => {
   });
 
   const match = window.location.hash.match(/category-(.*)/);
-  if (match) {
+  if (platformFilter && !match) {
+    document.querySelector(".category-anchor").style.marginTop = sidebar.getAnchorMarginTop();
+    window.setTimeout(() => {
+      window.location.hash = document.querySelector(".category-anchor").id;
+    }, 500);  
+  } else if (match) {
+    document.getElementById("category-" + match[1]).style.marginTop = sidebar.getAnchorMarginTop();;
     window.location.hash = "";
     window.setTimeout(() => {
       window.location.hash = "category-" + match[1];
-    }, 500);  
+    }, 500);
   }
-
 });

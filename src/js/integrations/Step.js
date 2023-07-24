@@ -17,49 +17,51 @@ class Step
 
     /** @type {{[key: string]: import("./IntegrationsService").StepVersion}} */
     this.versions = data.versions;
+  }
 
-    this.latestVersion = Object.keys(this.versions)[0];
+  get latestVersion() {
+    return this.versions[Object.keys(this.versions)[0]];
   }
 
   /** @returns {string[]} */
   get categories() {
-    return this.versions[this.latestVersion].type_tags || ['other'];
+    return this.latestVersion.type_tags || ['other'];
   }
 
   /** @returns {?string[]} */
   get platforms() {
-    return this.versions[this.latestVersion].project_type_tags || null;
+    return this.latestVersion.project_type_tags || null;
   }
 
   /** @returns {?string} */
   get svgIcon() {
-    return this.versions[this.latestVersion].asset_urls ?
-      this.versions[this.latestVersion].asset_urls['icon.svg'] : 
+    return this.latestVersion.asset_urls ?
+      this.latestVersion.asset_urls['icon.svg'] : 
       null;
   }
 
   /** @returns {string} */
   get description() {
-    return this.versions[this.latestVersion].description;
+    return this.latestVersion.description;
   }
 
   /** @returns {string} */
   get formattedDescription() {
-    return MarkdownIt().render(this.versions[this.latestVersion].description).replace(/<(\/?)(h1|h2)>/g, "<$1h3>");
+    return MarkdownIt().render(this.description).replace(/<(\/?)(h1|h2)>/g, "<$1h3>");
   }
 
   /** @returns {string} */
   get summary() {
-    return this.versions[this.latestVersion].summary;
+    return this.latestVersion.summary;
   }
 
   get formattedSummary() {
-    return MarkdownIt().renderInline(this.versions[this.latestVersion].summary);
+    return MarkdownIt().renderInline(this.summary);
   }
 
   /** @returns {string} */
   get title() {
-    return this.versions[this.latestVersion].title;
+    return this.latestVersion.title;
   }
 
   /** @returns {string} */
@@ -69,7 +71,7 @@ class Step
 
   /** @returns {string} */
   get sourceCodeUrl() {
-    return this.versions[this.latestVersion].source_code_url;
+    return this.latestVersion.source_code_url;
   }
 
   /**

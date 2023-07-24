@@ -1,0 +1,13 @@
+.w-dropdown-link:hover {
+  background: rgba(0,0,0,.05);
+}
+
+.integrations-sidebar {
+  background-color: #fff;
+  z-index: 100;
+}
+
+.w-nav-link.disabled, .w-dropdown-link.disabled {
+  pointer-events: none;
+  opacity: .3;
+}
