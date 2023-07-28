@@ -38,6 +38,7 @@ class StepCardComponent
   render(integrations, step) {
     this.element.id = "step-" + step.key;
 
+    this.cardHeaderIcon.loading = "lazy";
     if (step.svgIcon) this.cardHeaderIcon.src = step.svgIcon;
 
     this.cardHeaderTitleLink.innerHTML = step.title;
