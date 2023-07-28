@@ -11,3 +11,8 @@
   pointer-events: none;
   opacity: .3;
 }
+
+.section_header1 .padding-section-large {
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+}
