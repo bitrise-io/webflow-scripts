@@ -39,6 +39,8 @@ class StepCardComponent
     this.element.id = "step-" + step.key;
 
     this.cardHeaderIcon.loading = "lazy";
+    this.cardHeaderIcon.width = 48;
+    this.cardHeaderIcon.height = 48;
     if (step.svgIcon) this.cardHeaderIcon.src = step.svgIcon;
 
     this.cardHeaderTitleLink.innerHTML = step.title;
