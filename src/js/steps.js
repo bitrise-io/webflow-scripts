@@ -33,6 +33,7 @@ IntegrationsService.loadIntegrations().then(integrations => {
     const step = integrations.steps[stepFilter];
 
     document.title = `${step.title} | Bitrise Integration Steps`;
+    document.querySelector("link[rel='canonical']").setAttribute("href", "https://bitrise.io/integrations/steps/" + step.key);
     setMetaContent({name: "description"}, step.summary.replace(/\s+/g, " "));
     setMetaContent({property: "og:title"}, `${step.title} | Bitrise Integration Steps`);
     setMetaContent({property: "og:description"}, step.summary.replace(/\s+/g, " "));
