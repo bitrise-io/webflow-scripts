@@ -72,4 +72,15 @@ function setMetaContent(options, content) {
   getMetaTag(options).content = content;
 }
 
-export {capitalize, icaseEqual, icaseIncludes, getElementTextContent, getFirstElementByClassname, getMetaTag, setMetaContent};
+/**
+ * @param {string} text 
+ */
+function fancyConsoleLog(text) {
+  const tpl =
+    'border-radius: 4px;' + 
+    'background-image: linear-gradient(318deg, #0dd3c5, #652ec3 48%, #760fc3 84%, #990fc3); ' +
+    'font-size:16px; font-weight: 100;padding:3px 5px;color:';
+  console.log('%c' + text, tpl + 'white');
+}
+
+export {capitalize, icaseEqual, icaseIncludes, getElementTextContent, getFirstElementByClassname, getMetaTag, setMetaContent, fancyConsoleLog};

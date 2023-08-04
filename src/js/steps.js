@@ -1,4 +1,4 @@
-import { setMetaContent } from "./common";
+import { fancyConsoleLog, setMetaContent } from "./common";
 import DetailsSection from "./integrations/DetailsSection";
 import HeaderSection from "./integrations/HeaderSection";
 import IntegrationsService from "./integrations/IntegrationsService";
@@ -43,5 +43,7 @@ IntegrationsService.loadIntegrations().then(integrations => {
 
     header.render(integrations, step);
     details.render(integrations, step);
-  }
+
+    fancyConsoleLog('Bitrise.io Integrations: ' + step.title);
+  }  
 });

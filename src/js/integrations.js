@@ -1,6 +1,7 @@
 import IntegrationsService from "./integrations/IntegrationsService";
 import StepListSection from "./integrations/StepListSection";
 import SidebarSection from "./integrations/SidebarSection";
+import { fancyConsoleLog } from "./common";
 
 const style = document.createElement("style");
 document.getElementsByTagName("head")[0].appendChild(style);
@@ -41,4 +42,6 @@ IntegrationsService.loadIntegrations().then(integrations => {
       window.location.hash = "category-" + match[1];
     }, 500);
   }
+
+  fancyConsoleLog("Bitrise.io Integrations");
 });
