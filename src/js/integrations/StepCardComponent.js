@@ -45,9 +45,15 @@ class StepCardComponent
 
     this.cardHeaderTitleLink.innerHTML = step.title;
     this.cardHeaderTitleLink.title = step.title;
-    this.cardHeaderTitleLink.href = "/integrations/steps/" + step.key;
     this.cardLink.title = step.title;
-    this.cardLink.href = "/integrations/steps/" + step.key;
+
+    if (location.hostname == "bitrise.io" || location.hostname == "localhost") {
+      this.cardHeaderTitleLink.href = "/integrations/steps/" + step.key;
+      this.cardLink.href = "/integrations/steps/" + step.key;
+    } else {
+      this.cardHeaderTitleLink.href = "/integrations/steps?step=" + step.key;
+      this.cardLink.href = "/integrations/steps?step=" + step.key;
+    }
 
     this.cardSummary.innerHTML = step.formattedSummary;
 

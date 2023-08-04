@@ -6,7 +6,14 @@ const hostname = '127.0.0.1';
 const port = 3000;
 
 const server = http.createServer((req, res) => {
-  const url = new URL("http://" + req.hostname + req.url);
+
+  let pathname = "" + req.url;
+  const urlMatch = pathname.match(/(\/integrations\/steps)\/(.*)/);
+  if (urlMatch) {
+    pathname = urlMatch[1];
+  }
+
+  const url = new URL("http://" + req.hostname + pathname);
   const filePath = '.' + url.pathname;
   
   fs.readFile(filePath, (error, content) => {
@@ -20,7 +27,7 @@ const server = http.createServer((req, res) => {
 
     } else {
 
-      fetch(process.argv[2] + req.url).then(response => {
+      fetch(process.argv[2] + pathname).then(response => {
         res.statusCode = response.status;
         res.setHeader('Content-Type', response.headers.get("Content-Type"));
         return response.text();
