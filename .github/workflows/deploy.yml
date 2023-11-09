@@ -34,8 +34,10 @@ jobs:
       - name: Setup NodeJS with yarn
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
           cache: 'yarn'
+      - name: Switch to yarn 4
+        run: yarn set version 4.0.1
       - name: Install NodeJS dependencies
         run: yarn install
       - name: Build
