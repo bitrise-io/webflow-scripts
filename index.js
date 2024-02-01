@@ -7,36 +7,51 @@ const port = 3000;
 
 const webflowDomain = process.argv[2] || 'webflow.bitrise.io';
 
-const workerEvents = [];
+const fetchEventHandlers = {};
 
 /**
- * @param {string} eventName 
+ * @param {string} workerName 
  * @param {Function} eventHandler 
  */
-function addEventListener(eventName, eventHandler) {
-  workerEvents.unshift(eventHandler);
+function addEventListener(workerName, eventHandler) {
+  fetchEventHandlers[workerName] = eventHandler;
 }
 
 /**
+ * @param {string} workerName 
  * @param {string} workerScript 
  */
-function includeWorkerScript(workerScript) {
+function includeWorkerScript(workerName, workerScript) {
   fs.readFile(workerScript, 'utf8', (err, data) => {
     if (err) {
       console.log(err);
     } else {
-      eval(data.toString().replaceAll('webflow.bitrise.io', webflowDomain));    
+      eval(data.toString()
+        .replace('addEventListener(\'fetch\'', `addEventListener('${workerName}'`)
+        .replaceAll('webflow.bitrise.io', webflowDomain)
+      );    
     }
   });
 }
 
-addEventListener('fetch', event => {
+addEventListener('common', event => {
   let urlObject = new URL(event.request.url);
   urlObject.hostname = webflowDomain;
   event.respondWith(fetch(urlObject));
 });
 
-includeWorkerScript("./src/js/integrations/worker.js");
+includeWorkerScript("integrations", "./src/js/integrations/worker.js");
+
+/**
+ * @param {URL} urlObject 
+ * @returns {Function}
+ */
+function getFetchEventHandler(urlObject) {
+  if (urlObject.pathname.match(/^\/integrations/)) {
+    return fetchEventHandlers['integrations'];
+  }
+  return fetchEventHandlers['common'];
+}
 
 const server = http.createServer((req, res) => {
   const urlObject = new URL("http://" + req.hostname + req.url);
@@ -51,25 +66,21 @@ const server = http.createServer((req, res) => {
 
   }).catch(error  => {
 
-    let requestHandled = false;
-    for (let workerEvent of workerEvents) {
-      if (requestHandled) break;
-      workerEvent({
-        request: {
-          url: urlObject,
-        },
-        respondWith: buffer => {
-          requestHandled = true;
-          buffer.then(response => {
-            res.statusCode = response.status;
-            res.setHeader('Content-Type', response.headers.get("Content-Type"));
-            return response.text();
-          }).then(text => {
-            res.end(text.replace("https://bitrise-io.github.io/webflow-scripts/", "/dist/"));
-          });
-        }
-      });
-    }
+    getFetchEventHandler(urlObject)({
+      request: {
+        url: urlObject,
+      },
+      respondWith: buffer => {
+        requestHandled = true;
+        buffer.then(response => {
+          res.statusCode = response.status;
+          res.setHeader('Content-Type', response.headers.get("Content-Type"));
+          return response.text();
+        }).then(text => {
+          res.end(text.replace("https://bitrise-io.github.io/webflow-scripts/", "/dist/"));
+        });
+      }
+    });
 
   });
 });
