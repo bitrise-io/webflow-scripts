@@ -47,7 +47,7 @@ class StepCardComponent
     this.cardHeaderTitleLink.title = step.title;
     this.cardLink.title = step.title;
 
-    if (location.hostname == "bitrise.io" || location.hostname == "localhost") {
+    if (location.hostname.match(/bitrise\.io|localhost|127\.0\.0\.1/)) {
       this.cardHeaderTitleLink.href = "/integrations/steps/" + step.key;
       this.cardLink.href = "/integrations/steps/" + step.key;
     } else {
