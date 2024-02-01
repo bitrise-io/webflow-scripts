@@ -18,6 +18,5 @@
   "scripts": {
     "build_dev": "./node_modules/.bin/webpack --config webpack.dev.js --progress --color",
     "build_prod": "./node_modules/.bin/webpack --config webpack.prod.js"
-  },
-  "packageManager": "yarn@4.0.1"
+  }
 }
