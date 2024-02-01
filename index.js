@@ -5,58 +5,73 @@ const path = require('path');
 const hostname = '127.0.0.1';
 const port = 3000;
 
+const webflowDomain = process.argv[2] || 'webflow.bitrise.io';
+
+const workerEvents = [];
+
 /**
- * 
- * @param {URL} urlObject 
- * @param {RegExp} pattern 
- * @param {string} pathname 
- * @param {string} hostname 
- * @returns {URL}
+ * @param {string} eventName 
+ * @param {Function} eventHandler 
  */
-function handleRouting(urlObject, pattern, pathname, hostname) {
-  const match = urlObject.pathname.match(pattern);
-  if (match) {
-    urlObject.hostname = hostname;
-    urlObject.pathname = urlObject.pathname.replace(pattern, pathname);
-    return urlObject;
-  }
-  return null;
+function addEventListener(eventName, eventHandler) {
+  workerEvents.unshift(eventHandler);
 }
 
-const webflowDomain = process.argv[2];
+/**
+ * @param {string} workerScript 
+ */
+function includeWorkerScript(workerScript) {
+  fs.readFile(workerScript, 'utf8', (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      eval(data.toString().replaceAll('webflow.bitrise.io', webflowDomain));    
+    }
+  });
+}
 
-const routingRules = [
-  [/^\/integrations\/steps\/.+/, '/integrations/steps', webflowDomain],
-  [/\/integrations$|integrations\/(.*)/, '/integrations', webflowDomain],
+addEventListener('fetch', event => {
+  let urlObject = new URL(event.request.url);
+  urlObject.hostname = webflowDomain;
+  event.respondWith(fetch(urlObject));
+});
 
-
-  [/(.*)/, '$1', webflowDomain],
-];
+includeWorkerScript("./src/js/integrations/worker.js");
 
 const server = http.createServer((req, res) => {
   const urlObject = new URL("http://" + req.hostname + req.url);
   fs.promises.readFile(`.${urlObject.pathname}`).then(content => {
+
     res.statusCode = 200;
     const extname = path.extname(urlObject.pathname);
     if (extname == ".js") res.setHeader('Content-Type', "text/javascript");
     if (extname == ".html") res.setHeader('Content-Type', "text/html");
+    if (extname == ".json") res.setHeader('Content-Type', "application/json");
     res.end(content);
-  }).catch(error  => {
-    for (let routingRule of routingRules) {
-      const target = handleRouting(urlObject, ...routingRule);
-      if (target) {
-        fetch(target).then(response => {
-          res.statusCode = response.status;
-          res.setHeader('Content-Type', response.headers.get("Content-Type"));
-          return response.text();
-        }).then(text => {
-          res.end(text.replace("https://bitrise-io.github.io/webflow-scripts/", "/dist/"));
-        });
-        break;
-      }
-    }
-  });
 
+  }).catch(error  => {
+
+    let requestHandled = false;
+    for (let workerEvent of workerEvents) {
+      if (requestHandled) break;
+      workerEvent({
+        request: {
+          url: urlObject,
+        },
+        respondWith: buffer => {
+          requestHandled = true;
+          buffer.then(response => {
+            res.statusCode = response.status;
+            res.setHeader('Content-Type', response.headers.get("Content-Type"));
+            return response.text();
+          }).then(text => {
+            res.end(text.replace("https://bitrise-io.github.io/webflow-scripts/", "/dist/"));
+          });
+        }
+      });
+    }
+
+  });
 });
 
 server.listen(port, hostname, () => {
