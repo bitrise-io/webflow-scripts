@@ -8,10 +8,11 @@ module.exports = {
     ]
   },
   entry: {
-    integrations: "js/integrations.js",
-    steps:        "js/steps.js",
-    careers:      "js/careers.js",
-    changelog:    "js/changelog.js",
+    integrations:      "js/integrations.js",
+    steps:             "js/steps.js",
+    careers:           "js/careers.js",
+    changelog:         "js/changelog.js",
+    "changelog-topic": "js/changelog-topic.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
