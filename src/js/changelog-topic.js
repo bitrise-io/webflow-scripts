@@ -20,7 +20,11 @@ function detectTopicFromUrl(url) {
 const url = new URL(document.location.href);
 const topicSlugId = detectTopicFromUrl(url);
 
-ChangelogService.loadTopic(topicSlugId).then(topic => {
+/** @type {string} */
+const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? "" : "https://bitrise.io";
+const changelogService = new ChangelogService(apiBase);
+
+changelogService.loadTopic(topicSlugId).then(topic => {
 
   document.getElementById("changelog-topic-title").innerHTML = topic.fancyTitle;
   document.getElementById("changelog-topic-meta").innerHTML = topic.createdAt.toLocaleDateString();
