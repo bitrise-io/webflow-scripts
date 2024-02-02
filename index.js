@@ -41,6 +41,7 @@ addEventListener('common', event => {
 });
 
 includeWorkerScript("integrations", "./src/js/integrations/worker.js");
+includeWorkerScript("changelog", "./src/js/changelog/worker.js");
 
 /**
  * @param {URL} urlObject 
@@ -49,6 +50,9 @@ includeWorkerScript("integrations", "./src/js/integrations/worker.js");
 function getFetchEventHandler(urlObject) {
   if (urlObject.pathname.match(/^\/integrations/)) {
     return fetchEventHandlers['integrations'];
+  }
+  if (urlObject.pathname.match(/^\/changelog/)) {
+    return fetchEventHandlers['changelog'];
   }
   return fetchEventHandlers['common'];
 }
