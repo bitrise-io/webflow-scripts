@@ -22,9 +22,11 @@
           "HTMLElement",
           "HTMLHeadingElement",
           "HTMLImageElement",
+          "HTMLLIElement",
           "HTMLMetaElement",
           "HTMLParagraphElement",
           "HTMLSpanElement",
+          "HTMLUListElement",
           "Promise",
           "URL"
         ]

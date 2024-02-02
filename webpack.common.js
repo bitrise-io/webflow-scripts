@@ -11,6 +11,7 @@ module.exports = {
     integrations: "js/integrations.js",
     steps:        "js/steps.js",
     careers:      "js/careers.js",
+    changelog:    "js/changelog.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
