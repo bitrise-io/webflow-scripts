@@ -28,7 +28,7 @@ class ChangelogList
    */
   renderListItem(topic, isUnread = false) {
     const listItem = (isUnread ? this.unreadListItemTemplate : this.readListItemTemplate).cloneNode(true);
-    listItem.querySelector(".changelog-timestamp").innerHTML = `[${topic.createdAt.toLocaleDateString()}]`;
+    listItem.querySelector(".changelog-timestamp").innerHTML = topic.createdAt.toLocaleDateString();
     listItem.querySelector(".changelog-title").innerHTML = topic.fancyTitle;
     listItem.querySelector("a").href = topic.webflowUrl;
     return listItem;
