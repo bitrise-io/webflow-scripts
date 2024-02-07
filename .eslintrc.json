@@ -28,6 +28,7 @@
           "HTMLSpanElement",
           "HTMLUListElement",
           "Promise",
+          "Response",
           "URL"
         ]
       }

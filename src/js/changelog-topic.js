@@ -24,6 +24,13 @@ const topicSlugId = detectTopicFromUrl(url);
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? "" : "https://bitrise.io";
 const changelogService = new ChangelogService(apiBase);
 
+document.getElementById("changelog-topic-title").innerHTML = "<span class='changelog-loading'>Loading</span>";
+document.getElementById("changelog-topic-meta").innerHTML = "<span class='changelog-loading'>Loading</span>";
+document.getElementById("changelog-topic-content").innerHTML = 
+  "<p class='changelog-loading'>Loading</p>" +
+  "<p class='changelog-loading'>Loading</p>" +
+  "<p class='changelog-loading'>Loading</p>";
+
 changelogService.loadTopic(topicSlugId).then(topic => {
 
   document.getElementById("changelog-topic-title").innerHTML = topic.fancyTitle;

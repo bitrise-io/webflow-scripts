@@ -13,24 +13,7 @@ const changelogList = new ChangelogList(document.getElementById("changelog-list"
 /** @type {HTMLAnchorElement} */
 const changelogLoadMoreButton = document.getElementById("changelog-load-more-button");
 
-/** */
-function loadMore() {
-  changelogLoadMoreButton.disabled = true;
-  changelogLoadMoreButton.innerHTML = "Loading...";
-  changelogService.loadMore().then(topics => {
-    changelogList.render(topics);
-    changelogLoadMoreButton.disabled = false;
-    changelogLoadMoreButton.innerHTML = "Load more...";
-
-    if (!changelogService.isMore) {
-      changelogLoadMoreButton.remove();
-    }
-  });
-}
-
-changelogLoadMoreButton.addEventListener('click', event => {
-  event.preventDefault();
-  loadMore();
+changelogLoadMoreButton.remove();
+changelogService.loadTopics("/changelog.json").then(topics => {
+  changelogList.render(topics);
 });
-
-loadMore();

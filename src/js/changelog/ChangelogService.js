@@ -8,44 +8,18 @@ class ChangelogService
   constructor(apiBase) {
     /** @type {string} */
     this.apiBase = apiBase;
-
-    /** @type {string} */
-    this.changelogUrl = "/changelog.json";
-
-    /** @type {ChangelogTopic[]} */
-    this.topics = [];
-
-    /** @type {number} */
-    this.nextPage = 0;
-    /** @type {number} */
-    this.currentPage = -1;
   }
 
-  /** @returns {Promise<ChangelogTopic[]>} */
-  async loadMore() {
-    if (this.isMore) {
-      const url = this.apiBase + this.changelogUrl + "?page=" + this.nextPage;
-      const response = await fetch(url);
-      const json = await response.json();
-  
-      this.currentPage = this.nextPage;
-  
-      if (json.topic_list.more_topics_url) {
-        const moreTopicsUrlMatch = json.topic_list.more_topics_url.match(/page=(\d+)/);
-        this.nextPage = parseInt(moreTopicsUrlMatch[1]);
-      }
-  
-      json.topic_list.topics.forEach(data => {
-        this.topics.push(new ChangelogTopic(data));
-      });
-    }
-
-    return this.topics;
-  }
-
-  /** @returns {boolean} */
-  get isMore() {
-    return this.nextPage > this.currentPage;
+  /**
+   * @param {string} changelogUrl 
+   * @returns {Promise<ChangelogTopic[]>}
+   */
+async loadTopics(changelogUrl) {
+    const url = this.apiBase + changelogUrl;
+    const response = await fetch(url);
+    const json = await response.json();
+    console.log(json);
+    return json.topic_list.topics.map(data => new ChangelogTopic(data));
   }
 
   /**
@@ -53,11 +27,10 @@ class ChangelogService
    * @returns {Promise<ChangelogTopic>}
    */
   async loadTopic(topicSlugId) {
-    const url = this.apiBase + `/changelog/${topicSlugId}.json`;
+    const url = this.apiBase + `/changelog/api/t/${topicSlugId}.json`;
     const response = await fetch(url);
-    const data = await response.json();
-    console.log(data);
-    return new ChangelogTopic(data);
+    const json = await response.json();
+    return new ChangelogTopic(json);
   }
 }
 
