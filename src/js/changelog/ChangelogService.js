@@ -15,7 +15,8 @@ class ChangelogService
    * @returns {Promise<ChangelogTopic[]>}
    */
 async loadTopics(changelogUrl) {
-    const url = this.apiBase + changelogUrl;
+    const chacheBuster = (new Date()).toISOString().split(":")[0].replace(/[^\d]/g, "");
+    const url = this.apiBase + changelogUrl + "?_=" + chacheBuster;
     const response = await fetch(url);
     const json = await response.json();
     console.log(json);
