@@ -19,6 +19,11 @@ class ChangelogList
     this.readListItemTemplate.id = "";
     this.readListItemTemplate.remove();
 
+    /** @type {HTMLLIElement} */
+    this.timestampListItemTemplate = this.list.querySelector("#changelog-group-timestamp-template");
+    this.timestampListItemTemplate.id = "";
+    this.timestampListItemTemplate.remove();
+
     this.list.append(this.renderLoadingListItem());
     this.list.append(this.renderLoadingListItem());
     this.list.append(this.renderLoadingListItem());
@@ -47,13 +52,24 @@ class ChangelogList
   }
 
   /**
-   * @param {ChangelogTopic[]} topics 
+   * @param {ChangelogTopic[]} topics
+   * @param {Date} lastVisitedDate
    */
-  render(topics) {
+  render(topics, lastVisitedDate) {
     this.list.innerHTML = "";
+    let timestamp = null;
     for (let topic of topics) {
       if (!this.listItems[topic.id]) {
-        const listItem = this.renderListItem(topic);
+
+        if (timestamp != topic.createdAt.toLocaleDateString()) {
+          timestamp = topic.createdAt.toLocaleDateString();
+          const timestampListItem = this.timestampListItemTemplate.cloneNode(true);
+          timestampListItem.innerHTML = timestamp;
+          this.list.append(timestampListItem);
+        }
+
+        const isUnread = topic.createdAt.getTime() > lastVisitedDate.getTime();
+        const listItem = this.renderListItem(topic, isUnread);
         this.listItems[topic.id] = listItem;
         this.list.append(listItem);
       }

@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const hostname = '127.0.0.1';
+const hostname = process.argv[3] || '127.0.0.1';
 const port = 3000;
 
 const webflowDomain = process.argv[2] || 'webflow.bitrise.io';

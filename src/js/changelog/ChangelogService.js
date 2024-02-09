@@ -19,7 +19,6 @@ async loadTopics(changelogUrl) {
     const url = this.apiBase + changelogUrl + "?_=" + chacheBuster;
     const response = await fetch(url);
     const json = await response.json();
-    console.log(json);
     return json.topic_list.topics.map(data => new ChangelogTopic(data));
   }
 
