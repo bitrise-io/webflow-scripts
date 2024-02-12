@@ -20,18 +20,25 @@ async function addCorsHeaders(originalResponse) {
 
 addEventListener('fetch', event => {
   let urlObject = new URL(event.request.url);
+  let useCors = true;
   
   urlObject.hostname = 'webflow.bitrise.io';
 
   if (urlObject.pathname.match(/^\/changelog\/api\/(.+\.json)$/)) {
     urlObject.hostname = 'discuss.bitrise.io';
     urlObject.pathname = urlObject.pathname.replace(/^\/changelog\/api\/(.+\.json)$/, '/$1');
-  } else if (urlObject.pathname.match(/^\/changelog\.json$/)) {
+    useCors = true;
+  } else if (urlObject.pathname.match(/^\/(changelog|changelog_latest)\.json$/)) {
     urlObject.hostname = 'web-cdn.bitrise.io';
     urlObject.pathname = 'changelog.json';
+    useCors = true;
   } else if (urlObject.pathname.match(/^\/changelog\/.+/)) {
     urlObject.pathname = '/changelog/topic';
   }
 
-  event.respondWith(addCorsHeaders(fetch(urlObject)));
+  if (useCors) {
+    event.respondWith(addCorsHeaders(fetch(urlObject)));
+  } else {
+    event.respondWith(fetch(urlObject));
+  }
 })

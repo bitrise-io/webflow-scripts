@@ -70,10 +70,19 @@ async function buildChangelog() {
 
   const filename = "./changelog.json";
   process.stdout.write(`Writing ${filename}: `);
-  await fs.promises.writeFile("./changelog.json", JSON.stringify({
+  await fs.promises.writeFile(filename, JSON.stringify({
     timestamp: new Date(),
     topic_list: {
       topics: topics,
+    },
+  }));
+
+  const filename_latest = "./changelog_latest.json";
+  process.stdout.write(`Writing ${filename_latest}: `);
+  await fs.promises.writeFile(filename_latest, JSON.stringify({
+    timestamp: new Date(),
+    topic_list: {
+      topics: topics.slice(0, 5),
     },
   }));
 
