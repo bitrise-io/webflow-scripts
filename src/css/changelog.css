@@ -11,6 +11,10 @@
   display: none;
 }
 
+.changelog-topic-content img {
+  height: auto;
+}
+
 .changelog-topic-content h1 {
   font-size: 2rem;
   margin-bottom: 1rem;

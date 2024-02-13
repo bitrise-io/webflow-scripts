@@ -24,7 +24,10 @@ class ChangelogList
     this.timestampListItemTemplate.id = "";
     this.timestampListItemTemplate.remove();
 
+    this.list.innerHTML = "";
+    this.list.append(this.renderLoadingTimestampListItem());
     this.list.append(this.renderLoadingListItem());
+    this.list.append(this.renderLoadingTimestampListItem());
     this.list.append(this.renderLoadingListItem());
     this.list.append(this.renderLoadingListItem());
   }
@@ -33,8 +36,13 @@ class ChangelogList
     const listItem = this.readListItemTemplate.cloneNode(true);
     listItem.querySelector(".changelog-timestamp").innerHTML = "<span class='changelog-loading'>Loading</span>";
     listItem.querySelector(".changelog-title").innerHTML = "<span class='changelog-loading'>Loading</span>";
-    listItem.querySelectorAll(".display-inline .display-inline").forEach(elem => elem.remove());
     return listItem;
+  }
+
+  renderLoadingTimestampListItem() {
+    const timestampListItem = this.readListItemTemplate.cloneNode(true);
+    timestampListItem.innerHTML = "<span class='changelog-loading'>Loading</span>";
+    return timestampListItem;
   }
 
 
