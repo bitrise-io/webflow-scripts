@@ -28,9 +28,13 @@ addEventListener('fetch', event => {
     urlObject.hostname = 'discuss.bitrise.io';
     urlObject.pathname = urlObject.pathname.replace(/^\/changelog\/api\/(.+\.json)$/, '/$1');
     useCors = true;
-  } else if (urlObject.pathname.match(/^\/(changelog|changelog_latest)\.json$/)) {
+  } else if (urlObject.pathname.match(/^\/changelog\.json$/)) {
     urlObject.hostname = 'web-cdn.bitrise.io';
     urlObject.pathname = 'changelog.json';
+    useCors = true;
+  } else if (urlObject.pathname.match(/^\/changelog_latest\.json$/)) {
+    urlObject.hostname = 'web-cdn.bitrise.io';
+    urlObject.pathname = 'changelog_latest.json';
     useCors = true;
   } else if (urlObject.pathname.match(/^\/changelog\/.+/)) {
     urlObject.pathname = '/changelog/topic';
