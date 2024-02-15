@@ -83,4 +83,25 @@ function fancyConsoleLog(text) {
   console.log('%c' + text, tpl + 'white');
 }
 
-export {capitalize, icaseEqual, icaseIncludes, getElementTextContent, getFirstElementByClassname, getMetaTag, setMetaContent, fancyConsoleLog};
+/**
+ * @param {string} cssData 
+ * @returns {HTMLStyleElement}
+ */
+function loadCss(cssData) {
+  const style = document.createElement("style");
+  document.getElementsByTagName("head")[0].appendChild(style);
+  style.appendChild(document.createTextNode(cssData));
+  return style;
+}
+
+export {
+  capitalize,
+  fancyConsoleLog,
+  getElementTextContent,
+  getFirstElementByClassname,
+  getMetaTag,
+  icaseEqual,
+  icaseIncludes,
+  loadCss,
+  setMetaContent,
+};

@@ -2,10 +2,9 @@ import IntegrationsService from "./integrations/IntegrationsService";
 import StepListSection from "./integrations/StepListSection";
 import SidebarSection from "./integrations/SidebarSection";
 import { fancyConsoleLog } from "./common";
+import { loadCss } from "./common";
 
-const style = document.createElement("style");
-document.getElementsByTagName("head")[0].appendChild(style);
-style.appendChild(document.createTextNode(require("../css/integrations.css")));
+loadCss(require("../css/integrations.css"));
 
 const url = new URL(document.location.href);
 const platformFilter = url.searchParams.get("platform");

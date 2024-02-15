@@ -1,8 +1,7 @@
 import ChangelogService from "./changelog/ChangelogService";
+import { loadCss } from "./common";
 
-const style = document.createElement("style");
-document.getElementsByTagName("head")[0].appendChild(style);
-style.appendChild(document.createTextNode(require("../css/changelog.css")));
+loadCss(require("../css/changelog.css"));
 
 /** 
  * @param {URL} url

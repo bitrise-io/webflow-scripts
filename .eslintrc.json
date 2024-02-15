@@ -26,6 +26,7 @@
           "HTMLMetaElement",
           "HTMLParagraphElement",
           "HTMLSpanElement",
+          "HTMLStyleElement",
           "HTMLUListElement",
           "Promise",
           "Response",
