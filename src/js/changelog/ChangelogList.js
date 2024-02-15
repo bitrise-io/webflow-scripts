@@ -6,9 +6,6 @@ class ChangelogList
     /** @type {HTMLUListElement} */
     this.list = list;
 
-    /** @type {HTMLLIElement[]} */
-    this.listItems = [];
-
     /** @type {HTMLLIElement} */
     this.unreadListItemTemplate = this.list.querySelector("#changelog-unread-template");
     this.unreadListItemTemplate.id = "";
@@ -67,20 +64,16 @@ class ChangelogList
     this.list.innerHTML = "";
     let timestamp = null;
     for (let topic of topics) {
-      if (!this.listItems[topic.id]) {
-
-        if (timestamp != topic.createdAt.toLocaleDateString()) {
-          timestamp = topic.createdAt.toLocaleDateString();
-          const timestampListItem = this.timestampListItemTemplate.cloneNode(true);
-          timestampListItem.innerHTML = timestamp;
-          this.list.append(timestampListItem);
-        }
-
-        const isUnread = topic.createdAt.getTime() > lastVisitedDate.getTime();
-        const listItem = this.renderListItem(topic, isUnread);
-        this.listItems[topic.id] = listItem;
-        this.list.append(listItem);
+      if (timestamp != topic.createdAt.toLocaleDateString()) {
+        timestamp = topic.createdAt.toLocaleDateString();
+        const timestampListItem = this.timestampListItemTemplate.cloneNode(true);
+        timestampListItem.innerHTML = timestamp;
+        this.list.append(timestampListItem);
       }
+
+      const isUnread = topic.createdAt.getTime() > lastVisitedDate.getTime();
+      const listItem = this.renderListItem(topic, isUnread);
+      this.list.append(listItem);
     }
   }
 }
