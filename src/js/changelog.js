@@ -4,30 +4,33 @@ import { loadCss } from "./common";
 
 loadCss(require("../css/changelog.css"));
 
-const now = new Date();
-let lastVisitedDate = now;
+const url = new URL(document.location.href);
+const overrideLastVisit = url.searchParams.get("lastVisit");
+const queryLoadMore = url.searchParams.get("loadMore");
+
+let lastVisitedDate = new Date();
+let newLastVisitDate = lastVisitedDate;
 
 /** @type {string} */
 const cookieName = "changelogLastVisit";
 const cookiePattern = new RegExp(`${cookieName}=([^;]+);?`);
 const cookieMatch = document.cookie.match(cookiePattern);
-if (cookieMatch) lastVisitedDate = new Date(cookieMatch[1]);
+if (cookieMatch) {
+  lastVisitedDate = new Date(decodeURIComponent(cookieMatch[1]));
+}
+
+if (overrideLastVisit) {
+  lastVisitedDate.setDate(lastVisitedDate.getDate() - parseInt(overrideLastVisit));
+  newLastVisitDate = lastVisitedDate;
+}
 
 const expires = new Date();
 expires.setMonth(expires.getMonth() + 12);
 let domain = '.bitrise.io';
-if (window.location.host.match('localhost')) domain = 'localhost';
-const cookieValue = encodeURIComponent(String(now))
+if (window.location.host.match('localhost')) domain = null;
+const cookieValue = encodeURIComponent(String(newLastVisitDate))
   .replace(/%(23|24|26|2B|3A|3C|3E|3D|2F|3F|40|5B|5D|5E|60|7B|7D|7C)/g, decodeURIComponent);
-document.cookie = `${cookieName}=${cookieValue};expires=${expires};domain=${domain};`;
-
-const url = new URL(document.location.href);
-const queryLastVisit = url.searchParams.get("lastVisit");
-if (queryLastVisit) {
-  lastVisitedDate = new Date();
-  lastVisitedDate.setDate(lastVisitedDate.getDate() - parseInt(queryLastVisit));
-}
-const queryLoadMore = url.searchParams.get("loadMore");
+document.cookie = `${cookieName}=${cookieValue};expires=${expires};` + (domain ? `domain=${domain};` : "");
 
 /** @type {string} */
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? "" : "https://bitrise.io";
