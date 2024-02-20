@@ -17,7 +17,9 @@ const expires = new Date();
 expires.setMonth(expires.getMonth() + 12);
 let domain = '.bitrise.io';
 if (window.location.host.match('localhost')) domain = 'localhost';
-document.cookie = `${cookieName}=${now};expires=${expires};domain=${domain};`;
+const cookieValue = encodeURIComponent(String(now))
+  .replace(/%(23|24|26|2B|3A|3C|3E|3D|2F|3F|40|5B|5D|5E|60|7B|7D|7C)/g, decodeURIComponent);
+document.cookie = `${cookieName}=${cookieValue};expires=${expires};domain=${domain};`;
 
 const url = new URL(document.location.href);
 const queryLastVisit = url.searchParams.get("lastVisit");
