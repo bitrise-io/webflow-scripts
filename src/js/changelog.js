@@ -20,7 +20,7 @@ if (cookieMatch) {
 }
 
 if (overrideLastVisit) {
-  lastVisitedDate.setDate(lastVisitedDate.getDate() - parseInt(overrideLastVisit));
+  lastVisitedDate.setDate((new Date()).getDate() - parseInt(overrideLastVisit));
   newLastVisitDate = lastVisitedDate;
 }
 
