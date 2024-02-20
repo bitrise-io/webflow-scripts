@@ -15,7 +15,9 @@ if (cookieMatch) lastVisitedDate = new Date(cookieMatch[1]);
 
 const expires = new Date();
 expires.setMonth(expires.getMonth() + 12);
-document.cookie = `${cookieName}=${now};expires=${expires};`;
+let domain = '.bitrise.io';
+if (window.location.host.match('localhost')) domain = 'localhost';
+document.cookie = `${cookieName}=${now};expires=${expires};domain=${domain};`;
 
 const url = new URL(document.location.href);
 const queryLastVisit = url.searchParams.get("lastVisit");
