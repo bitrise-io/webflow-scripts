@@ -10,9 +10,29 @@ function delay(time) {
 } 
 
 /**
+ * @typedef {{
+ *  id: number,
+ *  title: string,
+ *  fancy_title: string,
+ *  slug: string,
+ *  created_at: string,
+ *  pinned: boolean,
+ *  tags: string[],
+ * }} DiscourseTopic
+ */
+
+/**
+ * @typedef {{
+ *  topic_list: {
+ *    topics: DiscourseTopic[],
+ *  },
+ * }} DiscourseCategoryResponse
+ */
+
+/**
  * 
  * @param {string} category 
- * @returns {Promise<object>}
+ * @returns {Promise<DiscourseTopic[]>}
  */
 async function fetchCategory(category) {
   const topics = [];
@@ -25,6 +45,8 @@ async function fetchCategory(category) {
 
     const url = "https://discuss.bitrise.io" + category + "?page=" + nextPage;
     const response = await fetch(url);
+
+    /** @type {DiscourseCategoryResponse} */
     const json = await response.json();
     process.stdout.write(".");
 
@@ -35,7 +57,8 @@ async function fetchCategory(category) {
           title: topic.title,
           fancy_title: topic.fancy_title,
           slug: topic.slug,
-          created_at: topic.created_at
+          created_at: topic.created_at,
+          tags: topic.tags,
         });  
       }
     });
@@ -54,6 +77,7 @@ async function fetchCategory(category) {
 
 /** @returns {void} */
 async function buildChangelog() {
+  /** @type {DiscourseTopic[]} */
   const topics = [];
 
   const productUpdatesTopics = await fetchCategory("/c/product-updates/42.json");
@@ -82,7 +106,7 @@ async function buildChangelog() {
   await fs.promises.writeFile(filename_latest, JSON.stringify({
     timestamp: new Date(),
     topic_list: {
-      topics: topics.slice(0, 5),
+      topics: topics.slice(0, 20),
     },
   }));
 
