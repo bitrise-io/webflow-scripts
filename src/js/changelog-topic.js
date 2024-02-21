@@ -35,6 +35,14 @@ changelogService.loadTopic(topicSlugId).then(topic => {
   document.getElementById("changelog-topic-title").innerHTML = topic.fancyTitle;
   document.getElementById("changelog-topic-meta").innerHTML = formatDate(topic.createdAt);
   document.getElementById("changelog-topic-content").innerHTML = topic.posts[0].cooked;
+
+  document.querySelectorAll("#changelog-topic-content .lightbox-wrapper").forEach(lightboxWrapper => {
+    const image = lightboxWrapper.querySelector("img");
+    const figure = document.createElement("figure");
+    figure.appendChild(image);
+    lightboxWrapper.replaceWith(figure);
+  });
+
   document.getElementById("changelog-topic-leave-feedback-button").href = `https://discuss.bitrise.io/t/${topic.slug}/${topic.id}`;
   document.getElementById("changelog-topic-leave-feedback-button").target = "_blank";
 });
