@@ -78,8 +78,4 @@ function renderLatestChangelog(latestUrl, fullUrl, autoLoad) {
   });
 }
 
-if (queryLoadMore) {
-  renderLatestChangelog("/changelog_latest.json", "/changelog.json", queryLoadMore === "auto");
-} else {
-  renderFullChangelog("/changelog.json");
-}
+renderLatestChangelog("/changelog_latest.json", "/changelog.json", false);
