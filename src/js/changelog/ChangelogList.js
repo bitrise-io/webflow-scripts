@@ -1,3 +1,4 @@
+import { formatDate } from "../common";
 import ChangelogTopic from "./ChangelogTopic";
 
 class ChangelogList
@@ -50,7 +51,7 @@ class ChangelogList
    */
   renderListItem(topic, isUnread = false) {
     const listItem = (isUnread ? this.unreadListItemTemplate : this.readListItemTemplate).cloneNode(true);
-    listItem.querySelector(".changelog-timestamp").innerHTML = topic.createdAt.toLocaleDateString();
+    listItem.querySelector(".changelog-timestamp").innerHTML = formatDate(topic.createdAt);
     listItem.querySelector(".changelog-title").innerHTML = topic.fancyTitle;
     listItem.querySelector("a").href = topic.webflowUrl;
     return listItem;
@@ -64,8 +65,8 @@ class ChangelogList
     this.list.innerHTML = "";
     let timestamp = null;
     for (let topic of topics) {
-      if (timestamp != topic.createdAt.toLocaleDateString()) {
-        timestamp = topic.createdAt.toLocaleDateString();
+      if (timestamp != formatDate(topic.createdAt)) {
+        timestamp = formatDate(topic.createdAt);
         const timestampListItem = this.timestampListItemTemplate.cloneNode(true);
         timestampListItem.innerHTML = timestamp;
         this.list.append(timestampListItem);

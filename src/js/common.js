@@ -94,9 +94,19 @@ function loadCss(cssData) {
   return style;
 }
 
+/**
+ * @param {Date} date 
+ * @returns {string}
+ */
+function formatDate(date) {
+  const [weekday, month, day, year] = date.toDateString().split(" ");
+  return `${month} ${day.replace(/^0/, "")}, ${year}`;
+}
+
 export {
   capitalize,
   fancyConsoleLog,
+  formatDate,
   getElementTextContent,
   getFirstElementByClassname,
   getMetaTag,

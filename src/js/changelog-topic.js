@@ -1,5 +1,5 @@
 import ChangelogService from "./changelog/ChangelogService";
-import { loadCss } from "./common";
+import { formatDate, loadCss } from "./common";
 
 loadCss(require("../css/changelog.css"));
 
@@ -33,7 +33,7 @@ document.getElementById("changelog-topic-content").innerHTML =
 changelogService.loadTopic(topicSlugId).then(topic => {
 
   document.getElementById("changelog-topic-title").innerHTML = topic.fancyTitle;
-  document.getElementById("changelog-topic-meta").innerHTML = topic.createdAt.toLocaleDateString();
+  document.getElementById("changelog-topic-meta").innerHTML = formatDate(topic.createdAt);
   document.getElementById("changelog-topic-content").innerHTML = topic.posts[0].cooked;
   document.getElementById("changelog-topic-leave-feedback-button").href = `https://discuss.bitrise.io/t/${topic.slug}/${topic.id}`;
   document.getElementById("changelog-topic-leave-feedback-button").target = "_blank";

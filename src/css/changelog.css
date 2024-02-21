@@ -136,15 +136,11 @@ aside.onebox .onebox-body h4 {
 
 #changelog-topic-title .changelog-loading {
   width: 300px;
-  margin-left: auto;
-  margin-right: auto;
   display: block;
 }
 
 #changelog-topic-meta .changelog-loading {
   width: 200px;
-  margin-left: auto;
-  margin-right: auto;
   display: block;
 }
 
