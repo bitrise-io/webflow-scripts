@@ -6,22 +6,21 @@ loadCss(require("../css/changelog.css"));
 
 const url = new URL(document.location.href);
 const overrideLastVisit = url.searchParams.get("lastVisit");
-const queryLoadMore = url.searchParams.get("loadMore");
 
-let lastVisitedDate = new Date();
-let newLastVisitDate = lastVisitedDate;
+let lastVisitDate = new Date();
+let newLastVisitDate = new Date();
 
 /** @type {string} */
 const cookieName = "changelogLastVisit";
 const cookiePattern = new RegExp(`${cookieName}=([^;]+);?`);
 const cookieMatch = document.cookie.match(cookiePattern);
 if (cookieMatch) {
-  lastVisitedDate = new Date(decodeURIComponent(cookieMatch[1]));
+  lastVisitDate = new Date(decodeURIComponent(cookieMatch[1]));
 }
 
 if (overrideLastVisit) {
-  lastVisitedDate.setDate((new Date()).getDate() - parseInt(overrideLastVisit));
-  newLastVisitDate = lastVisitedDate;
+  newLastVisitDate.setDate(newLastVisitDate.getDate() - parseInt(overrideLastVisit));
+  lastVisitDate = new Date(newLastVisitDate);
 }
 
 const expires = new Date();
@@ -45,7 +44,7 @@ const changelogLoadMoreButton = document.getElementById("changelog-load-more-but
  */
 function renderFullChangelog(fullUrl) {
   changelogService.loadTopics(fullUrl).then(topics => {
-    changelogList.render(topics, lastVisitedDate);
+    changelogList.render(topics, lastVisitDate);
     changelogLoadMoreButton.remove();
   });
 }
@@ -66,7 +65,7 @@ function renderLatestChangelog(latestUrl, fullUrl, autoLoad) {
   });
 
   changelogService.loadTopics(latestUrl).then(topics => {
-    changelogList.render(topics, lastVisitedDate);
+    changelogList.render(topics, lastVisitDate);
     if (autoLoad) observer.observe(changelogLoadMoreButton);
   });
 
