@@ -16,12 +16,43 @@ function detectTopicFromUrl(url) {
   return null;
 }
 
+class ChangelogTopicDetails
+{
+  constructor() {
+    /** @type {HTMLDivElement} */
+    this.tagPurpleFilledTemplate = document.querySelector("#changelog-tag-purple-filled");
+    this.tagPurpleFilledTemplate.id = "";
+    this.tagPurpleFilledTemplate.remove();
+
+    /** @type {HTMLDivElement} */
+    this.tagPurpleTemplate = document.querySelector("#changelog-tag-purple");
+    this.tagPurpleTemplate.id = "";
+    this.tagPurpleTemplate.remove();
+
+    /** @type {HTMLDivElement} */
+    this.tagBlueTemplate = document.querySelector("#changelog-tag-blue");
+    this.tagBlueTemplate.id = "";
+    this.tagBlueTemplate.remove();
+
+    /** @type {HTMLDivElement} */
+    this.tagYelowTemplate = document.querySelector("#changelog-tag-yellow");
+    this.tagYelowTemplate.id = "";
+    this.tagYelowTemplate.remove();
+
+    /** @type {HTMLDivElement} */
+    this.topicMetaSeparator = document.querySelector("#changelog-topic-meta-separator");
+    this.topicMetaSeparator.style.display = "none";
+  }
+}
+
 const url = new URL(document.location.href);
 const topicSlugId = detectTopicFromUrl(url);
 
 /** @type {string} */
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? "" : "https://bitrise.io";
 const changelogService = new ChangelogService(apiBase);
+
+const changelogTopicDetails = new ChangelogTopicDetails();
 
 document.getElementById("changelog-topic-title").innerHTML = "<span class='changelog-loading'>Loading</span>";
 document.getElementById("changelog-topic-meta").innerHTML = "<span class='changelog-loading'>Loading</span>";
