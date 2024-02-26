@@ -1,5 +1,6 @@
 import { formatDate } from "../common";
-import ChangelogTopic, { ChangelogTag } from "./ChangelogTopic";
+import ChangelogTagFactory from "./ChangelogTagFactory";
+import ChangelogTopic from "./ChangelogTopic";
 
 class ChangelogList
 {
@@ -7,25 +8,7 @@ class ChangelogList
     /** @type {HTMLUListElement} */
     this.list = list;
 
-    /** @type {HTMLDivElement} */
-    this.tagPurpleFilledTemplate = this.list.querySelector("#changelog-tag-purple-filled");
-    this.tagPurpleFilledTemplate.id = "";
-    this.tagPurpleFilledTemplate.remove();
-
-    /** @type {HTMLDivElement} */
-    this.tagPurpleTemplate = this.list.querySelector("#changelog-tag-purple");
-    this.tagPurpleTemplate.id = "";
-    this.tagPurpleTemplate.remove();
-
-    /** @type {HTMLDivElement} */
-    this.tagBlueTemplate = this.list.querySelector("#changelog-tag-blue");
-    this.tagBlueTemplate.id = "";
-    this.tagBlueTemplate.remove();
-
-    /** @type {HTMLDivElement} */
-    this.tagYelowTemplate = this.list.querySelector("#changelog-tag-yellow");
-    this.tagYelowTemplate.id = "";
-    this.tagYelowTemplate.remove();
+    this.tagFactory = new ChangelogTagFactory();
 
     /** @type {HTMLLIElement} */
     this.unreadListItemTemplate = this.list.querySelector("#changelog-unread-template");
@@ -64,48 +47,18 @@ class ChangelogList
   }
 
   /**
-   * @param {ChangelogTag[]} tags 
-   * @returns {HTMLDivElement?}
-   */
-  getTopicTag(tags) {
-    if (tags.includes("new-feature")) {
-      const listItemTag = this.tagPurpleFilledTemplate.cloneNode(true);
-      listItemTag.innerHTML = `🎉 New feature`;
-      return listItemTag;
-    }
-    else if (tags.includes("feature-update")) {
-      const listItemTag = this.tagPurpleTemplate.cloneNode(true);
-      listItemTag.innerHTML = 'Feature update';
-      return listItemTag;
-    }
-    else if (tags.includes("step-update")) {
-      const listItemTag = this.tagBlueTemplate.cloneNode(true);
-      listItemTag.innerHTML = 'Step update';
-      return listItemTag;
-    }
-    else if (tags.includes("deprecation")) {
-      const listItemTag = this.tagYelowTemplate.cloneNode(true);
-      listItemTag.innerHTML = 'Deprecation';
-      return listItemTag;
-    }
-    return null;
-  }
-
-  /**
    * @param {ChangelogTopic} topic 
    * @param {boolean} isUnread
    * @returns {HTMLLIElement}
    */
   renderListItem(topic, isUnread = false) {
+    /** @type {HTMLLIElement} */
     const listItem = (isUnread ? this.unreadListItemTemplate : this.readListItemTemplate).cloneNode(true);
     listItem.querySelector(".changelog-timestamp").innerHTML = formatDate(topic.createdAt);
-
-    /** @type {HTMLDivElement} */
-    const changelogTitleElement = listItem.querySelector(".changelog-title");
-    changelogTitleElement.innerHTML = topic.fancyTitle;
+    listItem.querySelector(".changelog-title").innerHTML = topic.fancyTitle;
     
-    const listItemTag = this.getTopicTag(topic.tags);
-    if (listItemTag) changelogTitleElement.parentNode.insertBefore(listItemTag, changelogTitleElement);
+    const listItemTag = this.tagFactory.getTopicTag(topic.tags);
+    if (listItemTag) listItem.querySelector(".changelog-tag-placeholder").replaceWith(listItemTag);
 
     listItem.querySelector("a").href = topic.webflowUrl;
     return listItem;

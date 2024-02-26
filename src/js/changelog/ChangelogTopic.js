@@ -1,8 +1,32 @@
 /** @typedef {("new-feature" | "feature-update" | "step-update" | "deprecation")} ChangelogTag */
 
+/**
+ * @typedef {{
+ *  id: number,
+ *  title: string,
+ *  fancy_title: string,
+ *  slug: string,
+ *  created_at: string,
+ *  pinned: boolean,
+ *  tags: string[],
+ *  post_stream: {
+ *    posts: DiscoursePost[]
+ *  }
+ * }} DiscourseTopic
+ */
+
+/**
+ * @typedef {{
+ *  id: number,
+ *  cooked: string
+ * }} DiscoursePost
+ */
+
 class ChangelogTopic
 {
+  /** @param {DiscourseTopic} data */
   constructor(data) {
+    /** @type {DiscourseTopic} */
     this.data = data;
   }
 
@@ -36,6 +60,7 @@ class ChangelogTopic
     return !!this.data.pinned;
   }
 
+  /** @returns {DiscoursePost[]} */
   get posts() {
     if (this.data.post_stream) {
       return this.data.post_stream.posts;
@@ -43,9 +68,14 @@ class ChangelogTopic
     return [];
   }
 
+  /** @returns {string} */
+  get content() {
+    return this.posts.length ? this.posts[0].cooked : "";
+  }
+
   /** @returns {ChangelogTag[]} */
   get tags() {
-    return this.data.tags || [];
+    return (this.data.tags || []).filter((tag) => ["new-feature", "feature-update", "step-update", "deprecation"].includes(tag));
   }
 }
 

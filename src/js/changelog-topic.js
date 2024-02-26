@@ -1,4 +1,5 @@
 import ChangelogService from "./changelog/ChangelogService";
+import ChangelogTagFactory from "./changelog/ChangelogTagFactory";
 import { formatDate, loadCss } from "./common";
 
 loadCss(require("../css/changelog.css"));
@@ -16,34 +17,11 @@ function detectTopicFromUrl(url) {
   return null;
 }
 
-class ChangelogTopicDetails
-{
-  constructor() {
-    /** @type {HTMLDivElement} */
-    this.tagPurpleFilledTemplate = document.querySelector("#changelog-tag-purple-filled");
-    this.tagPurpleFilledTemplate.id = "";
-    this.tagPurpleFilledTemplate.remove();
+const tagFactory = new ChangelogTagFactory();
 
-    /** @type {HTMLDivElement} */
-    this.tagPurpleTemplate = document.querySelector("#changelog-tag-purple");
-    this.tagPurpleTemplate.id = "";
-    this.tagPurpleTemplate.remove();
-
-    /** @type {HTMLDivElement} */
-    this.tagBlueTemplate = document.querySelector("#changelog-tag-blue");
-    this.tagBlueTemplate.id = "";
-    this.tagBlueTemplate.remove();
-
-    /** @type {HTMLDivElement} */
-    this.tagYelowTemplate = document.querySelector("#changelog-tag-yellow");
-    this.tagYelowTemplate.id = "";
-    this.tagYelowTemplate.remove();
-
-    /** @type {HTMLDivElement} */
-    this.topicMetaSeparator = document.querySelector("#changelog-topic-meta-separator");
-    this.topicMetaSeparator.style.display = "none";
-  }
-}
+/** @type {HTMLDivElement} */
+const topicMetaSeparator = document.querySelector("#changelog-topic-meta-separator");
+topicMetaSeparator.style.display = "none";
 
 const url = new URL(document.location.href);
 const topicSlugId = detectTopicFromUrl(url);
@@ -51,8 +29,6 @@ const topicSlugId = detectTopicFromUrl(url);
 /** @type {string} */
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? "" : "https://bitrise.io";
 const changelogService = new ChangelogService(apiBase);
-
-const changelogTopicDetails = new ChangelogTopicDetails();
 
 document.getElementById("changelog-topic-title").innerHTML = "<span class='changelog-loading'>Loading</span>";
 document.getElementById("changelog-topic-meta").innerHTML = "<span class='changelog-loading'>Loading</span>";
@@ -65,7 +41,14 @@ changelogService.loadTopic(topicSlugId).then(topic => {
 
   document.getElementById("changelog-topic-title").innerHTML = topic.fancyTitle;
   document.getElementById("changelog-topic-meta").innerHTML = formatDate(topic.createdAt);
-  document.getElementById("changelog-topic-content").innerHTML = topic.posts[0].cooked;
+
+  const listItemTag = tagFactory.getTopicTag(topic.tags);
+  if (listItemTag) {
+    document.querySelector(".changelog-tag-placeholder").replaceWith(listItemTag);
+    topicMetaSeparator.style.display = "block";
+  }
+
+  document.getElementById("changelog-topic-content").innerHTML = topic.content;
 
   document.querySelectorAll("#changelog-topic-content .lightbox-wrapper").forEach(lightboxWrapper => {
     const image = lightboxWrapper.querySelector("img");
