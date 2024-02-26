@@ -1,11 +1,31 @@
 import { formatDate } from "../common";
-import ChangelogTopic from "./ChangelogTopic";
+import ChangelogTopic, { ChangelogTag } from "./ChangelogTopic";
 
 class ChangelogList
 {
   constructor(list) {
     /** @type {HTMLUListElement} */
     this.list = list;
+
+    /** @type {HTMLDivElement} */
+    this.tagPurpleFilledTemplate = this.list.querySelector("#changelog-tag-purple-filled");
+    this.tagPurpleFilledTemplate.id = "";
+    this.tagPurpleFilledTemplate.remove();
+
+    /** @type {HTMLDivElement} */
+    this.tagPurpleTemplate = this.list.querySelector("#changelog-tag-purple");
+    this.tagPurpleTemplate.id = "";
+    this.tagPurpleTemplate.remove();
+
+    /** @type {HTMLDivElement} */
+    this.tagBlueTemplate = this.list.querySelector("#changelog-tag-blue");
+    this.tagBlueTemplate.id = "";
+    this.tagBlueTemplate.remove();
+
+    /** @type {HTMLDivElement} */
+    this.tagYelowTemplate = this.list.querySelector("#changelog-tag-yellow");
+    this.tagYelowTemplate.id = "";
+    this.tagYelowTemplate.remove();
 
     /** @type {HTMLLIElement} */
     this.unreadListItemTemplate = this.list.querySelector("#changelog-unread-template");
@@ -43,6 +63,33 @@ class ChangelogList
     return timestampListItem;
   }
 
+  /**
+   * @param {ChangelogTag[]} tags 
+   * @returns {HTMLDivElement?}
+   */
+  getTopicTag(tags) {
+    if (tags.includes("new-feature")) {
+      const listItemTag = this.tagPurpleFilledTemplate.cloneNode(true);
+      listItemTag.innerHTML = `🎉 New feature`;
+      return listItemTag;
+    }
+    else if (tags.includes("feature-update")) {
+      const listItemTag = this.tagPurpleTemplate.cloneNode(true);
+      listItemTag.innerHTML = 'Feature update';
+      return listItemTag;
+    }
+    else if (tags.includes("step-update")) {
+      const listItemTag = this.tagBlueTemplate.cloneNode(true);
+      listItemTag.innerHTML = 'Step update';
+      return listItemTag;
+    }
+    else if (tags.includes("deprecation")) {
+      const listItemTag = this.tagYelowTemplate.cloneNode(true);
+      listItemTag.innerHTML = 'Deprecation';
+      return listItemTag;
+    }
+    return null;
+  }
 
   /**
    * @param {ChangelogTopic} topic 
@@ -52,7 +99,14 @@ class ChangelogList
   renderListItem(topic, isUnread = false) {
     const listItem = (isUnread ? this.unreadListItemTemplate : this.readListItemTemplate).cloneNode(true);
     listItem.querySelector(".changelog-timestamp").innerHTML = formatDate(topic.createdAt);
-    listItem.querySelector(".changelog-title").innerHTML = topic.fancyTitle;
+
+    /** @type {HTMLDivElement} */
+    const changelogTitleElement = listItem.querySelector(".changelog-title");
+    changelogTitleElement.innerHTML = topic.fancyTitle;
+    
+    const listItemTag = this.getTopicTag(topic.tags);
+    if (listItemTag) changelogTitleElement.parentNode.insertBefore(listItemTag, changelogTitleElement);
+
     listItem.querySelector("a").href = topic.webflowUrl;
     return listItem;
   }

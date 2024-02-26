@@ -1,3 +1,5 @@
+/** @typedef {("new-feature" | "feature-update" | "step-update" | "deprecation")} ChangelogTag */
+
 class ChangelogTopic
 {
   constructor(data) {
@@ -39,6 +41,11 @@ class ChangelogTopic
       return this.data.post_stream.posts;
     }
     return [];
+  }
+
+  /** @returns {ChangelogTag[]} */
+  get tags() {
+    return this.data.tags || [];
   }
 }
 
