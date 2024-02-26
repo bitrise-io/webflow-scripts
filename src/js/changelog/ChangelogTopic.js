@@ -36,6 +36,11 @@ class ChangelogTopic
   }
 
   /** @returns {string} */
+  get title() {
+    return this.data.title;
+  }
+
+  /** @returns {string} */
   get fancyTitle() {
     return this.data.fancy_title.replace(/:([^\s]+):/ig, '<img src="https://emoji.discourse-cdn.com/twitter/$1.png?v=12" title="$1" alt="$1" class="emoji">');
   }

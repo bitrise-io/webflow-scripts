@@ -1,6 +1,6 @@
 import ChangelogService from "./changelog/ChangelogService";
 import ChangelogTagFactory from "./changelog/ChangelogTagFactory";
-import { formatDate, loadCss } from "./common";
+import { formatDate, loadCss, setMetaContent } from "./common";
 
 loadCss(require("../css/changelog.css"));
 
@@ -38,6 +38,16 @@ document.getElementById("changelog-topic-content").innerHTML =
   "<p class='changelog-loading'>Loading</p>";
 
 changelogService.loadTopic(topicSlugId).then(topic => {
+
+  document.title = `${topic.title} | Bitrise Changelog`;
+  document.querySelector("link[rel='canonical']").setAttribute("href", `https://bitrise.io/changelog/${topic.slug}/${topic.id}`);
+  // setMetaContent({name: "description"}, step.summary.replace(/\s+/g, " "));
+  setMetaContent({property: "og:title"}, `${topic.title} | Bitrise Changelog`);
+  // setMetaContent({property: "og:description"}, step.summary.replace(/\s+/g, " "));
+  // setMetaContent({property: "og:image"}, step.svgIcon);
+  setMetaContent({property: "twitter:title"}, `${topic.title} | Bitrise Changelog`);
+  // setMetaContent({property: "twitter:description"}, step.summary.replace(/\s+/g, " "));
+  // setMetaContent({property: "twitter:image"}, step.svgIcon);
 
   document.getElementById("changelog-topic-title").innerHTML = topic.fancyTitle;
   document.getElementById("changelog-topic-meta").innerHTML = formatDate(topic.createdAt);
