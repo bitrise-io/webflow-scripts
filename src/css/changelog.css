@@ -60,6 +60,24 @@
   margin-bottom: 1rem;
 }
 
+.changelog-topic-content table thead th {
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  font-weight: bold;
+}
+.changelog-topic-content table td {
+  padding: 0.25rem 0.5rem;
+  font-size: .9rem;
+} 
+.changelog-topic-content table tr {
+  border-width: 1px 0 0 0;
+  border-style: solid;
+  border-color: var(--neutral-90);
+}
+.changelog-topic-content table thead tr {
+  border-width: 0 0 3px 0;
+}
+
 /* aside.ondebox from discuss */ 
 
 aside.onebox {
