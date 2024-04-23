@@ -37,6 +37,10 @@ function delay(time) {
 async function fetchCategory(category) {
   const topics = [];
 
+  const skipTag = "skip-changelog";
+
+  const skipTopics = [];
+
   process.stdout.write(`Fetching ${category}: `);
 
   let nextPage = 0;
@@ -51,16 +55,18 @@ async function fetchCategory(category) {
     process.stdout.write(".");
 
     json.topic_list.topics.forEach(topic => {
-      if (!topic.pinned) {
-        topics.push({
-          id: topic.id,
-          title: topic.title,
-          fancy_title: topic.fancy_title,
-          slug: topic.slug,
-          created_at: topic.created_at,
-          tags: topic.tags,
-        });  
-      }
+      if (topic.pinned) return;  // skip if pinned
+      if (skipTag && topic.tags.includes(skipTag)) return;  // skip if has skip tag
+      if (skipTopics.includes(topic.id)) return;  // skip if in skip id list
+
+      topics.push({
+        id: topic.id,
+        title: topic.title,
+        fancy_title: topic.fancy_title,
+        slug: topic.slug,
+        created_at: topic.created_at,
+        tags: topic.tags,
+      });
     });
 
     nextPage = null;
