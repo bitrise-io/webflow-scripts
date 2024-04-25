@@ -39,7 +39,7 @@ async function fetchCategory(category) {
 
   const skipTag = "skip-changelog";
 
-  const skipTopics = [];
+  const skipTopics = [24064];
 
   process.stdout.write(`Fetching ${category}: `);
 
