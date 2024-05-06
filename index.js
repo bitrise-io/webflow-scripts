@@ -81,7 +81,7 @@ const server = http.createServer((req, res) => {
           res.setHeader('Content-Type', response.headers.get("Content-Type"));
           return response.text();
         }).then(text => {
-          res.end(text.replace("https://bitrise-io.github.io/webflow-scripts/", "/dist/"));
+          res.end(text.replace("https://webflow-scripts.bitrise.io/", "/dist/"));
         });
       }
     });
