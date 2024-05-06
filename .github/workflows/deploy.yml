@@ -28,8 +28,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'yarn'
-      - name: Switch to yarn 4
-        run: yarn set version 4.0.1
       - name: Install NodeJS dependencies
         run: yarn install
       - name: Build
