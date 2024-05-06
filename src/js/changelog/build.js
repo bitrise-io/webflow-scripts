@@ -86,8 +86,8 @@ async function buildChangelog() {
   /** @type {DiscourseTopic[]} */
   const topics = [];
 
-  const productUpdatesTopics = await fetchCategory("/c/product-updates/42.json");
-  for (let topic of productUpdatesTopics) topics.push(topic);
+  // const productUpdatesTopics = await fetchCategory("/c/product-updates/42.json");
+  // for (let topic of productUpdatesTopics) topics.push(topic);
 
   const changelogTopics = await fetchCategory("/c/changelog/6.json");
   for (let topic of changelogTopics) topics.push(topic);
