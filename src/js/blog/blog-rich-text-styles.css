@@ -1,0 +1,44 @@
+.rich-text_blog-post-content h1 a,
+.rich-text_blog-post-content h2 a,
+.rich-text_blog-post-content h3 a,
+.rich-text_blog-post-content h4 a {
+  color: inherit;
+  font-weight: inherit;
+}
+
+.rich-text_blog-post-content .w-embed {
+  margin: 32px 0;
+}
+
+.rich-text_blog-post-content .w-code-block {
+  border-radius: 8px;
+  margin: 32px 0;
+  position: relative;
+  max-width: calc(100vw - 60px);
+}
+.rich-text_blog-post-content .w-code-block code {
+  margin: 0;
+  padding: 0.2em;
+  font-size: 14px;
+}
+
+.rich-text_blog-post-content .w-code-block .copy-button {
+  position: absolute;
+  right: 0.5em;
+  top: 0.5em;
+  z-index: 1;
+  display: none;
+  font-size: 14px;
+}
+
+.rich-text_blog-post-content .w-code-block:hover .copy-button {
+  display: block;
+}
+
+.rich-text_blog-post-content blockquote + p > em {
+  color: #616162;
+  font-size: 13px;
+  margin-left: 28px;
+  padding-bottom: 48px;
+  display: inline-block;
+}

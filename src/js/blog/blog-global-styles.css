@@ -1,0 +1,94 @@
+/* FS-tweaks */
+.events-off {
+  pointer-events: none;
+}
+.events-on {
+  pointer-events: auto;
+}
+.square:after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+.frost-blur {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+
+/* link arrow */
+.link-arrow { 
+  display: inline-block;
+}
+.link-arrow::after {
+    content: "→";
+    margin-left: 5px;
+    color: currentColor;
+    position: absolute;
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+    -webkit-transition: -webkit-transform .5s cubic-bezier(.694,0,.335,1);
+    transition: -webkit-transform .5s cubic-bezier(.694,0,.335,1);
+    -o-transition: transform .5s cubic-bezier(.694,0,.335,1);
+    transition: transform .5s cubic-bezier(.694,0,.335,1);
+    transition: transform .5s cubic-bezier(.694,0,.335,1),-webkit-transform .5s cubic-bezier(.694,0,.335,1);
+}
+.link-arrow div {
+  display: inline-block;
+}
+@media (hover: hover) {
+  .link-arrow:hover::after {
+      -webkit-transform: translateX(6px);
+      transform: translateX(6px);
+  }
+}
+
+/* add "pages" after pagination page count */
+.pagination_page-count-label::after {
+    content: 'pages';
+    display: inline-block;
+    margin-left: 5px;
+}
+
+/* -------------- REMOVED --------------- */
+
+.banner_subscribe {
+  background: radial-gradient(50% 67.55% at 50% 53.33%, #351D48 0%, #653E7E 100%);
+}
+.w--open .subscribe-label {
+    display: none;
+}
+.w--open .subscribe-label.label-open {
+    visibility: visible;
+    display: block;
+}
+  
+@media screen and (max-width: 767px){
+  .nav-dropdown-list.w--open {
+      max-width: calc(100vw - 20px);
+  }
+}
+
+/* sticky navigation style */
+.nav-wrapper.nav-active {
+  box-shadow: 0px 4px 8px rgb(53 29 72 / 8%), inset 0px -1px 0px #dddddd;
+}
+/* sticky navigatioon fix */
+.nav-active .nav-dropdown-list.w--open {
+    top: 90px;
+} 
+  
+/* navigation */
+@media screen and (min-width: 991px) {
+  .nav-items-wrapper {
+      transform: none !important;
+  }
+  .w-nav-overlay [data-nav-menu-open] {
+      top: 90px;
+      position: fixed;
+  }
+}
+
+.nav-dropdown-list.nav-search {
+  top: 0% !important;
+}
