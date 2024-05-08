@@ -1,7 +1,7 @@
-import { fancyConsoleLog, setMetaContent } from "./common";
 import DetailsSection from "./integrations/DetailsSection";
 import HeaderSection from "./integrations/HeaderSection";
 import IntegrationsService from "./integrations/IntegrationsService";
+import { fancyConsoleLog, setMetaContent } from "./shared/common";
 
 /** 
  * @param {URL} url

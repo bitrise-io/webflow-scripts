@@ -1,4 +1,4 @@
-import { getElementTextContent } from "../common";
+import { getElementTextContent } from "../shared/common";
 import { Department, Position } from "./CareersModels";
 
 class BambooHRService

@@ -1,21 +1,24 @@
+const fs = require('fs');
 const path = require('path');
+
+const srcPath = path.resolve(__dirname, "src");
+const distPath = path.resolve(__dirname, "dist");
+const entryPoints = {};
+fs.readdirSync(path.resolve(srcPath, "js")).forEach(fileName => {
+  const match = fileName.match(/^(.*)\.js$/);
+  if (match) entryPoints[match[1]] = path.join("js", fileName);
+});
 
 module.exports = {
   resolve: {
     modules: [
-        path.resolve(__dirname, "src"),
+        srcPath,
         "node_modules"
     ]
   },
-  entry: {
-    integrations:      "js/integrations.js",
-    steps:             "js/steps.js",
-    careers:           "js/careers.js",
-    changelog:         "js/changelog.js",
-    "changelog-topic": "js/changelog-topic.js",
-  },
+  entry: entryPoints,
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: distPath,
     filename: '[name].js',
   },
   module: {

@@ -1,5 +1,5 @@
-import { icaseEqual, icaseIncludes } from "../common";
 import MarkdownIt from "markdown-it";
+import { icaseEqual, icaseIncludes } from "../shared/common";
 
 
 class Step

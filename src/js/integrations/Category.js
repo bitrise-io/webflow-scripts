@@ -1,4 +1,4 @@
-import { capitalize } from "../common";
+import { capitalize } from "../shared/common";
 
 
 class Category

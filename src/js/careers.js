@@ -1,6 +1,6 @@
 import BambooHRService from "./careers/BambooHRService";
 import JobDepartmentList from "./careers/JobDepartmentList";
-import { fancyConsoleLog } from "./common";
+import { fancyConsoleLog } from "./shared/common";
 
 const jobDepartmentList = new JobDepartmentList();
 

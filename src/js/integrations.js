@@ -1,8 +1,7 @@
 import IntegrationsService from "./integrations/IntegrationsService";
 import StepListSection from "./integrations/StepListSection";
 import SidebarSection from "./integrations/SidebarSection";
-import { fancyConsoleLog } from "./common";
-import { loadCss } from "./common";
+import { fancyConsoleLog, loadCss } from "./shared/common";
 
 loadCss(require("../css/integrations.css"));
 

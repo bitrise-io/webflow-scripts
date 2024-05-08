@@ -1,6 +1,6 @@
 import ChangelogList from "./changelog/ChangelogList";
 import ChangelogService from "./changelog/ChangelogService";
-import { loadCss } from "./common";
+import { loadCss } from "./shared/common";
 
 loadCss(require("../css/changelog.css"));
 

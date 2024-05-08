@@ -1,5 +1,5 @@
 import Integrations from "./Integrations";
-import { icaseEqual } from "../common";
+import { icaseEqual } from "../shared/common";
 
 
 /**

@@ -1,6 +1,6 @@
 import ChangelogService from "./changelog/ChangelogService";
 import ChangelogTagFactory from "./changelog/ChangelogTagFactory";
-import { formatDate, loadCss, setMetaContent } from "./common";
+import { formatDate, loadCss, setMetaContent } from "./shared/common";
 
 loadCss(require("../css/changelog.css"));
 

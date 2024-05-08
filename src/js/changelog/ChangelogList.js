@@ -1,6 +1,6 @@
-import { formatDate } from "../common";
 import ChangelogTagFactory from "./ChangelogTagFactory";
 import ChangelogTopic from "./ChangelogTopic";
+import { formatDate } from "../shared/common";
 
 class ChangelogList
 {

@@ -1,4 +1,4 @@
-import { getFirstElementByClassname } from "../common";
+import { getFirstElementByClassname } from "../shared/common";
 import { Department } from "./CareersModels";
 
 class JobDepartmentList
