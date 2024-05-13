@@ -6,6 +6,8 @@ class JobDepartmentList
   constructor() {
     /** @type {HTMLElement} */
     this.jobDeparmentListElement = getFirstElementByClassname(document, 'job-department-list');
+    this.originalContent = this.jobDeparmentListElement.innerHTML;
+
     /** @type {HTMLElement} */
     this.jobDepartmentElementPrototype = getFirstElementByClassname(this.jobDeparmentListElement, 'job-department');
     this.jobDepartmentElementPrototype.parentNode.removeChild(this.jobDepartmentElementPrototype);
@@ -79,6 +81,10 @@ class JobDepartmentList
         jobPostListElement.parentNode.removeChild(jobPostListElement);
       }
     });
+  }
+
+  reset() {
+    this.jobDeparmentListElement.innerHTML = this.originalContent;
   }
 }
 

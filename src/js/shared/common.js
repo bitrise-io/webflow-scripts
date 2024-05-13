@@ -84,17 +84,6 @@ function fancyConsoleLog(text) {
 }
 
 /**
- * @param {string} cssData 
- * @returns {HTMLStyleElement}
- */
-function loadCss(cssData) {
-  const style = document.createElement("style");
-  document.getElementsByTagName("head")[0].appendChild(style);
-  style.appendChild(document.createTextNode(cssData));
-  return style;
-}
-
-/**
  * @param {Date} date 
  * @returns {string}
  */
@@ -112,6 +101,5 @@ export {
   getMetaTag,
   icaseEqual,
   icaseIncludes,
-  loadCss,
   setMetaContent,
 };

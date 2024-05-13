@@ -22,9 +22,7 @@ CSS: `src/css/my-styles.css`
 
 JS: `src/js/my-script.js`
 ```javascript
-import { loadCss } from "./shared/common";
-
-loadCss(require("../css/my-styles.css"));
+import "../css/my-styles.css";
 
 window.addEventListener('load', async () => {
   console.log('Hello World!');
@@ -39,24 +37,24 @@ https://webflow-scripts.bitrise.io/my-script.js
 
 ## Developing with the local environment
 
-After cloning, 
-
-build scripts with webpack, use `--watch` if needed
+After cloning, install dependencies
 
 ```sh
-yarn build_dev
+yarn install
 ```
 
-and start server with
+and start local proxy server with
 
 ```sh
-node index.js "<webflow-environment>" "<local-domain (optional)>"
+yarn proxy_staging
 ```
 
-The local server will proxy paths from the `<webflow-environment>` and replace the script that are already embedded in the page with the local one.
+or 
 
-### Using Temp Files
+```sh
+yarn proxy_prod
+```
 
-Loading an html file from the temp folder will bypass the webflow proxy.
+The server will proxy paths from staging or prod and replace already embedded scripts in the page with the local one.
 
-You have to directly reference the script to be used in the temp file, the replace won't happen in this case.
+The server automatically builds bundles with webpack and - if the script entry points are [HMR enabled](https://webpack.js.org/api/hot-module-replacement) - replaces them on change.

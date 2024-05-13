@@ -3,10 +3,17 @@ import { ChangelogTag } from "./ChangelogTopic";
 class ChangelogTagFactory
 {
   constructor() {
+    this.tagContainer = document.querySelector("#changelog-tag-purple-filled").parentNode;
+    this.originalContent = this.tagContainer.innerHTML;
+
     this.tagPurpleFilledTemplate = this.initTag("#changelog-tag-purple-filled");
     this.tagPurpleTemplate = this.initTag("#changelog-tag-purple");
     this.tagBlueTemplate = this.initTag("#changelog-tag-blue");
     this.tagYelowTemplate = this.initTag("#changelog-tag-yellow");
+  }
+
+  reset() {
+    this.tagContainer.innerHTML = this.originalContent;
   }
 
   /**

@@ -10,3 +10,10 @@ bamboo.getJobs().then(jobs => {
 
   fancyConsoleLog("Bitrise.io Careers");
 });
+
+if (module.hot) {
+  module.hot.dispose(() => {
+    jobDepartmentList.reset(); 
+  });
+  module.hot.accept();
+}

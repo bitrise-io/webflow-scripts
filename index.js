@@ -1,6 +1,10 @@
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const express = require('express');
+const webpack = require("webpack");
+const webpackConfig = require("./webpack.dev.js");
+const devMiddleware = require("webpack-dev-middleware");
+const hotMiddleware = require("webpack-hot-middleware");
 
 const hostname = process.argv[3] || '127.0.0.1';
 const port = 3000;
@@ -13,7 +17,7 @@ const fetchEventHandlers = {};
  * @param {string} workerName 
  * @param {Function} eventHandler 
  */
-function addEventListener(workerName, eventHandler) {
+function registerWorker(workerName, eventHandler) {
   fetchEventHandlers[workerName] = eventHandler;
 }
 
@@ -27,14 +31,14 @@ function includeWorkerScript(workerName, workerScript) {
       console.log(err);
     } else {
       eval(data.toString()
-        .replace('addEventListener(\'fetch\'', `addEventListener('${workerName}'`)
+        .replace('addEventListener(\'fetch\'', `registerWorker('${workerName}'`)
         .replaceAll('webflow.bitrise.io', webflowDomain)
       );    
     }
   });
 }
 
-addEventListener('common', event => {
+registerWorker('common', event => {
   let urlObject = new URL(event.request.url);
   urlObject.hostname = webflowDomain;
   event.respondWith(fetch(urlObject));
@@ -57,7 +61,16 @@ function getFetchEventHandler(urlObject) {
   return fetchEventHandlers['common'];
 }
 
-const server = http.createServer((req, res) => {
+const compiler = webpack(webpackConfig);
+const devMiddlewareOptions = {
+  // writeToDisk: true,
+};
+const app = express();
+
+app.use(devMiddleware(compiler, devMiddlewareOptions));
+if (webpackConfig.mode === "development") app.use(hotMiddleware(compiler));
+
+app.get(/\/.*/, (req, res) => {
   const urlObject = new URL("http://" + req.hostname + req.url);
   fs.promises.readFile(`.${urlObject.pathname}`).then(content => {
 
@@ -81,7 +94,7 @@ const server = http.createServer((req, res) => {
           res.setHeader('Content-Type', response.headers.get("Content-Type"));
           return response.text();
         }).then(text => {
-          res.end(text.replace("https://webflow-scripts.bitrise.io/", "/dist/"));
+          res.end(text.replace("https://webflow-scripts.bitrise.io/", "/"));
         });
       }
     });
@@ -89,6 +102,7 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(port, hostname, () => {
+
+app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });

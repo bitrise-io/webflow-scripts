@@ -3,7 +3,8 @@ import StepListSection from "./integrations/StepListSection";
 import SidebarSection from "./integrations/SidebarSection";
 import { fancyConsoleLog, loadCss } from "./shared/common";
 
-loadCss(require("../css/integrations.css"));
+import "../css/integrations.css";
+
 
 const url = new URL(document.location.href);
 const platformFilter = url.searchParams.get("platform");
@@ -41,5 +42,7 @@ IntegrationsService.loadIntegrations().then(integrations => {
     }, 500);
   }
 
-  fancyConsoleLog("Bitrise.io Integrations");
+  fancyConsoleLog('Bitrise.io Integrations');
 });
+
+if (module.hot) module.hot.accept();

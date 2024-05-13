@@ -2,7 +2,7 @@ import ChangelogService from "./changelog/ChangelogService";
 import ChangelogTagFactory from "./changelog/ChangelogTagFactory";
 import { formatDate, loadCss, setMetaContent } from "./shared/common";
 
-loadCss(require("../css/changelog.css"));
+import "../css/changelog.css";
 
 /** 
  * @param {URL} url
@@ -70,3 +70,10 @@ changelogService.loadTopic(topicSlugId).then(topic => {
   document.getElementById("changelog-topic-leave-feedback-button").href = `https://discuss.bitrise.io/t/${topic.slug}/${topic.id}`;
   document.getElementById("changelog-topic-leave-feedback-button").target = "_blank";
 });
+
+if (module.hot) {
+  module.hot.dispose(() => {
+    tagFactory.reset();
+  });
+  module.hot.accept();
+}

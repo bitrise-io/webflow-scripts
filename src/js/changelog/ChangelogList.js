@@ -8,6 +8,9 @@ class ChangelogList
     /** @type {HTMLUListElement} */
     this.list = list;
 
+    /** @type {string} */
+    this.originalContent = this.list.innerHTML;
+
     this.tagFactory = new ChangelogTagFactory();
 
     /** @type {HTMLLIElement} */
@@ -83,6 +86,10 @@ class ChangelogList
       const listItem = this.renderListItem(topic, isUnread);
       this.list.append(listItem);
     }
+  }
+
+  reset() {
+    this.list.innerHTML = this.originalContent;
   }
 }
 

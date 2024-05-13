@@ -45,6 +45,8 @@ IntegrationsService.loadIntegrations().then(integrations => {
     header.render(integrations, step);
     details.render(integrations, step);
 
-    fancyConsoleLog('Bitrise.io Integrations: ' + step.title);
+    fancyConsoleLog(`Bitrise.io Integrations: ${step.title}`);
   }  
 });
+
+if (module.hot) module.hot.accept();

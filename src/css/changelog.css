@@ -1,3 +1,13 @@
+.changelog-unread.text-weight-medium.text-color-neutral10:hover,
+.changelog-read.text-color-neutral40:hover {
+  text-decoration: none;
+}
+
+.changelog-unread.text-weight-medium.text-color-neutral10:hover .changelog-title,
+.changelog-read.text-color-neutral40:hover .changelog-title {
+  text-decoration: underline;
+}
+
 .changelog-title img.emoji,
 #changelog-topic-title img.emoji,
 .changelog-topic-content img.emoji {

@@ -2,7 +2,7 @@ import ChangelogList from "./changelog/ChangelogList";
 import ChangelogService from "./changelog/ChangelogService";
 import { loadCss } from "./shared/common";
 
-loadCss(require("../css/changelog.css"));
+import "../css/changelog.css";
 
 const url = new URL(document.location.href);
 const overrideLastVisit = url.searchParams.get("lastVisit");
@@ -42,39 +42,55 @@ const changelogLoadMoreButton = document.getElementById("changelog-load-more-but
 /**
  * @param {string} fullUrl 
  */
-function renderFullChangelog(fullUrl) {
-  changelogService.loadTopics(fullUrl).then(topics => {
-    changelogList.render(topics, lastVisitDate);
-    changelogLoadMoreButton.remove();
-  });
+const renderFullChangelog = async (fullUrl) => {
+  const topics = await changelogService.loadTopics(fullUrl);
+  changelogList.render(topics, lastVisitDate);
 }
+
+const loadMoreClickHandler = async (event) => {
+  event.preventDefault();
+
+  const oldButtonLabel = changelogLoadMoreButton.innerHTML;
+  changelogLoadMoreButton.innerHTML = "Loading...";
+  changelogLoadMoreButton.disabled = true;
+
+  await renderFullChangelog("/changelog.json");
+
+  changelogLoadMoreButton.disabled = false;
+  changelogLoadMoreButton.innerHTML = oldButtonLabel;
+  changelogLoadMoreButton.style.setProperty("display", "none");
+};
+
+const observer = new IntersectionObserver((entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      changelogLoadMoreButton.dispatchEvent(new CustomEvent("click", { target: entry.target }));
+      observer.unobserve(changelogLoadMoreButton);
+    }
+  })
+});
 
 /**
- * @param {string} latestUrl 
- * @param {string} fullUrl 
+ * @param {string} latestUrl
  * @param {boolean} autoLoad
  */
-function renderLatestChangelog(latestUrl, fullUrl, autoLoad) {
-  const observer = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.dispatchEvent(new CustomEvent("click", { target: entry.target }));
-        observer.unobserve(entry.target);
-      }
-    })
-  });
+const renderLatestChangelog = async (latestUrl, autoLoad) => {
+  const topics = await changelogService.loadTopics(latestUrl);
+  changelogList.render(topics, lastVisitDate);
 
-  changelogService.loadTopics(latestUrl).then(topics => {
-    changelogList.render(topics, lastVisitDate);
-    if (autoLoad) observer.observe(changelogLoadMoreButton);
-  });
+  if (autoLoad) observer.observe(changelogLoadMoreButton);
 
-  changelogLoadMoreButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    changelogLoadMoreButton.innerHTML = "Loading...";
-    changelogLoadMoreButton.disabled = true;
-    renderFullChangelog(fullUrl);
-  });
+  changelogLoadMoreButton.addEventListener("click", loadMoreClickHandler);
 }
 
-renderLatestChangelog("/changelog_latest.json", "/changelog.json", false);
+renderLatestChangelog("/changelog_latest.json", false);
+
+if (module.hot) {
+  module.hot.dispose(() => {
+    changelogList.reset();
+    observer.unobserve(changelogLoadMoreButton);
+    changelogLoadMoreButton.removeEventListener("click", loadMoreClickHandler);
+    changelogLoadMoreButton.style.removeProperty("display");
+  });
+  module.hot.accept();
+}
