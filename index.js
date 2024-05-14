@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 const webpack = require("webpack");
 const webpackConfig = require("./webpack.dev.js");
@@ -11,54 +12,45 @@ const port = 3000;
 
 const webflowDomain = process.argv[2] || 'webflow.bitrise.io';
 
-const fetchEventHandlers = {};
+const importedWorkers = {};
 
 /**
- * @param {string} workerName 
- * @param {Function} eventHandler 
+ * @param {string} workerScript
+ * @returns {Promise<Function>}
  */
-function registerWorker(workerName, eventHandler) {
-  fetchEventHandlers[workerName] = eventHandler;
-}
-
-/**
- * @param {string} workerName 
- * @param {string} workerScript 
- */
-function includeWorkerScript(workerName, workerScript) {
-  fs.readFile(workerScript, 'utf8', (err, data) => {
-    if (err) {
-      console.log(err);
-    } else {
+async function importWorker(workerScript) {
+  try {
+    const data = await fs.promises.readFile(workerScript, 'utf8');
+    const workerName = `${workerScript}-${crypto.createHash('md5').update(data).digest("hex")}`;
+    if (!importedWorkers[workerName]) {
       eval(data.toString()
-        .replace('addEventListener(\'fetch\'', `registerWorker('${workerName}'`)
+        .replace('addEventListener(\'fetch\',', `importedWorkers['${workerName}'] = (`)
         .replaceAll('webflow.bitrise.io', webflowDomain)
-      );    
+      );
+      console.log(`Registered new worker: ${workerName}`, importedWorkers[workerName]);
     }
-  });
+    return importedWorkers[workerName];
+  } catch (err) {
+    throw err;
+  }
 }
-
-registerWorker('common', event => {
-  let urlObject = new URL(event.request.url);
-  urlObject.hostname = webflowDomain;
-  event.respondWith(fetch(urlObject));
-});
-
-includeWorkerScript("integrations", "./src/js/integrations/worker.js");
-includeWorkerScript("changelog", "./src/js/changelog/worker.js");
 
 /**
  * @param {URL} urlObject 
- * @returns {Function}
+ * @returns {Promise<Function>}
  */
-function getFetchEventHandler(urlObject) {
+async function getServiceWorker(urlObject) {
   if (urlObject.pathname.match(/^\/integrations/)) {
-    return fetchEventHandlers['integrations'];
+    return await importWorker("./src/js/integrations/worker.js");
   }
   if (urlObject.pathname.match(/^\/changelog/)) {
-    return fetchEventHandlers['changelog'];
+    return await importWorker("./src/js/changelog/worker.js");
   }
-  return fetchEventHandlers['common'];
+  return (event) => {
+    let urlObject = new URL(event.request.url);
+    urlObject.hostname = webflowDomain;
+    event.respondWith(fetch(urlObject));
+  };
 }
 
 const compiler = webpack(webpackConfig);
@@ -70,10 +62,12 @@ const app = express();
 app.use(devMiddleware(compiler, devMiddlewareOptions));
 if (webpackConfig.mode === "development") app.use(hotMiddleware(compiler));
 
-app.get(/\/.*/, (req, res) => {
+app.get(/\/.*/, async (req, res) => {
   const urlObject = new URL("http://" + req.hostname + req.url);
-  fs.promises.readFile(`.${urlObject.pathname}`).then(content => {
 
+  try {
+
+    const content = await fs.promises.readFile(`./dist${urlObject.pathname}`);
     res.statusCode = 200;
     const extname = path.extname(urlObject.pathname);
     if (extname == ".js") res.setHeader('Content-Type', "text/javascript");
@@ -81,27 +75,23 @@ app.get(/\/.*/, (req, res) => {
     if (extname == ".json") res.setHeader('Content-Type', "application/json");
     res.end(content);
 
-  }).catch(error  => {
+  } catch(error) {
 
-    getFetchEventHandler(urlObject)({
+    (await getServiceWorker(urlObject))({
       request: {
         url: urlObject,
       },
-      respondWith: buffer => {
-        requestHandled = true;
-        buffer.then(response => {
-          res.statusCode = response.status;
-          res.setHeader('Content-Type', response.headers.get("Content-Type"));
-          return response.text();
-        }).then(text => {
-          res.end(text.replace("https://webflow-scripts.bitrise.io/", "/"));
-        });
+      respondWith: async (buffer) => {
+        const response = await buffer;
+        res.statusCode = response.status;
+        res.setHeader('Content-Type', response.headers.get("Content-Type"));
+        const text = await response.text();
+        res.end(text.replace("https://webflow-scripts.bitrise.io/", "/"));
       }
     });
 
-  });
+  }
 });
-
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
