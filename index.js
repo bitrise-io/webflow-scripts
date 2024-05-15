@@ -15,19 +15,35 @@ const webflowDomain = process.argv[2] || 'webflow.bitrise.io';
 const importedWorkers = {};
 
 /**
- * @param {string} workerScript
+ * @param {string} workerPath
  * @returns {Promise<Function>}
  */
-async function importWorker(workerScript) {
+async function importWorker(workerPath) {
   try {
-    const data = await fs.promises.readFile(workerScript, 'utf8');
-    const workerName = `${workerScript}-${crypto.createHash('md5').update(data).digest("hex")}`;
+    const workerContent = (await fs.promises.readFile(workerPath, 'utf8')).toString()
+      .replaceAll('webflow.bitrise.io', webflowDomain)
+      .replaceAll(/\/\*(.|[\n\r])*?\*\//gm, "")
+      .replaceAll(/\/\/.*$/g, "");
+    const workerName = `${workerPath}-${crypto.createHash('md5').update(workerContent).digest("hex")}`;
     if (!importedWorkers[workerName]) {
-      eval(data.toString()
-        .replace('addEventListener(\'fetch\',', `importedWorkers['${workerName}'] = (`)
-        .replaceAll('webflow.bitrise.io', webflowDomain)
-      );
-      console.log(`Registered new worker: ${workerName}`, importedWorkers[workerName]);
+      if (workerContent.match(/addEventListener\('fetch',/)) {  // Service Worker Syntax
+        eval(`(() => {
+          function addEventListener(_, cb) {
+            importedWorkers['${workerName}'] = { type: "Service" };
+            importedWorkers['${workerName}'].handler = cb;
+          };
+          ${workerContent}
+        })();`);
+      }
+      if (workerContent.match(/export default {/)) { // ES6 Module Syntax
+        eval(`(() => {
+          ${workerContent.replace(/export default {/, `
+            importedWorkers['${workerName}'] = { type: "ES6 Module" };
+            importedWorkers['${workerName}'].handler = {`
+          )}
+        })();`);
+      }
+      console.log(`Registered new ${importedWorkers[workerName].type} Worker: ${workerName}`, importedWorkers[workerName].handler);
     }
     return importedWorkers[workerName];
   } catch (err) {
@@ -37,19 +53,24 @@ async function importWorker(workerScript) {
 
 /**
  * @param {URL} urlObject 
- * @returns {Promise<Function>}
+ * @returns {Promise<{ type: string; handler: Function; }>}
  */
-async function getServiceWorker(urlObject) {
+async function getWorker(urlObject) {
   if (urlObject.pathname.match(/^\/integrations/)) {
     return await importWorker("./src/js/integrations/worker.js");
   }
   if (urlObject.pathname.match(/^\/changelog/)) {
     return await importWorker("./src/js/changelog/worker.js");
   }
-  return (event) => {
-    let urlObject = new URL(event.request.url);
-    urlObject.hostname = webflowDomain;
-    event.respondWith(fetch(urlObject));
+  return {
+    type: "ES6 Module",
+    handler: { 
+      async fetch(request) {
+        let urlObject = new URL(request.url);
+        urlObject.hostname = webflowDomain;
+        return await fetch(urlObject);
+      },
+    },
   };
 }
 
@@ -77,7 +98,8 @@ app.get(/\/.*/, async (req, res) => {
 
   } catch(error) {
 
-    (await getServiceWorker(urlObject))({
+    const requestHandler = await getWorker(urlObject);
+    const fetchEvent = {
       request: {
         url: urlObject,
       },
@@ -88,8 +110,15 @@ app.get(/\/.*/, async (req, res) => {
         const text = await response.text();
         res.end(text.replace("https://webflow-scripts.bitrise.io/", "/"));
       }
-    });
+    };
 
+    if (requestHandler.type === "Service") {
+      requestHandler.handler(fetchEvent);
+    }
+
+    if (requestHandler.type === "ES6 Module") {
+      fetchEvent.respondWith(requestHandler.handler.fetch(fetchEvent.request));
+    }
   }
 });
 
