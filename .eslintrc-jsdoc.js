@@ -1,8 +1,4 @@
-{
-  "parserOptions": { 
-    "ecmaVersion": 8,
-    "sourceType": "module" 
-  },
+module.exports = {
   "plugins": [
       "jsdoc"
   ],
@@ -47,4 +43,4 @@
     "jsdoc/tag-lines": 1,
     "jsdoc/valid-types": 1
   }
-}
+};
