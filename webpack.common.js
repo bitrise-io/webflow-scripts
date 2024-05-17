@@ -1,36 +1,33 @@
 const fs = require('fs');
 const path = require('path');
-const webpack = require("webpack");
+const webpack = require('webpack');
 
 module.exports = (mode) => {
   const plugins = [];
-  if (mode === "development") {
-    plugins.push(new webpack.HotModuleReplacementPlugin())
+  if (mode === 'development') {
+    plugins.push(new webpack.HotModuleReplacementPlugin());
   }
 
-  const srcPath = path.resolve(__dirname, "src");
-  const distPath = path.resolve(__dirname, "dist");
+  const srcPath = path.resolve(__dirname, 'src');
+  const distPath = path.resolve(__dirname, 'dist');
   const entryPoints = {};
-  fs.readdirSync(path.resolve(srcPath, "js")).forEach(fileName => {
+  fs.readdirSync(path.resolve(srcPath, 'js')).forEach((fileName) => {
     const match = fileName.match(/^(.*)\.js$/);
     if (match) {
-      if (mode === "development") {
-        entryPoints[match[1]] = ['webpack-hot-middleware/client', path.join("js", fileName)];
+      if (mode === 'development') {
+        entryPoints[match[1]] = ['webpack-hot-middleware/client', path.join('js', fileName)];
       } else {
-        entryPoints[match[1]] = path.join("js", fileName);
+        entryPoints[match[1]] = path.join('js', fileName);
       }
     }
   });
 
   return {
-    mode: mode,
+    mode,
     resolve: {
-      modules: [
-          srcPath,
-          "node_modules"
-      ]
+      modules: [srcPath, 'node_modules'],
     },
-    plugins: plugins,
+    plugins,
     entry: entryPoints,
     output: {
       path: distPath,
@@ -40,9 +37,9 @@ module.exports = (mode) => {
       rules: [
         {
           test: /\.css$/i,
-          use: ["style-loader", "css-loader"],
-        }
+          use: ['style-loader', 'css-loader'],
+        },
       ],
     },
-  }
+  };
 };
