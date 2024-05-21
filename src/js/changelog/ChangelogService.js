@@ -1,9 +1,8 @@
-import ChangelogTopic from "./ChangelogTopic";
+import ChangelogTopic from './ChangelogTopic';
 
-class ChangelogService
-{
+class ChangelogService {
   /**
-   * @param {string} apiBase 
+   * @param {string} apiBase
    */
   constructor(apiBase) {
     /** @type {string} */
@@ -11,23 +10,23 @@ class ChangelogService
   }
 
   /**
-   * @param {string} changelogUrl 
+   * @param {string} changelogUrl
    * @returns {Promise<ChangelogTopic[]>}
    */
-async loadTopics(changelogUrl) {
-    const chacheBuster = (new Date()).toISOString().split(":")[0].replace(/[^\d]/g, "");
-    const url = this.apiBase + changelogUrl + "?_=" + chacheBuster;
+  async loadTopics(changelogUrl) {
+    const chacheBuster = new Date().toISOString().split(':')[0].replace(/[^\d]/g, '');
+    const url = `${this.apiBase + changelogUrl}?_=${chacheBuster}`;
     const response = await fetch(url);
     const json = await response.json();
-    return json.topic_list.topics.map(data => new ChangelogTopic(data));
+    return json.topic_list.topics.map((data) => new ChangelogTopic(data));
   }
 
   /**
-   * @param {string} topicSlugId 
+   * @param {string} topicSlugId
    * @returns {Promise<ChangelogTopic>}
    */
   async loadTopic(topicSlugId) {
-    const url = this.apiBase + `/changelog/api/t/${topicSlugId}.json`;
+    const url = `${this.apiBase}/changelog/api/t/${topicSlugId}.json`;
     const response = await fetch(url);
     const json = await response.json();
     return new ChangelogTopic(json);

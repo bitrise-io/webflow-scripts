@@ -19,44 +19,42 @@ const importedWorkers = {};
  * @returns {Promise<Function>}
  */
 async function importWorker(workerPath) {
-  try {
-    const workerContent = (await fs.promises.readFile(workerPath, 'utf8'))
-      .toString()
-      .replaceAll('webflow.bitrise.io', webflowDomain)
-      .replaceAll(/\/\*(.|[\n\r])*?\*\//gm, '')
-      .replaceAll(/\/\/.*$/g, '');
-    const workerName = `${workerPath}-${crypto.createHash('md5').update(workerContent).digest('hex')}`;
-    if (!importedWorkers[workerName]) {
-      if (workerContent.match(/addEventListener\('fetch',/)) {
-        // Service Worker Syntax
-        eval(`(() => {
-          function addEventListener(_, cb) {
-            importedWorkers['${workerName}'] = { type: "Service" };
-            importedWorkers['${workerName}'].handler = cb;
-          };
-          ${workerContent}
-        })();`);
-      }
-      if (workerContent.match(/export default {/)) {
-        // ES6 Module Syntax
-        eval(`(() => {
-          ${workerContent.replace(
-            /export default {/,
-            `
-            importedWorkers['${workerName}'] = { type: "ES6 Module" };
-            importedWorkers['${workerName}'].handler = {`,
-          )}
-        })();`);
-      }
-      console.log(
-        `Registered new ${importedWorkers[workerName].type} Worker: ${workerName}`,
-        importedWorkers[workerName].handler,
-      );
+  const workerContent = (await fs.promises.readFile(workerPath, 'utf8'))
+    .toString()
+    .replaceAll('webflow.bitrise.io', webflowDomain)
+    .replaceAll(/\/\*(.|[\n\r])*?\*\//gm, '')
+    .replaceAll(/\/\/.*$/g, '');
+  const workerName = `${workerPath}-${crypto.createHash('md5').update(workerContent).digest('hex')}`;
+  if (!importedWorkers[workerName]) {
+    if (workerContent.match(/addEventListener\('fetch',/)) {
+      // Service Worker Syntax
+      // eslint-disable-next-line no-eval
+      eval(`(() => {
+        function addEventListener(_, cb) {
+          importedWorkers['${workerName}'] = { type: "Service" };
+          importedWorkers['${workerName}'].handler = cb;
+        };
+        ${workerContent}
+      })();`);
     }
-    return importedWorkers[workerName];
-  } catch (err) {
-    throw err;
+    if (workerContent.match(/export default {/)) {
+      // ES6 Module Syntax
+      // eslint-disable-next-line no-eval
+      eval(`(() => {
+        ${workerContent.replace(
+          /export default {/,
+          `
+          importedWorkers['${workerName}'] = { type: "ES6 Module" };
+          importedWorkers['${workerName}'].handler = {`,
+        )}
+      })();`);
+    }
+    console.log(
+      `Registered new ${importedWorkers[workerName].type} Worker: ${workerName}`,
+      importedWorkers[workerName].handler,
+    );
   }
+  return importedWorkers[workerName];
 }
 
 /**
@@ -65,18 +63,18 @@ async function importWorker(workerPath) {
  */
 async function getWorker(urlObject) {
   if (urlObject.pathname.match(/^\/integrations/)) {
-    return await importWorker('./src/js/integrations/worker.js');
+    return importWorker('./src/js/integrations/worker.js');
   }
   if (urlObject.pathname.match(/^\/changelog/)) {
-    return await importWorker('./src/js/changelog/worker.js');
+    return importWorker('./src/js/changelog/worker.js');
   }
   return {
     type: 'ES6 Module',
     handler: {
       async fetch(request) {
-        const urlObject = new URL(request.url);
-        urlObject.hostname = webflowDomain;
-        return await fetch(urlObject);
+        const url = new URL(request.url);
+        url.hostname = webflowDomain;
+        return fetch(url);
       },
     },
   };
@@ -98,9 +96,9 @@ app.get(/\/.*/, async (req, res) => {
     const content = await fs.promises.readFile(`./dist${urlObject.pathname}`);
     res.statusCode = 200;
     const extname = path.extname(urlObject.pathname);
-    if (extname == '.js') res.setHeader('Content-Type', 'text/javascript');
-    if (extname == '.html') res.setHeader('Content-Type', 'text/html');
-    if (extname == '.json') res.setHeader('Content-Type', 'application/json');
+    if (extname === '.js') res.setHeader('Content-Type', 'text/javascript');
+    if (extname === '.html') res.setHeader('Content-Type', 'text/html');
+    if (extname === '.json') res.setHeader('Content-Type', 'application/json');
     res.end(content);
   } catch (error) {
     const requestHandler = await getWorker(urlObject);

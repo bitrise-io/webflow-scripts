@@ -1,8 +1,6 @@
-import { capitalize } from "../shared/common";
+import { capitalize } from '../shared/common';
 
-
-class Category
-{
+class Category {
   /** @param {string} name */
   constructor(name) {
     /** @type {string} */
@@ -19,10 +17,10 @@ class Category
 
   /** @returns {string} */
   getName() {
-    if (this.name == "ios") return "iOS";
-    if (this.name == "macos") return "macOS";
-    return capitalize(this.name.replace("-", " "));
-  };
+    if (this.name === 'ios') return 'iOS';
+    if (this.name === 'macos') return 'macOS';
+    return capitalize(this.name.replace('-', ' '));
+  }
 
   getSlug() {
     return this.name;

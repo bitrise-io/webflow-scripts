@@ -1,16 +1,17 @@
-addEventListener('fetch', event => {
-  let urlObject = new URL(event.request.url);
-  
+// eslint-disable-next-line no-restricted-globals
+addEventListener('fetch', (event) => {
+  const urlObject = new URL(event.request.url);
+
   urlObject.hostname = 'webflow.bitrise.io';
 
-   if (urlObject.pathname.match(/^\/integrations\/steps\/.+/)) {
+  if (urlObject.pathname.match(/^\/integrations\/steps\/.+/)) {
     urlObject.pathname = '/integrations/steps';
   } else if (urlObject.pathname.match(/\/integrations$|integrations\/(.*)/)) {
     urlObject.pathname = '/integrations';
   }
 
   event.respondWith(fetch(urlObject));
-})
+});
 
 /*
 bitrise.io/integrations/steps/* -> webflow.bitrise.io/integrations/steps

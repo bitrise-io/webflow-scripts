@@ -1,11 +1,10 @@
-import Categories from "./Categories";
-import Step from "./Step";
+import Categories from './Categories';
+import Step from './Step';
 
-class Integrations
-{
+class Integrations {
   constructor() {
-    this.categories = new Categories("Category");
-    this.platforms = new Categories("Platform");
+    this.categories = new Categories('Category');
+    this.platforms = new Categories('Platform');
 
     /** @type {{[key: string]: Step}} */
     this.steps = {};

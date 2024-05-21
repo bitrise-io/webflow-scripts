@@ -1,6 +1,5 @@
-import Integrations from "./Integrations";
-import Step from "./Step";
-
+import Integrations from './Integrations';
+import Step from './Step';
 
 /**
  * @typedef {object} StepInfo
@@ -25,17 +24,15 @@ import Step from "./Step";
  * @property {string} website
  */
 
-/** 
+/**
  * @typedef {object} StepData
  * @property {StepInfo} info
  * @property {{[key: string]: StepVersion}} versions
  */
 
-
-class IntegrationsService
-{
+class IntegrationsService {
   constructor() {
-    this.url = "https://bitrise-steplib-collection.s3.amazonaws.com/slim-spec.json.gz";
+    this.url = 'https://bitrise-steplib-collection.s3.amazonaws.com/slim-spec.json.gz';
   }
 
   /** @returns {Promise<Integrations>} */
@@ -44,21 +41,21 @@ class IntegrationsService
 
     /** @type {{"steps": {[key: string]: StepData}}} */
     const json = await response.json();
-    
+
     const integrations = new Integrations();
-    
-    Object.keys(json.steps).map(slug => {
+
+    Object.keys(json.steps).forEach((slug) => {
       const step = new Step(slug, json.steps[slug]);
       integrations.steps[slug] = step;
 
-      step.categories.forEach(category => integrations.categories.addStep(category, slug));
+      step.categories.forEach((category) => integrations.categories.addStep(category, slug));
       if (step.platforms) {
-        step.platforms.forEach(paltform => integrations.platforms.addStep(paltform, slug));
+        step.platforms.forEach((paltform) => integrations.platforms.addStep(paltform, slug));
       }
     });
-    
+
     return integrations;
-  };
+  }
 
   /**
    * @param {string} slug
@@ -67,7 +64,7 @@ class IntegrationsService
   async loadStep(slug) {
     const integrations = await this.loadIntegrations();
     return integrations.steps[slug];
-  };
+  }
 }
 
 export default new IntegrationsService();

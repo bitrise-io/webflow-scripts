@@ -22,8 +22,7 @@
  * }} DiscoursePost
  */
 
-class ChangelogTopic
-{
+class ChangelogTopic {
   /** @param {DiscourseTopic} data */
   constructor(data) {
     /** @type {DiscourseTopic} */
@@ -42,7 +41,10 @@ class ChangelogTopic
 
   /** @returns {string} */
   get fancyTitle() {
-    return this.data.fancy_title.replace(/:([^\s]+):/ig, '<img src="https://emoji.discourse-cdn.com/twitter/$1.png?v=12" title="$1" alt="$1" class="emoji">');
+    return this.data.fancy_title.replace(
+      /:([^\s]+):/gi,
+      '<img src="https://emoji.discourse-cdn.com/twitter/$1.png?v=12" title="$1" alt="$1" class="emoji">',
+    );
   }
 
   /** @returns {Date} */
@@ -75,12 +77,14 @@ class ChangelogTopic
 
   /** @returns {string} */
   get content() {
-    return this.posts.length ? this.posts[0].cooked : "";
+    return this.posts.length ? this.posts[0].cooked : '';
   }
 
   /** @returns {ChangelogTag[]} */
   get tags() {
-    return (this.data.tags || []).filter((tag) => ["new-feature", "feature-update", "step-update", "deprecation"].includes(tag));
+    return (this.data.tags || []).filter((tag) =>
+      ['new-feature', 'feature-update', 'step-update', 'deprecation'].includes(tag),
+    );
   }
 }
 

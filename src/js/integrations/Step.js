@@ -1,12 +1,10 @@
-import MarkdownIt from "markdown-it";
-import { icaseEqual, icaseIncludes } from "../shared/common";
+import MarkdownIt from 'markdown-it';
+import { icaseEqual, icaseIncludes } from '../shared/common';
 
-
-class Step
-{
+class Step {
   /**
-   * @param {string} key 
-   * @param {import("./IntegrationsService").StepData} data 
+   * @param {string} key
+   * @param {import("./IntegrationsService").StepData} data
    */
   constructor(key, data) {
     /** @type {string} */
@@ -35,9 +33,7 @@ class Step
 
   /** @returns {?string} */
   get svgIcon() {
-    return this.latestVersion.asset_urls ?
-      this.latestVersion.asset_urls['icon.svg'] : 
-      null;
+    return this.latestVersion.asset_urls ? this.latestVersion.asset_urls['icon.svg'] : null;
   }
 
   /** @returns {string} */
@@ -47,7 +43,9 @@ class Step
 
   /** @returns {string} */
   get formattedDescription() {
-    return MarkdownIt().render(this.description).replace(/<(\/?)(h1|h2)>/g, "<$1h3>");
+    return MarkdownIt()
+      .render(this.description)
+      .replace(/<(\/?)(h1|h2)>/g, '<$1h3>');
   }
 
   /** @returns {string} */
@@ -75,33 +73,29 @@ class Step
   }
 
   /**
-   * @param {?string} platform 
+   * @param {?string} platform
    * @returns {boolean}
    */
   fitsPlatform(platform) {
-    return !platform ||
-      !this.platforms ||
-      this.platforms.filter(plat => icaseEqual(plat, platform)).length > 0;
+    return !platform || !this.platforms || this.platforms.filter((plat) => icaseEqual(plat, platform)).length > 0;
   }
 
   /**
-   * @param {?string} category 
+   * @param {?string} category
    * @returns {boolean}
    */
   fitsCategory(category) {
-    return !category ||
-      this.categories.filter(cat => icaseEqual(cat, category)).length > 0;
+    return !category || this.categories.filter((cat) => icaseEqual(cat, category)).length > 0;
   }
 
   /**
-   * @param {?string} query 
+   * @param {?string} query
    * @returns {boolean}
    */
   fitsQuery(query) {
-    return !query ||
-      icaseIncludes(this.key, query) ||
-      icaseIncludes(this.title, query) ||
-      icaseIncludes(this.summary, query);
+    return (
+      !query || icaseIncludes(this.key, query) || icaseIncludes(this.title, query) || icaseIncludes(this.summary, query)
+    );
   }
 }
 

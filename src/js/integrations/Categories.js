@@ -1,8 +1,6 @@
-import Category from "./Category";
+import Category from './Category';
 
-
-class Categories
-{
+class Categories {
   /** @param {string} title */
   constructor(title) {
     /** @type {string} */
@@ -11,10 +9,10 @@ class Categories
     /** @type {{[key: string]: Category}} */
     this.items = {};
   }
-  
+
   /**
-   * @param {string} key 
-   * @param {string} slug 
+   * @param {string} key
+   * @param {string} slug
    */
   addStep(key, slug) {
     if (!(key in this.items)) {
@@ -25,7 +23,7 @@ class Categories
 
   /** @returns {Category[]} */
   getItems() {
-    return this.getKeys().map(key => this.items[key]);
+    return this.getKeys().map((key) => this.items[key]);
   }
 
   /** @returns {string[]} */
@@ -33,7 +31,7 @@ class Categories
     return Object.keys(this.items).sort();
   }
 
-  /** 
+  /**
    * @param {string} key
    * @returns {Category}
    */

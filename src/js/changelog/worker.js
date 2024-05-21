@@ -1,6 +1,6 @@
 /**
- * 
- * @param {Promise<Response>} originalResponse 
+ *
+ * @param {Promise<Response>} originalResponse
  * @returns {Promise<Response>}
  */
 async function addCorsHeaders(originalResponse) {
@@ -10,18 +10,19 @@ async function addCorsHeaders(originalResponse) {
   response = new Response(response.body, response);
   // Set CORS headers
 
-  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set('Access-Control-Allow-Origin', '*');
 
   // Append to/Add Vary header so browser will cache response correctly
-  response.headers.append("Vary", "Origin");
+  response.headers.append('Vary', 'Origin');
 
   return response;
 }
 
-addEventListener('fetch', event => {
-  let urlObject = new URL(event.request.url);
+// eslint-disable-next-line no-restricted-globals
+addEventListener('fetch', (event) => {
+  const urlObject = new URL(event.request.url);
   let useCors = true;
-  
+
   urlObject.hostname = 'webflow.bitrise.io';
 
   if (urlObject.pathname.match(/^\/changelog\/api\/(.+\.json)$/)) {
@@ -45,4 +46,4 @@ addEventListener('fetch', event => {
   } else {
     event.respondWith(fetch(urlObject));
   }
-})
+});

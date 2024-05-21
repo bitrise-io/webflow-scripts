@@ -1,9 +1,8 @@
-import ChangelogTagFactory from "./ChangelogTagFactory";
-import ChangelogTopic from "./ChangelogTopic";
-import { formatDate } from "../shared/common";
+import { formatDate } from '../shared/common';
+import ChangelogTagFactory from './ChangelogTagFactory';
+import ChangelogTopic from './ChangelogTopic';
 
-class ChangelogList
-{
+class ChangelogList {
   constructor(list) {
     /** @type {HTMLUListElement} */
     this.list = list;
@@ -14,21 +13,21 @@ class ChangelogList
     this.tagFactory = new ChangelogTagFactory();
 
     /** @type {HTMLLIElement} */
-    this.unreadListItemTemplate = this.list.querySelector("#changelog-unread-template");
-    this.unreadListItemTemplate.id = "";
+    this.unreadListItemTemplate = this.list.querySelector('#changelog-unread-template');
+    this.unreadListItemTemplate.id = '';
     this.unreadListItemTemplate.remove();
 
     /** @type {HTMLLIElement} */
-    this.readListItemTemplate = this.list.querySelector("#changelog-read-template");
-    this.readListItemTemplate.id = "";
+    this.readListItemTemplate = this.list.querySelector('#changelog-read-template');
+    this.readListItemTemplate.id = '';
     this.readListItemTemplate.remove();
 
     /** @type {HTMLLIElement} */
-    this.timestampListItemTemplate = this.list.querySelector("#changelog-group-timestamp-template");
-    this.timestampListItemTemplate.id = "";
+    this.timestampListItemTemplate = this.list.querySelector('#changelog-group-timestamp-template');
+    this.timestampListItemTemplate.id = '';
     this.timestampListItemTemplate.remove();
 
-    this.list.innerHTML = "";
+    this.list.innerHTML = '';
     this.list.append(this.renderLoadingTimestampListItem());
     this.list.append(this.renderLoadingListItem());
     this.list.append(this.renderLoadingTimestampListItem());
@@ -38,8 +37,8 @@ class ChangelogList
 
   renderLoadingListItem() {
     const listItem = this.readListItemTemplate.cloneNode(true);
-    listItem.querySelector(".changelog-timestamp").innerHTML = "<span class='changelog-loading'>Loading</span>";
-    listItem.querySelector(".changelog-title").innerHTML = "<span class='changelog-loading'>Loading</span>";
+    listItem.querySelector('.changelog-timestamp').innerHTML = "<span class='changelog-loading'>Loading</span>";
+    listItem.querySelector('.changelog-title').innerHTML = "<span class='changelog-loading'>Loading</span>";
     return listItem;
   }
 
@@ -50,20 +49,20 @@ class ChangelogList
   }
 
   /**
-   * @param {ChangelogTopic} topic 
+   * @param {ChangelogTopic} topic
    * @param {boolean} isUnread
    * @returns {HTMLLIElement}
    */
   renderListItem(topic, isUnread = false) {
     /** @type {HTMLLIElement} */
     const listItem = (isUnread ? this.unreadListItemTemplate : this.readListItemTemplate).cloneNode(true);
-    listItem.querySelector(".changelog-timestamp").innerHTML = formatDate(topic.createdAt);
-    listItem.querySelector(".changelog-title").innerHTML = topic.fancyTitle;
-    
-    const listItemTag = this.tagFactory.getTopicTag(topic.tags);
-    if (listItemTag) listItem.querySelector(".changelog-tag-placeholder").replaceWith(listItemTag);
+    listItem.querySelector('.changelog-timestamp').innerHTML = formatDate(topic.createdAt);
+    listItem.querySelector('.changelog-title').innerHTML = topic.fancyTitle;
 
-    listItem.querySelector("a").href = topic.webflowUrl;
+    const listItemTag = this.tagFactory.getTopicTag(topic.tags);
+    if (listItemTag) listItem.querySelector('.changelog-tag-placeholder').replaceWith(listItemTag);
+
+    listItem.querySelector('a').href = topic.webflowUrl;
     return listItem;
   }
 
@@ -72,10 +71,10 @@ class ChangelogList
    * @param {Date} lastVisitedDate
    */
   render(topics, lastVisitedDate) {
-    this.list.innerHTML = "";
+    this.list.innerHTML = '';
     let timestamp = null;
-    for (let topic of topics) {
-      if (timestamp != formatDate(topic.createdAt)) {
+    topics.forEach((topic) => {
+      if (timestamp !== formatDate(topic.createdAt)) {
         timestamp = formatDate(topic.createdAt);
         const timestampListItem = this.timestampListItemTemplate.cloneNode(true);
         timestampListItem.innerHTML = timestamp;
@@ -85,7 +84,7 @@ class ChangelogList
       const isUnread = topic.createdAt.getTime() > lastVisitedDate.getTime();
       const listItem = this.renderListItem(topic, isUnread);
       this.list.append(listItem);
-    }
+    });
   }
 
   reset() {
