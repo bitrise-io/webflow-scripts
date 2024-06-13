@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-restricted-globals
 addEventListener('fetch', (event) => {
   const urlObject = new URL(event.request.url);
 

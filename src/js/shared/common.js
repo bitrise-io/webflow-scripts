@@ -93,6 +93,23 @@ function formatDate(date) {
   return `${month} ${day.replace(/^0/, '')}, ${year}`;
 }
 
+/**
+ * @param {URL} url
+ * @param {string} prefix
+ * @returns {?string}
+ */
+function detectTopicFromUrl(url, prefix) {
+  const path = url.pathname;
+  if (path.match(new RegExp(`${prefix}/?$`))) {
+    return '';
+  }
+  const match = path.match(new RegExp(`${prefix}/(.+)$`));
+  if (match) {
+    return match[1];
+  }
+  return null;
+}
+
 export {
   capitalize,
   fancyConsoleLog,
@@ -103,4 +120,5 @@ export {
   icaseEqual,
   icaseIncludes,
   setMetaContent,
+  detectTopicFromUrl,
 };
