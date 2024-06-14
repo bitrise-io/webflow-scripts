@@ -110,7 +110,7 @@ const formatHtml = (html) => {
 
     [...dataContainer.querySelectorAll('a')]
       .map((link) => {
-        return [new URL(link.href).pathname, link.innerHTML];
+        return [new URL(link.href).pathname.replace(/\/$/, ''), link.innerHTML];
       })
       .forEach(([pathname, title]) => {
         const announcementsMatch = pathname.match(/announcements\/([^/]+)/);
@@ -130,7 +130,7 @@ const formatHtml = (html) => {
           const page = awsMatch[1];
           const version = awsMatch[2];
           if (!stacksLinks.aws[version]) stacksLinks.aws[version] = {};
-          stacksLinks.aws[version].title = title.replace(/ changelog/, '').trim();
+          stacksLinks.aws[version].title = title.replace(/ changelogs?/, '').trim();
           stacksLinks.aws[version][page] = pathname;
         }
         const xcodeMatch = pathname.match(/(stack_reports|changelogs)\/([^/]+xcode[^/]+)/);
@@ -140,7 +140,7 @@ const formatHtml = (html) => {
           const version = xcodeMatch[2].replace(/-edge/, '');
           if (!stacksLinks.xcode[version]) stacksLinks.xcode[version] = {};
           if (!stacksLinks.xcode[version][edge]) stacksLinks.xcode[version][edge] = {};
-          stacksLinks.xcode[version].title = title.replace(/ with edge updates| changelog/, '').trim();
+          stacksLinks.xcode[version].title = title.replace(/ with edge updates| changelogs?/, '').trim();
           stacksLinks.xcode[version][edge][page] = pathname;
         }
         const ubuntuMatch = pathname.match(/(stack_reports|changelogs)\/(linux[^/]+)/);
@@ -148,7 +148,7 @@ const formatHtml = (html) => {
           const page = ubuntuMatch[1];
           const version = ubuntuMatch[2];
           if (!stacksLinks.ubuntu[version]) stacksLinks.ubuntu[version] = {};
-          stacksLinks.ubuntu[version].title = title.replace(/ changelog/, '').trim();
+          stacksLinks.ubuntu[version].title = title.replace(/ changelogs?/, '').trim();
           stacksLinks.ubuntu[version][page] = pathname;
         }
       });
