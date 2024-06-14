@@ -10,6 +10,6 @@ export default {
       urlObject.pathname = '/stacks';
     }
 
-    return await fetch(urlObject, request);
+    return await fetch(urlObject);
   },
 };
