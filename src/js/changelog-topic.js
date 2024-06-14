@@ -1,21 +1,8 @@
 import ChangelogService from './changelog/ChangelogService';
 import ChangelogTagFactory from './changelog/ChangelogTagFactory';
-import { formatDate, setMetaContent } from './shared/common';
+import { detectTopicFromUrl, formatDate, setMetaContent } from './shared/common';
 
 import '../css/changelog.css';
-
-/**
- * @param {URL} url
- * @returns {?string}
- */
-function detectTopicFromUrl(url) {
-  const path = url.pathname;
-  const match = path.match(/changelog\/(.+)$/);
-  if (match) {
-    return match[1];
-  }
-  return null;
-}
 
 const tagFactory = new ChangelogTagFactory();
 
@@ -24,7 +11,7 @@ const topicMetaSeparator = document.querySelector('#changelog-topic-meta-separat
 topicMetaSeparator.style.display = 'none';
 
 const url = new URL(document.location.href);
-const topicSlugId = detectTopicFromUrl(url);
+const topicSlugId = detectTopicFromUrl(url, 'changelog');
 
 /** @type {string} */
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? '' : 'https://bitrise.io';

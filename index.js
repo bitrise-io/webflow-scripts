@@ -28,7 +28,6 @@ async function importWorker(workerPath) {
   if (!importedWorkers[workerName]) {
     if (workerContent.match(/addEventListener\('fetch',/)) {
       // Service Worker Syntax
-      // eslint-disable-next-line no-eval
       eval(`(() => {
         function addEventListener(_, cb) {
           importedWorkers['${workerName}'] = { type: "Service" };
@@ -39,7 +38,6 @@ async function importWorker(workerPath) {
     }
     if (workerContent.match(/export default {/)) {
       // ES6 Module Syntax
-      // eslint-disable-next-line no-eval
       eval(`(() => {
         ${workerContent.replace(
           /export default {/,
@@ -49,10 +47,7 @@ async function importWorker(workerPath) {
         )}
       })();`);
     }
-    console.log(
-      `Registered new ${importedWorkers[workerName].type} Worker: ${workerName}`,
-      importedWorkers[workerName].handler,
-    );
+    process.stdout.write(`[info] Registered new ${importedWorkers[workerName].type} Worker: ${workerName}\n`);
   }
   return importedWorkers[workerName];
 }
@@ -67,6 +62,9 @@ async function getWorker(urlObject) {
   }
   if (urlObject.pathname.match(/^\/changelog/)) {
     return importWorker('./src/js/changelog/worker.js');
+  }
+  if (urlObject.pathname.match(/^\/stacks/)) {
+    return importWorker('./src/js/stacks/worker.js');
   }
   return {
     type: 'ES6 Module',
@@ -92,16 +90,25 @@ if (webpackConfig.mode === 'development') app.use(hotMiddleware(compiler));
 app.get(/\/.*/, async (req, res) => {
   const urlObject = new URL(`http://${req.hostname}${req.url}`);
 
+  process.stdout.write(`[info] Handling request to ${urlObject}\n`);
+
   try {
-    const content = await fs.promises.readFile(`./dist${urlObject.pathname}`);
+    const filePath = `./dist${urlObject.pathname}`;
+    const content = await fs.promises.readFile(filePath);
     res.statusCode = 200;
     const extname = path.extname(urlObject.pathname);
     if (extname === '.js') res.setHeader('Content-Type', 'text/javascript');
     if (extname === '.html') res.setHeader('Content-Type', 'text/html');
     if (extname === '.json') res.setHeader('Content-Type', 'application/json');
+
+    process.stdout.write(`[info] Serving local file ${filePath}\n`);
+
     res.end(content);
   } catch (error) {
     const requestHandler = await getWorker(urlObject);
+
+    process.stdout.write(`[info] Using request handler ${requestHandler.type}\n`);
+
     const fetchEvent = {
       request: {
         url: urlObject,
@@ -111,7 +118,14 @@ app.get(/\/.*/, async (req, res) => {
         res.statusCode = response.status;
         res.setHeader('Content-Type', response.headers.get('Content-Type'));
         const text = await response.text();
-        res.end(text.replace('https://webflow-scripts.bitrise.io/', '/'));
+
+        process.stdout.write(`[info] Serving response with status ${res.statusCode}\n`);
+
+        res.end(
+          text
+            .replace("document.location.host === 'test-e93bfd.webflow.io'", 'true')
+            .replace('https://webflow-scripts.bitrise.io/', '/'),
+        );
       },
     };
 
@@ -126,5 +140,5 @@ app.get(/\/.*/, async (req, res) => {
 });
 
 app.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+  process.stdout.write(`Server running at http://${hostname}:${port}/\n`);
 });

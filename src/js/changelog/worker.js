@@ -18,7 +18,6 @@ async function addCorsHeaders(originalResponse) {
   return response;
 }
 
-// eslint-disable-next-line no-restricted-globals
 addEventListener('fetch', (event) => {
   const urlObject = new URL(event.request.url);
   let useCors = true;

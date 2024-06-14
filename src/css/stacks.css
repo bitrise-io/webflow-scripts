@@ -1,0 +1,101 @@
+div#stacks-content {
+  --gray-100: #f8f9fa;
+  --gray-200: #e9ecef;
+}
+
+div#stacks-content p {
+  margin: 1rem 0;
+}
+
+div#stacks-content code {
+  padding: .125rem .25rem;
+  background: var(--gray-200);
+  border-radius: .25rem;
+  font-size: .875rem;
+}
+
+div#stacks-content pre {
+  padding: 1rem;
+  background: var(--gray-200);
+  border-radius: .25rem;
+  font-size: .875rem;
+  overflow-x: auto;
+}
+
+div#stacks-content pre code {
+  padding: 0;
+  background: none;
+}
+
+div#stacks-content h2 {
+  font-size: 1.5rem;
+  line-height: 1.5em;
+  margin: 1.5rem 0 1rem 0;
+}
+
+div#stacks-content h3 {
+  font-size: 1.17rem;
+  line-height: 1.5em;
+  margin: 1.5rem 0 1rem 0;
+}
+
+div#stacks-content h2 a,
+div#stacks-content h3 a {
+  display: none;
+}
+div#stacks-content h3:hover a,
+div#stacks-content h2:hover a {
+  display: inline;
+}
+
+div#stacks-content details {
+  padding: 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: .25rem;
+  margin-bottom: .5rem;
+}
+div#stacks-content details summary::-webkit-details-marker { 
+  display:none;
+}
+div#stacks-content details summary svg {
+  content: "";
+  float: right;
+  transition: transform .1s;
+}
+div#stacks-content details[open] summary svg {
+  transform: rotateZ(180deg);
+} 
+
+div#stacks-content .book-hint.info {
+  border-color: #6bf;
+  background-color: rgba(102, 187, 255, .1);
+}
+
+div#stacks-content .book-hint.warning {
+  border-color: #fd6;
+  background-color: rgba(255, 221, 102, .1);
+}
+
+div#stacks-content .book-hint.danger {
+  border-color: #f66;
+  background-color: rgba(255, 102, 102, .1);
+}
+
+div#stacks-content blockquote {
+  margin: 1rem 0;
+  padding: .5rem 1rem .5rem .75rem;
+  border-inline-start: .25rem solid var(--gray-200);
+  border-radius: .25rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+div#stacks-content table tr th,
+div#stacks-content table tr td {
+  padding: .5rem 1rem;
+  border: 1px solid var(--gray-200);
+}
+
+div#stacks-content table tr:nth-child(2n) {
+  background: var(--gray-100);
+}
