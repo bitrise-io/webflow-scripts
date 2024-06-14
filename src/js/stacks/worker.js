@@ -13,3 +13,5 @@ export default {
     return await fetch(urlObject);
   },
 };
+
+/* test */

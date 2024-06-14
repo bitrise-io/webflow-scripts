@@ -19,7 +19,8 @@
     "eslint-plugin-jsdoc": "^46.2.6",
     "prettier": "^3.2.5",
     "style-loader": "^3.3.3",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "wrangler": "^3.60.2"
   },
   "scripts": {
     "build_dev": "./node_modules/.bin/webpack --config webpack.dev.js --progress --color",

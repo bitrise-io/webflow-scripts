@@ -1,3 +1,4 @@
 name = "stacks-proxy"
-main = "worker.js"
+main = "./src/js/stacks/worker.js"
 compatibility_date = "2023-08-23"
+route = "bitrise.io/stacks*"
