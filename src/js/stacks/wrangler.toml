@@ -2,6 +2,6 @@ name = "stacks-proxy"
 main = "./src/js/stacks/worker.js"
 compatibility_date = "2023-08-23"
 routes = [
-	{ pattern = "bitrise.io/stacks*", zone_name = "ebitrise.io" }
+	{ pattern = "bitrise.io/stacks*", zone_name = "bitrise.io" }
 ]
 no_bundle = true
