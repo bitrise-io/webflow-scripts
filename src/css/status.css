@@ -1,0 +1,47 @@
+a.statuspage__entry-point {
+  --radii-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+
+  --red-70: #ff8091;
+  --green-70: #77cf8f;
+  --orange-70: #fd9730;
+  --yellow-70: #ebba00;
+  --neutral-10: #201b22;
+
+  font-family: "Figtree", sans-serif;
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: var(--radii-4);
+  display: inline-block;
+  padding: calc(var(--space-8) - 1px) calc(var(--space-12) - 1px);
+  border-width: 1px;
+  border-style: solid;
+}
+
+a.statuspage__severity-none {
+  border-color: var(--green-70);
+  background-color: var(--green-70);
+  color: var(--neutral-10);
+}
+
+a.statuspage__severity-minor {
+  border-color: var(--yellow-70);
+  background-color: var(--yellow-70);
+  color: var(--neutral-10);
+}
+
+a.statuspage__severity-major {
+  border-color: var(--orange-70);
+  background-color: var(--orange-70);
+  color: var(--neutral-10);
+}
+
+a.statuspage__severity-critical {
+  border-color: var(--red-70);
+  background-color: var(--red-70);
+  color: var(--neutral-10);
+}
