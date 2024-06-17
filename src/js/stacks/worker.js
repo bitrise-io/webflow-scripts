@@ -8,6 +8,7 @@ export default {
     if (rssMatch) {
       urlObject.hostname = 'stacks.bitrise.io';
       urlObject.pathname = `/${rssMatch[1]}`;
+      urlObject.search = '?proxy=1';
       const response = await fetch(urlObject);
       const data = (await response.text()).replaceAll('stacks.bitrise.io/', 'bitrise.io/stacks/');
       return new Response(data, {
