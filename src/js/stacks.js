@@ -34,7 +34,7 @@ const formatHtml = (html) => {
     )
     .replaceAll(/\s+<\/code>/g, '</code>')
     .replaceAll(/href="\//g, 'href="/stacks/')
-    .replaceAll('https://stacks.bitrise.io/', '/stacks/');
+    .replaceAll(stacksAPIBase, '/stacks/');
 };
 
 (async () => {
@@ -43,7 +43,7 @@ const formatHtml = (html) => {
   const pageType = pagePath.split('/')[0];
 
   if (pageType === '') {
-    const response = await fetch(`${stacksAPIBase}`);
+    const response = await fetch(`${stacksAPIBase}index.html`);
     /** @type {StacksPageData} */
     const html = await response.text();
     const match = html.match(/<main.*\/main>/gms);
