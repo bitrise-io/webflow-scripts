@@ -6,5 +6,5 @@ dist/*.js
 changelog.json
 changelog_latest.json
 .DS_Store
-wrangler.toml
 .env
+/wrangler.toml
