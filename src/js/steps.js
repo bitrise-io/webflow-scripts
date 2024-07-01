@@ -28,7 +28,7 @@ const details = new DetailsSection();
 
 IntegrationsService.loadIntegrations().then((integrations) => {
   if (!stepFilter || !(stepFilter in integrations.steps)) {
-    window.location.href = '/integrations/steps/not-found'; // 404
+    window.location.href = '/integrations';
   } else {
     const step = integrations.steps[stepFilter];
 

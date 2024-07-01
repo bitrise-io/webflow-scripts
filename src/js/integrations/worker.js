@@ -4,8 +4,8 @@ addEventListener('fetch', (event) => {
   urlObject.hostname = 'webflow.bitrise.io';
 
   if (urlObject.pathname.match(/^\/integrations\/steps\/.+/)) {
-    urlObject.pathname = '/integrations/steps';
-  } else if (urlObject.pathname.match(/\/integrations$|integrations\/(.*)/)) {
+    urlObject.pathname = '/integrations/step';
+  } else if (urlObject.pathname.match(/^\/integrations\/?$/)) {
     urlObject.pathname = '/integrations';
   }
 
