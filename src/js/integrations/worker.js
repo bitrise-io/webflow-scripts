@@ -1,21 +1,31 @@
-addEventListener('fetch', (event) => {
-  const urlObject = new URL(event.request.url);
+export default {
+  async fetch(request) {
+    const urlObject = new URL(request.url);
+    const canonical = new URL(request.url);
 
-  urlObject.hostname = 'webflow.bitrise.io';
+    urlObject.hostname = 'webflow.bitrise.io';
+    canonical.hostname = 'bitrise.io';
 
-  if (urlObject.pathname.match(/^\/integrations\/steps\/.+/)) {
-    urlObject.pathname = '/integrations/step';
-  } else if (urlObject.pathname.match(/^\/integrations\/?$/)) {
-    urlObject.pathname = '/integrations';
-  }
+    if (urlObject.pathname.match(/^\/integrations\/steps\/.+/)) {
+      urlObject.pathname = '/integrations/step';
+    } else if (urlObject.pathname.match(/^\/integrations\/?$/)) {
+      urlObject.pathname = '/integrations';
+    }
 
-  event.respondWith(fetch(urlObject));
-});
+    canonical.pathname = canonical.pathname.replace(/\/$/, '');
 
-/*
-bitrise.io/integrations/steps/* -> webflow.bitrise.io/integrations/steps
-bitrise.io/integrations -> webflow.bitrise.io/integrations
-bitrise.io/* -> webflow.bitrise.io/*
-
-webflow.bitrise.io/integrations
-*/
+    const response = await fetch(urlObject);
+    const data = await response.text();
+    return new Response(
+      data.replace(
+        'href="https://bitrise.io/integrations/step" rel="canonical"',
+        `href="${canonical.href}" rel="canonical"`,
+      ),
+      {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+      },
+    );
+  },
+};
