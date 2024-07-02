@@ -8,6 +8,9 @@ export default {
 
     if (urlObject.pathname.match(/^\/integrations\/steps\/.+/)) {
       urlObject.pathname = '/integrations/step';
+    } else if (urlObject.pathname.match(/^\/integrations\/steps\/?$/)) {
+      urlObject.pathname = '/integrations';
+      return Response.redirect(urlObject, 301);
     } else if (urlObject.pathname.match(/^\/integrations\/?$/)) {
       urlObject.pathname = '/integrations';
     }
