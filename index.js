@@ -116,7 +116,16 @@ app.get(/\/.*/, async (req, res) => {
       respondWith: async (buffer) => {
         const response = await buffer;
         res.statusCode = response.status;
-        res.setHeader('Content-Type', response.headers.get('Content-Type'));
+
+        const responseContentType = response.headers.get('Content-Type');
+        if (responseContentType) res.setHeader('Content-Type', response.headers.get('Content-Type'));
+        const responseLocation = response.headers.get('Location');
+        if (responseLocation)
+          res.setHeader(
+            'Location',
+            responseLocation.replace(webflowDomain, `${hostname}:${port}`).replace('https', 'http'),
+          );
+
         const text = await response.text();
 
         process.stdout.write(`[info] Serving response with status ${res.statusCode}\n`);
