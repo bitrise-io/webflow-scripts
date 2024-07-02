@@ -2,9 +2,9 @@ temp
 node_modules
 yarn-error.log
 dist/*.js
-.yarn/install-state.gz
 changelog.json
 changelog_latest.json
 .DS_Store
 .env
 /wrangler.toml
+.wrangler/tmp
