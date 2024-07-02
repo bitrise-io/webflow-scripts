@@ -1,0 +1,6 @@
+name = "changelog-proxy"
+main = "./src/js/changelog/worker.js"
+compatibility_date = "2023-08-23"
+route = "bitrise.io/changelog*"
+no_bundle = true
+workers_dev = true
