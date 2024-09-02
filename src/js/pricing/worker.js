@@ -4,10 +4,14 @@ export default {
 
     urlObject.hostname = 'webflow.bitrise.io';
 
-    if (urlObject.search.match(/us=1/) || request.headers.get('cf-ipcountry') === 'US') {
-      urlObject.pathname = '/plans-pricing-us';
+    const actualPath = 'plans-pricing';
+    const variantPath = 'plans-pricing-pro-plan-variant';
+    const variantCondition = request.headers.get('cf-ipcountry') === 'US';
+
+    if (urlObject.search.match(new RegExp(`variant=${variantPath}`)) || variantCondition) {
+      urlObject.pathname = `/${variantPath}`;
       const response = await fetch(urlObject);
-      const data = (await response.text()).replace('plans-pricing-us', 'plans-pricing');
+      const data = (await response.text()).replace(variantPath, actualPath);
       return new Response(data, {
         status: response.status,
         statusText: response.statusText,
@@ -15,7 +19,7 @@ export default {
       });
     }
 
-    urlObject.pathname = urlObject.pathname.replace('plans-pricing-test', 'plans-pricing');
+    urlObject.pathname = `/${actualPath}`;
 
     return fetch(urlObject);
   },
