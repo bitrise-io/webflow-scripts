@@ -19,8 +19,6 @@ export default {
       });
     }
 
-    urlObject.pathname = `/${actualPath}`;
-
     return fetch(urlObject);
   },
 };
