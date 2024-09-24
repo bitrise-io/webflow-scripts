@@ -14,8 +14,9 @@ class ChangelogService {
    * @returns {Promise<ChangelogTopic[]>}
    */
   async loadTopics(changelogUrl) {
-    const chacheBuster = new Date().toISOString().split(':')[0].replace(/[^\d]/g, '');
-    const url = `${this.apiBase + changelogUrl}?_=${chacheBuster}`;
+    const d = new Date().toISOString().split(':');
+    const cacheBuster = `${d[0].replace(/[^\d]/g, '')}${Math.floor(d[1] / 15)}`;
+    const url = `${this.apiBase + changelogUrl}?_=${cacheBuster}`;
     const response = await fetch(url);
     const json = await response.json();
     return json.topic_list.topics.map((data) => new ChangelogTopic(data));
