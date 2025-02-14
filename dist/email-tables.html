@@ -110,6 +110,14 @@
       width: 320px;
     }
 
+    .dynamic-tag {
+      padding: .125rem .25rem;
+      font-family: monospace;
+      background: #F6EAFF;
+      border-radius: .25rem;
+      color: #6218AA;
+    }
+
   </style>
 
 </head>
@@ -123,7 +131,7 @@
   Mobile
 </div>
 
-<div class="email">
+<div class="email" style="display: none;">
   <div class="email-header">
     <strong>Segment: Legacy CC plans: Developer, Org Standard, Org Elite</strong><br>
     Email 1
@@ -178,7 +186,7 @@
 </div>
 
 
-<div class="email">
+<div class="email" style="display: none;">
   <div class="email-header">
     <strong>Segment: Teams V2 (Tier 1-6)- Current pricing</strong><br>
     Email 1
@@ -245,6 +253,43 @@
 
   </div>
 </div>
+
+<div class="email">
+  <div class="email-header">
+    <strong>Subject:</strong> Your free trial has started
+  </div>
+  <div class="email-body">
+
+<p>Hi <%= @to_user.username %>, </p>
+<p>Welcome to Bitrise! Your <strong>30-day free trial</strong> has started and will end on <strong><%= format_date_with_zone @end_date %></strong>. You can now run builds and tests on Bitrise.</p>
+<p>We look forward to helping you build, test, and deploy high-quality apps with ease.</p>
+
+<p>
+  <a href="<%= link_new_repo_url() %>?workspace=<%= @org.slug %>&ref=trial-started-email" target="_blank" style="text-align: center; font-family: inherit; display: inline-block; font-size: 16px; font-weight: bold; font-style: normal; font-stretch: normal; line-height: 24px; letter-spacing: normal; width:100%; padding: 11px 0 13px 0; color: #f8f8f8; text-decoration: none; border-radius: 4px; background: #760fc3 linear-gradient(#6c0eb2, #450674 97%);">
+    Access Bitrise here to add your first project
+  </a>
+</p>
+
+<p>Bitrise's intuitive interface and step-by-step guides should have you up-and-running in no time, but if you get stuck, please don't hesitate to reach out to our team.</p>
+<p>Happy building! 🚀</p>
+<p>
+  Barnabas<br>
+  <span style="color: #a0a0a0;">Bitrise CEO & Co-Founder</span><br>
+  <span style="color: #a0a0a0;">Bitrise Limited</span>
+</p>
+
+  </div>
+</div>
+
+
+
+<script>
+  document.querySelectorAll(".email-body").forEach(emailBody => {
+    const emailHTML = emailBody.innerHTML;
+    emailBody.innerHTML = emailHTML.replace(/&lt;%=\s*(.*?)\s*%&gt;/gm, "<span class='dynamic-tag'>$1</span>");
+  });
+
+</script>
 
 </body>
 </html>
