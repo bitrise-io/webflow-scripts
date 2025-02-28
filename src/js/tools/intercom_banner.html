@@ -1,0 +1,119 @@
+<!-- SIMULATE INTERCOM TOP BANNER -->
+<script>
+const removeSimulatedBanner = (documentOverride = null) => {
+  const doc = documentOverride || document;
+  doc.getElementById('test_banner')?.remove();
+  doc.body.style.marginTop = '0px';
+  doc.body.style.maxHeight = '100%';
+};
+
+const simulateIntercomBanner = (text, size = '48px', documentOverride = null) => {
+  const doc = documentOverride || document;
+  doc.getElementById('test_banner')?.remove();
+  doc.body.style.maxHeight = `calc(100% - ${size})`;
+  doc.body.style.transition = 'margin 250ms';
+  const banner = doc.createElement('button');
+  banner.name = 'intercom-banner-frame';
+  banner.style.position = 'fixed';
+  banner.style.width = '100%';
+  banner.style.height = '0px';
+  banner.style.top = '0px';
+  banner.style.left = '0px';
+  banner.style.backgroundColor = '#690EB7';
+  banner.style.color = 'white';
+  banner.style.textAlign = 'center';
+  banner.style.lineHeight = size;
+  banner.style.zIndex = '1000';
+  banner.style.cursor = 'pointer';
+  banner.style.transition = 'height 250ms';
+  banner.textContent = text;
+  banner.id = 'test_banner';
+  banner.addEventListener('click', () => {
+    removeSimulatedBanner(doc);
+  });
+  doc.body.appendChild(banner);
+  window.setTimeout(() => {
+    banner.style.height = size;
+    doc.body.style.marginTop = size;
+  }, 0);
+};
+
+simulateIntercomBanner('Intercom test banner, click to close.');
+// simulateIntercomBanner('48px', document.getElementById("storybook-preview-iframe").contentWindow.document);
+</script>
+
+<!-- WEBFLOW -->
+
+<style>
+/* intercom banner hides the top navigation without this */
+body { max-height: none !important; }
+</style>
+<script>
+/* this part keeps the intercom banner visible when scrolling */
+window.setInterval(() => {
+  document.querySelector(".navigation").style.top = document.querySelector("body").style.marginTop;
+}, 500);
+</script>
+
+
+<!-- DEVCENTER -->
+
+<script>
+window.setInterval(() => {
+  const bodyMarginTop = document.body.style.marginTop; // intercom sets this for top banner
+  document.querySelector('aside.site-sidebar').style.marginTop = bodyMarginTop;
+  document.querySelector('aside.site-sidebar').style.maxHeight = `calc(100% - ${bodyMarginTop})`;
+  document.querySelector('.site-content .toolbar').style.marginTop = bodyMarginTop;
+}, 500);
+</script>
+
+<!-- MONOLITH -->
+
+<script>
+
+// window.setInterval(() => {
+//   const bodyMarginTop = document.body.style.marginTop; // intercom sets this for top banner
+//   document.querySelector('.platform-header').style.marginTop = bodyMarginTop;
+//   document.querySelector('.platform-nav').style.marginTop = bodyMarginTop;
+// }, 500);
+
+
+const initIntercomBannerObserver = (bannerHeightChangeHandler) => {
+  let bannerHeight = "0px";
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'childList') {
+        const banner = document.querySelector('[name="intercom-banner-frame"]');
+        if (banner) {
+          const interval = setInterval(() => {
+            // const { height } = banner.getBoundingClientRect();
+            // const newHeight = height > 0 ? `${height}px` : '0px';
+            const computedStyle = window.getComputedStyle(document.body);
+            const newHeight = computedStyle.getPropertyValue('margin-top');
+            if (newHeight !== bannerHeight) {
+              bannerHeight = newHeight;
+              bannerHeightChangeHandler(bannerHeight);
+            } else if (newHeight !== '0px') {
+              clearInterval(interval);
+            }
+          }, 25);
+        } else {
+          bannerHeight = "0px";
+          bannerHeightChangeHandler(bannerHeight);
+        }
+      }
+    });
+  });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+};
+
+initIntercomBannerObserver((bannerHeight) => {
+  console.log('Intercom banner height', bannerHeight);
+  // document.querySelector('.platform-header').style.marginTop = bannerHeight;
+  // document.querySelector('.platform-nav').style.marginTop = bannerHeight;
+});
+
+</script>
