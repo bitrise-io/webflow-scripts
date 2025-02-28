@@ -27,7 +27,7 @@
     "build_dev": "./node_modules/.bin/webpack --config webpack.dev.js --progress --color",
     "build_prod": "./node_modules/.bin/webpack --config webpack.prod.js",
     "build_changelog": "node ./src/js/changelog/build.js",
-    "build_careers": "node ./src/js/careers/build.js",
+    "build_career_maps": "node ./src/js/career-maps/build.js",
     "proxy_staging": "node ./index.js test-e93bfd.webflow.io",
     "proxy_prod": "node ./index.js bitrise.io"
   }

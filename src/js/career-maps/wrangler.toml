@@ -1,0 +1,6 @@
+name = "career-maps-proxy"
+main = "./src/js/career-maps/worker.js"
+compatibility_date = "2024-02-28"
+route = "bitrise.io/careers/maps/*"
+no_bundle = true
+workers_dev = true
