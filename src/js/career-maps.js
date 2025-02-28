@@ -16,7 +16,7 @@ fancyConsoleLog('Bitrise.io Career Maps');
   const loadingSection = dsf.createLoadingSection();
   departmentListContainer.appendChild(loadingSection);
 
-  const response = await fetch('/careers.json');
+  const response = await fetch('/careers/maps/data.json');
   const careerMaps = await response.json();
 
   departmentListContainer.innerHTML = '';
