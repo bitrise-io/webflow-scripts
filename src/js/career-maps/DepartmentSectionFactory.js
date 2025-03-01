@@ -1,49 +1,110 @@
+/**
+ * @typedef {{
+ *  name: string,
+ *  description?: string,
+ *  teams: Team[]
+ * }} Department
+ */
+
+/**
+ * @typedef {{
+ *  name: string,
+ * }} Team
+ */
+
 class DepartmentSectionFactory {
+  /**
+   * @param {HTMLElement} templateElement
+   */
   constructor(templateElement) {
+    /** @type {HTMLElement} */
     this.templateElement = templateElement.cloneNode(true);
     this.templateElement.style.display = 'none';
   }
 
+  /**
+   *
+   * @param {Department} department
+   * @returns {HTMLElement}
+   */
   createDepartmentSection(department) {
+    /** @type {HTMLElement} */
     const departmentSection = this.templateElement.cloneNode(true);
     departmentSection.style.display = '';
-    departmentSection.querySelector('[data-template-id="cm-department-name"]').textContent = department.name;
+
+    /** @type {HTMLElement} */
+    const departmentNameElement = departmentSection.querySelector('[data-template-id="cm-department-name"]');
+    departmentNameElement.textContent = departmentNameElement.textContent.replace('{department_name}', department.name);
+
+    /** @type {HTMLElement} */
+    const departmentDescriptionElement = departmentSection.querySelector(
+      '[data-template-id="cm-department-description"]',
+    );
     if (department.description) {
-      departmentSection.querySelector('[data-template-id="cm-department-description"]').textContent =
-        department.description;
+      departmentDescriptionElement.textContent = departmentDescriptionElement.textContent.replace(
+        '{department_description}',
+        department.description,
+      );
     } else {
-      departmentSection.querySelector('[data-template-id="cm-department-description"]').remove();
+      departmentDescriptionElement.remove();
     }
 
+    /** @type {HTMLElement} */
     const teamGrid = departmentSection.querySelector('[data-template-id="cm-team-grid"]');
-    const teamLinkTemplate = teamGrid.querySelector('[data-template-id="cm-team"]').cloneNode(true);
+
+    /** @type {HTMLElement} */
+    const teamCardTemplate = teamGrid.querySelector('[data-template-id="cm-team"]').cloneNode(true);
+
     teamGrid.innerHTML = '';
     department.teams.forEach((team) => {
-      const teamLink = teamLinkTemplate.cloneNode(true);
-      teamLink.querySelector('[data-template-id="cm-team-name"]').textContent = team.name;
-      teamLink.href = `/careers/maps/${team.name.toLowerCase().replace(/ /g, '-')}`;
-      teamGrid.appendChild(teamLink);
+      /** @type {HTMLAnchorElement} */
+      const teamCardElement = teamCardTemplate.cloneNode(true);
+      teamCardElement.href = `/careers/maps/${team.name.toLowerCase().replace(/ /g, '-')}`;
+
+      /** @type {HTMLElement} */
+      const teamNameElement = teamCardElement.querySelector('[data-template-id="cm-team-name"]');
+      teamNameElement.textContent = teamNameElement.textContent.replace('{team_name}', team.name);
+
+      /** @type {HTMLElement} */
+      const teamLinkElement = teamCardElement.querySelector('[data-template-id="cm-team-link"]');
+      teamLinkElement.textContent = teamLinkElement.textContent.replace('{team_name}', team.name);
+
+      teamGrid.appendChild(teamCardElement);
     });
 
     return departmentSection;
   }
 
+  /**
+   * Creates a loading skeleton for the department section
+   * @returns {HTMLElement}
+   */
   createLoadingSection() {
+    /** @type {HTMLElement} */
     const loadingSection = this.templateElement.cloneNode(true);
     loadingSection.style.display = '';
-    loadingSection.querySelector('[data-template-id="cm-department-name"]').innerHTML =
-      '<span class="cm-loading">Loading department...</span>';
-    loadingSection.querySelector('[data-template-id="cm-department-description"]').remove();
 
+    /** @type {HTMLElement} */
+    const departmentNameElement = loadingSection.querySelector('[data-template-id="cm-department-name"]');
+    departmentNameElement.innerHTML = '<span class="cm-loading">Loading department...</span>';
+
+    /** @type {HTMLElement} */
+    const departmentDescriptionElement = loadingSection.querySelector('[data-template-id="cm-department-description"]');
+    departmentDescriptionElement.remove();
+
+    /** @type {HTMLElement} */
     const teamGrid = loadingSection.querySelector('[data-template-id="cm-team-grid"]');
-    const teamLinkTemplate = teamGrid.querySelector('[data-template-id="cm-team"]').cloneNode(true);
+
+    /** @type {HTMLElement} */
+    const teamCardTemplate = teamGrid.querySelector('[data-template-id="cm-team"]').cloneNode(true);
+
     teamGrid.innerHTML = '';
     for (let i = 0; i < 3; i++) {
-      const teamLink = teamLinkTemplate.cloneNode(true);
-      teamLink.querySelector('[data-template-id="cm-team-name"]').textContent = 'Loading...';
-      teamLink.href = '#';
-      teamLink.className += ' cm-loading';
-      teamGrid.appendChild(teamLink);
+      /** @type {HTMLAnchorElement} */
+      const teamCardElement = teamCardTemplate.cloneNode(true);
+      teamCardElement.href = '#javascript:void(0)';
+      teamCardElement.className += ' cm-loading';
+      teamGrid.appendChild(teamCardElement);
     }
 
     return loadingSection;

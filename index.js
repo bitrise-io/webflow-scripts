@@ -66,6 +66,9 @@ async function getWorker(urlObject) {
   if (urlObject.pathname.match(/^\/stacks/)) {
     return importWorker('./src/js/stacks/worker.js');
   }
+  if (urlObject.pathname.match(/^\/careers\/maps\//)) {
+    return importWorker('./src/js/career-maps/worker.js');
+  }
   return {
     type: 'ES6 Module',
     handler: {
