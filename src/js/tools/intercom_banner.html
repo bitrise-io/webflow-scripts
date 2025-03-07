@@ -2,16 +2,21 @@
 <script>
 const removeSimulatedBanner = (documentOverride = null) => {
   const doc = documentOverride || document;
-  doc.getElementById('test_banner')?.remove();
+  doc.querySelector('#intercom-container .intercom-app [name="intercom-banner-frame"]')?.remove();
   doc.body.style.marginTop = '0px';
   doc.body.style.maxHeight = '100%';
 };
 
 const simulateIntercomBanner = (text, size = '48px', documentOverride = null) => {
   const doc = documentOverride || document;
-  doc.getElementById('test_banner')?.remove();
-  doc.body.style.maxHeight = `calc(100% - ${size})`;
-  doc.body.style.transition = 'margin 250ms';
+
+  const intercomContainer = doc.getElementById('intercom-container') || doc.createElement('div');
+  intercomContainer.id = 'intercom-container';
+
+  const intercomApp = intercomContainer.querySelector('.intercom-app') || doc.createElement('div');
+  intercomApp.className = 'intercom-app';
+  intercomApp.innerHTML = '';
+
   const banner = doc.createElement('button');
   banner.name = 'intercom-banner-frame';
   banner.style.position = 'fixed';
@@ -23,20 +28,42 @@ const simulateIntercomBanner = (text, size = '48px', documentOverride = null) =>
   banner.style.color = 'white';
   banner.style.textAlign = 'center';
   banner.style.lineHeight = size;
-  banner.style.zIndex = '1000';
+  banner.style.zIndex = '1000000';
   banner.style.cursor = 'pointer';
   banner.style.transition = 'height 250ms';
   banner.textContent = text;
-  banner.id = 'test_banner';
   banner.addEventListener('click', () => {
     removeSimulatedBanner(doc);
   });
-  doc.body.appendChild(banner);
+
+  doc.body.appendChild(intercomContainer);
+  intercomContainer.appendChild(intercomApp);
+  intercomApp.appendChild(banner);
   window.setTimeout(() => {
+    doc.body.style.maxHeight = `calc(100% - ${size})`;
+    doc.body.style.transition = 'margin 250ms';
     banner.style.height = size;
     doc.body.style.marginTop = size;
   }, 0);
 };
+
+const simulateButton = document.createElement('button');
+simulateButton.textContent = 'Simulate Intercom Banner';
+simulateButton.style.position = 'fixed';
+simulateButton.style.bottom = '100px';
+simulateButton.style.right = '50%';
+simulateButton.style.transform = 'translateX(50%)';
+simulateButton.style.backgroundColor = '#690EB7';
+simulateButton.style.color = 'white';
+simulateButton.style.padding = '10px 20px';
+simulateButton.style.border = 'none';
+simulateButton.style.borderRadius = '5px';
+simulateButton.style.zIndex = '1000000';
+simulateButton.style.cursor = 'pointer';
+simulateButton.addEventListener('click', () => {
+  simulateIntercomBanner('Intercom test banner, click to close.');
+});
+document.body.appendChild(simulateButton);
 
 simulateIntercomBanner('Intercom test banner, click to close.');
 // simulateIntercomBanner('48px', document.getElementById("storybook-preview-iframe").contentWindow.document);
