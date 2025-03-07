@@ -1,17 +1,3 @@
-/**
- * @typedef {{
- *  name: string,
- *  description?: string,
- *  teams: Team[]
- * }} Department
- */
-
-/**
- * @typedef {{
- *  name: string,
- * }} Team
- */
-
 class DepartmentSectionFactory {
   /**
    * @param {HTMLElement} templateElement
@@ -24,7 +10,7 @@ class DepartmentSectionFactory {
 
   /**
    *
-   * @param {Department} department
+   * @param {import('../career-maps').Department} department
    * @returns {HTMLElement}
    */
   createDepartmentSection(department) {
@@ -59,7 +45,7 @@ class DepartmentSectionFactory {
     department.teams.forEach((team) => {
       /** @type {HTMLAnchorElement} */
       const teamCardElement = teamCardTemplate.cloneNode(true);
-      teamCardElement.href = `/careers/maps/${team.name.toLowerCase().replace(/ /g, '-')}`;
+      teamCardElement.href = `/careers/maps/${team.slug}`;
 
       /** @type {HTMLElement} */
       const teamNameElement = teamCardElement.querySelector('[data-template-id="cm-team-name"]');
