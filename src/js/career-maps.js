@@ -55,12 +55,18 @@ fancyConsoleLog('Bitrise.io Career Maps');
  */
 const createSlug = (text) => text.toLowerCase().replace(/ /g, '-');
 
-const renderCareerMaps = (careerMaps) => {
+/**
+ *
+ * @param {Department[]} departments
+ * @returns {() => void}
+ */
+const renderCareerMaps = (departments) => {
   /** @type {HTMLElement} */
   const departmentTemplate = document.querySelector('[data-template-id="cm-department"]');
 
   /** @type {HTMLElement} */
   const departmentListContainer = departmentTemplate.parentNode;
+  const originalTemplateContent = departmentListContainer.innerHTML;
 
   const dsf = new DepartmentSectionFactory(departmentTemplate);
 
@@ -70,10 +76,14 @@ const renderCareerMaps = (careerMaps) => {
   departmentListContainer.appendChild(loadingSection);
 
   departmentListContainer.innerHTML = '';
-  careerMaps.forEach((department) => {
+  departments.forEach((department) => {
     const departmentSection = dsf.createDepartmentSection(department);
     departmentListContainer.appendChild(departmentSection);
   });
+
+  return () => {
+    departmentListContainer.innerHTML = originalTemplateContent;
+  };
 };
 
 /**
@@ -137,8 +147,74 @@ const findLevelBySlug = (job, levelSlug) => {
   return job.levels[0];
 };
 
-let originalTemplateContainer = null;
-let originalTemplateHTML = '';
+/** @type {() => {}[]} */
+const resetDocument = [];
+
+/**
+ *
+ * @param {HTMLElement} templateContainer
+ * @param {Team} team
+ * @param {Job} job
+ * @returns {() => void}
+ */
+const renderJobDropdown = (templateContainer, team, job) => {
+  const jobList = Object.keys(team.jobs).map((jobName) => {
+    return {
+      slug: createSlug(jobName),
+      name: jobName,
+      defaultLevelSlug: createSlug(Object.keys(team.jobs[jobName]).shift()),
+    };
+  });
+
+  const jobsDropdown = templateContainer.querySelector('#cm-jobs-dropdown');
+  jobsDropdown.querySelector('.w-dropdown-toggle .replace-text').textContent = job.name;
+  const jobsDropownItemTemplate = jobsDropdown.querySelector('.w-dropdown-link').cloneNode(true);
+  jobsDropdown.querySelector('.w-dropdown-list').innerHTML = '';
+  jobList.forEach((jobListItem) => {
+    const jobDropdownItem = jobsDropownItemTemplate.cloneNode(true);
+    jobDropdownItem.textContent = jobListItem.name;
+    jobDropdownItem.setAttribute('data-dropdown', jobListItem.slug);
+    jobDropdownItem.href = `/careers/maps/${team.slug}/${jobListItem.slug}/${jobListItem.defaultLevelSlug}`;
+    jobsDropdown.querySelector('.w-dropdown-list').appendChild(jobDropdownItem);
+  });
+  jobsDropdown.querySelector('.w-dropdown-toggle').addEventListener('click', () => {
+    jobsDropdown.classList.toggle('w--open');
+  });
+
+  return () => {};
+};
+
+/**
+ *
+ * @param {HTMLElement} templateContainer
+ * @param {Team} team
+ * @param {Job} job
+ * @param {Level} level
+ * @returns {() => void}
+ */
+const renderLevelTabs = (templateContainer, team, job, level) => {
+  const levelTabs = templateContainer.querySelector('#cm-level-tabs');
+  const originalTemplateContent = levelTabs.innerHTML;
+
+  const levelTabClassName = levelTabs.querySelector('#cm-level-tab').className;
+  const selectedLevelTabClassName = levelTabs.querySelector('#cm-level-tab-selected').className;
+  const levelTabTemplate = levelTabs.querySelector('#cm-level-tab').cloneNode(true);
+  levelTabTemplate.removeAttribute('id');
+
+  levelTabs.innerHTML = '';
+
+  job.levels.forEach((jobLevel) => {
+    const levelTab = levelTabTemplate.cloneNode(true);
+    levelTab.textContent = jobLevel.name;
+    levelTab.href = `/careers/maps/${team.slug}/${job.slug}/${jobLevel.slug}`;
+    levelTab.className = jobLevel.slug === level.slug ? selectedLevelTabClassName : levelTabClassName;
+    levelTabs.appendChild(levelTab);
+  });
+
+  return () => {
+    levelTabs.innerHTML = originalTemplateContent;
+  };
+};
 
 (async () => {
   const response = await fetch('/careers/maps/data.json');
@@ -150,8 +226,9 @@ let originalTemplateHTML = '';
     });
   });
 
-  if (document.location.pathname === '/careers/maps') {
-    renderCareerMaps(careerMaps);
+  if (document.location.pathname.match(/^\/careers\/maps\/?$/)) {
+    resetDocument.push(renderCareerMaps(careerMaps));
+    return;
   }
 
   const teamPageMatch = document.location.pathname.match(/^\/careers\/maps\/([a-z0-9-/]+)?$/);
@@ -166,40 +243,19 @@ let originalTemplateHTML = '';
       window.history.replaceState({}, '', `/careers/maps/${teamSlug}/${job.slug}/${level.slug}`);
     }
 
-    const jobList = Object.keys(team.jobs).map((jobName) => {
-      return {
-        slug: createSlug(jobName),
-        name: jobName,
-        defaultLevelSlug: createSlug(Object.keys(team.jobs[jobName]).shift()),
-      };
-    });
-
     const templateContainer = document.querySelector('#cm-jobs-dropdown').parentNode;
-    originalTemplateContainer = templateContainer;
-    originalTemplateHTML = templateContainer.innerHTML;
 
-    const jobsDropdown = templateContainer.querySelector('#cm-jobs-dropdown');
-    jobsDropdown.querySelector('.w-dropdown-toggle .replace-text').textContent = job.name;
-    const jobsDropownItemTemplate = jobsDropdown.querySelector('.w-dropdown-link').cloneNode(true);
-    jobsDropdown.querySelector('.w-dropdown-list').innerHTML = '';
-    jobList.forEach((jobListItem) => {
-      const jobDropdownItem = jobsDropownItemTemplate.cloneNode(true);
-      jobDropdownItem.textContent = jobListItem.name;
-      jobDropdownItem.setAttribute('data-dropdown', jobListItem.slug);
-      jobDropdownItem.href = `/careers/maps/${teamSlug}/${jobListItem.slug}/${jobListItem.defaultLevelSlug}`;
-      jobsDropdown.querySelector('.w-dropdown-list').appendChild(jobDropdownItem);
-    });
-    jobsDropdown.querySelector('.w-dropdown-toggle').addEventListener('click', () => {
-      jobsDropdown.classList.toggle('w--open');
-    });
+    resetDocument.push(renderJobDropdown(templateContainer, team, job));
+    resetDocument.push(renderLevelTabs(templateContainer, team, job, level));
   }
 })();
 
 if (import.meta.webpackHot) {
   import.meta.webpackHot.dispose(() => {
-    // if (originalTemplateContainer) {
-    //   originalTemplateContainer.innerHTML = originalTemplateHTML;
-    // }
+    while (resetDocument.length) {
+      resetDocument.pop()();
+    }
+    console.log('Document reset');
   });
   import.meta.webpackHot.accept();
 }
