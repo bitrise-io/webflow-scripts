@@ -22,6 +22,10 @@ async function importWorker(workerPath) {
   const workerContent = (await fs.promises.readFile(workerPath, 'utf8'))
     .toString()
     .replaceAll('webflow.bitrise.io', webflowDomain)
+    .replaceAll(
+      `urlObject.hostname = 'web-cdn.bitrise.io';`,
+      `urlObject.hostname = '${hostname}'; urlObject.port = ${port}; urlObject.search = 'cdn=1';`, // TODO: make this switchable
+    )
     .replaceAll(/\/\*(.|[\n\r])*?\*\//gm, '')
     .replaceAll(/\/\/.*$/g, '');
   const workerName = `${workerPath}-${crypto.createHash('md5').update(workerContent).digest('hex')}`;
@@ -96,7 +100,11 @@ app.get(/\/.*/, async (req, res) => {
   process.stdout.write(`[info] Handling request to ${urlObject}\n`);
 
   try {
-    const filePath = `./dist${urlObject.pathname}`;
+    let webRootPath = './dist';
+    if (urlObject.searchParams.get('cdn') === '1') {
+      webRootPath = '.';
+    }
+    const filePath = `${webRootPath}${urlObject.pathname}`;
     const content = await fs.promises.readFile(filePath);
     res.statusCode = 200;
     const extname = path.extname(urlObject.pathname);
