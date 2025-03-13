@@ -282,10 +282,10 @@ const getCompetencyFramworks = async () => {
       if (!level.description) {
         level.warnings.push('Description is missing!');
       } else {
-        level.description = level.description.replaceAll(/(<[a-z]+)\s[^>]+/g, '$1');
+        // level.description = level.description.replaceAll(/(<[a-z]+)\s[^>]+/g, '$1');
       }
 
-      console.log(level);
+      // console.log(level);
 
       flatLevel = flatLevels.pop();
     }
@@ -296,6 +296,6 @@ const getCompetencyFramworks = async () => {
     await fs.promises.writeFile('./career-maps.json', JSON.stringify(departments, null, 2));
     process.stdout.write('Done\n');
   } catch (err) {
-    console.error(err);
+    process.stderr.write(`Failed\n${err}\n`);
   }
 })();

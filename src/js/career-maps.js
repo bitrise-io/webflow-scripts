@@ -147,7 +147,7 @@ const findLevelBySlug = (job, levelSlug) => {
   return job.levels[0];
 };
 
-/** @type {() => {}[]} */
+/** @type {((() => void) | void)[]} */
 const resetDocument = [];
 
 /**
@@ -155,7 +155,6 @@ const resetDocument = [];
  * @param {HTMLElement} templateContainer
  * @param {Team} team
  * @param {Job} job
- * @returns {() => void}
  */
 const renderJobDropdown = (templateContainer, team, job) => {
   const jobList = Object.keys(team.jobs).map((jobName) => {
@@ -180,8 +179,6 @@ const renderJobDropdown = (templateContainer, team, job) => {
   jobsDropdown.querySelector('.w-dropdown-toggle').addEventListener('click', () => {
     jobsDropdown.classList.toggle('w--open');
   });
-
-  return () => {};
 };
 
 /**
@@ -216,6 +213,86 @@ const renderLevelTabs = (templateContainer, team, job, level) => {
   };
 };
 
+/**
+ *
+ * @param {number} salary
+ * @returns {string}
+ */
+const formatSalary = (salary) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(salary);
+};
+
+/**
+ *
+ * @param {Level} level
+ */
+const renderLevelDescription = (level) => {
+  const compensationSection = document.querySelector('#cm-compensation-section');
+  const salaryTableContainer = compensationSection.querySelector('#cm-compensation-table');
+  const salaryTable = salaryTableContainer.querySelector('table');
+  if (salaryTable.querySelectorAll('thead th').length > 3) {
+    salaryTable.querySelectorAll('thead th')[2].remove();
+  }
+  const salaryTableBody = salaryTable.querySelector('tbody');
+  const salaryTableRowTemplate = salaryTableBody.querySelector('tr').cloneNode(true);
+  salaryTableBody.innerHTML = '';
+  if (salaryTableRowTemplate.querySelectorAll('td').length > 3) {
+    salaryTableRowTemplate.querySelectorAll('td')[2].remove();
+  }
+
+  Object.keys(level.salary).forEach((country) => {
+    const salaryTableRow = salaryTableRowTemplate.cloneNode(true);
+    salaryTableRow.querySelector('td').textContent = country;
+    salaryTableRow.querySelectorAll('td')[1].textContent = formatSalary(level.salary[country].lowEnd);
+    salaryTableRow.querySelectorAll('td')[2].textContent = formatSalary(level.salary[country].highEnd);
+    salaryTableBody.appendChild(salaryTableRow);
+  });
+
+  const bonusTitleElement = compensationSection.querySelector('#cm-bonus-title');
+  const bonusValueElement = compensationSection.querySelector('#cm-bonus-value');
+
+  if (level.bonus) {
+    bonusTitleElement.textContent = 'Bonus percentage';
+    bonusValueElement.textContent = level.bonus;
+  } else if (level.variablePay) {
+    bonusTitleElement.textContent = 'Variable pay percentage';
+    bonusValueElement.textContent = level.variablePay;
+  } else if (level.commission) {
+    bonusTitleElement.textContent = 'Commission percentage';
+    bonusValueElement.textContent = level.commission;
+  } else {
+    bonusTitleElement.textContent = '';
+    bonusValueElement.textContent = '';
+  }
+
+  const tenureSection = document.querySelector('#cm-tenure-section');
+  tenureSection.querySelector('#cm-tenure-description').innerHTML = level.tenure;
+
+  const wayOfWorkingSection = document.querySelector('#cm-way-of-working-section');
+  wayOfWorkingSection.querySelector('#cm-way-of-working-description').innerHTML = level.description
+    .replaceAll(/<(\/?)h(3|4|5|6)/g, '<$1h6')
+    .replaceAll(/<(\/?)h2/g, '<$1h5');
+  [...wayOfWorkingSection.querySelectorAll('table')].forEach((table) => {
+    table.className = 'fs-table_table';
+    [...table.querySelectorAll('tbody tr')].forEach((row) => {
+      row.className = 'fs-table_row';
+      if (row.querySelectorAll('th').length > 1) {
+        row.querySelectorAll('th')[0].className = 'fs-table_header';
+        row.querySelectorAll('th')[1].className = 'fs-table_header';
+      } else if (row.querySelectorAll('td').length > 1) {
+        row.querySelectorAll('td')[0].className = 'fs-table_header';
+        row.querySelectorAll('td')[1].className = 'fs-table_cell is-white';
+      } else {
+        row.querySelectorAll('td')[0].setAttribute('colspan', 2);
+        row.querySelectorAll('td')[0].className = 'fs-table_cell is-white';
+      }
+    });
+  });
+};
+
 (async () => {
   const response = await fetch('/careers/maps/data.json');
   /** @type {Department[]} */
@@ -245,15 +322,23 @@ const renderLevelTabs = (templateContainer, team, job, level) => {
 
     const templateContainer = document.querySelector('#cm-jobs-dropdown').parentNode;
 
+    document.querySelector('#cm-team-page-title').textContent = document
+      .querySelector('#cm-team-page-title')
+      .textContent.replace('{team_name}', team.name);
+
     resetDocument.push(renderJobDropdown(templateContainer, team, job));
     resetDocument.push(renderLevelTabs(templateContainer, team, job, level));
+    resetDocument.push(renderLevelDescription(level));
   }
 })();
 
 if (import.meta.webpackHot) {
   import.meta.webpackHot.dispose(() => {
     while (resetDocument.length) {
-      resetDocument.pop()();
+      const resetFunction = resetDocument.pop();
+      if (resetFunction) {
+        resetFunction();
+      }
     }
     console.log('Document reset');
   });
