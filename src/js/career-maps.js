@@ -275,6 +275,13 @@ const renderLevelDescription = (level) => {
   wayOfWorkingSection.querySelector('#cm-way-of-working-description').innerHTML = level.description
     .replaceAll(/<(\/?)h(3|4|5|6)/g, '<$1h6')
     .replaceAll(/<(\/?)h2/g, '<$1h5');
+  [...wayOfWorkingSection.querySelectorAll('a')].forEach((link) => {
+    if (link.href.match(/bitrise\.atlassian\.net/)) {
+      link.replaceWith(link.textContent);
+    } else if (link.href.match(`${window.location.pathname}#`)) {
+      link.replaceWith(link.textContent);
+    }
+  });
   [...wayOfWorkingSection.querySelectorAll('table')].forEach((table) => {
     table.className = 'fs-table_table';
     [...table.querySelectorAll('tbody tr')].forEach((row) => {
@@ -285,8 +292,9 @@ const renderLevelDescription = (level) => {
       } else if (row.querySelectorAll('td').length > 1) {
         row.querySelectorAll('td')[0].className = 'fs-table_header';
         row.querySelectorAll('td')[1].className = 'fs-table_cell is-white';
+      } else if (row.querySelectorAll('td').length === 1 && row.querySelectorAll('td')[0].colSpan === 2) {
+        row.querySelectorAll('td')[0].className = 'fs-table_header';
       } else {
-        row.querySelectorAll('td')[0].setAttribute('colspan', 2);
         row.querySelectorAll('td')[0].className = 'fs-table_cell is-white';
       }
     });
@@ -340,7 +348,6 @@ if (import.meta.webpackHot) {
         resetFunction();
       }
     }
-    console.log('Document reset');
   });
   import.meta.webpackHot.accept();
 }

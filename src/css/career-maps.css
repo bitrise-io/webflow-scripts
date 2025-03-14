@@ -2,8 +2,14 @@
   margin-top: 1.25rem;
   margin-bottom: 1rem;
 }
+#cm-way-of-working-description table {
+  margin-bottom: 2rem;
+}
 #cm-way-of-working-description table p {
   margin: 0;
+}
+#cm-way-of-working-description table p + p {
+  margin-top: 1rem;
 }
 #cm-way-of-working-description table .fs-table_header,
 #cm-way-of-working-description table .fs-table_header p {
@@ -12,7 +18,8 @@
 #cm-way-of-working-description table tr th {
   text-align: left;
 }
-#cm-way-of-working-description table tr th:first-child {
+#cm-way-of-working-description table tr th:first-child,
+#cm-way-of-working-description table tr td:first-child {
   width: 25%;
 }
 
