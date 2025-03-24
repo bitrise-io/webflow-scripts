@@ -43,19 +43,21 @@ class DepartmentSectionFactory {
 
     teamGrid.innerHTML = '';
     department.teams.forEach((team) => {
-      /** @type {HTMLAnchorElement} */
-      const teamCardElement = teamCardTemplate.cloneNode(true);
-      teamCardElement.href = `/careers/maps/${team.slug}`;
+      if (team.jobs && Object.keys(team.jobs).length > 0) {
+        /** @type {HTMLAnchorElement} */
+        const teamCardElement = teamCardTemplate.cloneNode(true);
+        teamCardElement.href = `/careers/maps/${team.slug}`;
 
-      /** @type {HTMLElement} */
-      const teamNameElement = teamCardElement.querySelector('[data-template-id="cm-team-name"]');
-      teamNameElement.textContent = teamNameElement.textContent.replace('{team_name}', team.name);
+        /** @type {HTMLElement} */
+        const teamNameElement = teamCardElement.querySelector('[data-template-id="cm-team-name"]');
+        teamNameElement.textContent = teamNameElement.textContent.replace('{team_name}', team.name);
 
-      /** @type {HTMLElement} */
-      const teamLinkElement = teamCardElement.querySelector('[data-template-id="cm-team-link"]');
-      teamLinkElement.textContent = teamLinkElement.textContent.replace('{team_name}', team.name);
+        /** @type {HTMLElement} */
+        const teamLinkElement = teamCardElement.querySelector('[data-template-id="cm-team-link"]');
+        teamLinkElement.textContent = teamLinkElement.textContent.replace('{team_name}', team.name);
 
-      teamGrid.appendChild(teamCardElement);
+        teamGrid.appendChild(teamCardElement);
+      }
     });
 
     return departmentSection;
