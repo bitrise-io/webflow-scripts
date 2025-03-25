@@ -26,9 +26,6 @@ document.getElementById('changelog-topic-content').innerHTML =
 
 changelogService.loadTopic(topicSlugId).then((topic) => {
   document.title = `${topic.title} | Bitrise Changelog`;
-  document
-    .querySelector("link[rel='canonical']")
-    .setAttribute('href', `https://bitrise.io/changelog/${topic.slug}/${topic.id}`);
   // setMetaContent({name: "description"}, step.summary.replace(/\s+/g, " "));
   setMetaContent({ property: 'og:title' }, `${topic.title} | Bitrise Changelog`);
   // setMetaContent({property: "og:description"}, step.summary.replace(/\s+/g, " "));
@@ -56,12 +53,16 @@ changelogService.loadTopic(topicSlugId).then((topic) => {
   });
 
   if (topic.id === 0) {
+    document.querySelector("link[rel='canonical']").setAttribute('href', `https://bitrise.io/changelog/${topic.slug}`);
     document.querySelector('.changelog-topic-footer > div').textContent = 'Read more on Release Management API';
     document.getElementById('changelog-topic-leave-feedback-button').href =
       'https://api.bitrise.io/release-management/api-docs/index.html';
     document.getElementById('changelog-topic-leave-feedback-button').target = '_blank';
     document.getElementById('changelog-topic-leave-feedback-button').textContent = 'API Documentation';
   } else {
+    document
+      .querySelector("link[rel='canonical']")
+      .setAttribute('href', `https://bitrise.io/changelog/${topic.slug}/${topic.id}`);
     document.getElementById('changelog-topic-leave-feedback-button').href =
       `https://discuss.bitrise.io/t/${topic.slug}/${topic.id}`;
     document.getElementById('changelog-topic-leave-feedback-button').target = '_blank';

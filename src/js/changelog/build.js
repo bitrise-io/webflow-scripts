@@ -95,6 +95,7 @@ async function buildChangelog() {
   const changelogTopics = await fetchCategory('/c/changelog/6.json');
   changelogTopics.forEach((topic) => topics.push(topic));
 
+  process.stdout.write(`Fetching Release Management Public API Changelog: `);
   const releaseManagementPublicApiChangelog = await fetch(
     'https://storage.googleapis.com/bitrise-release-management-public-api-docs/changelog.json',
   );
@@ -110,6 +111,7 @@ async function buildChangelog() {
       changelog: changelogLine[createdAt],
     });
   });
+  process.stdout.write(` \x1b[32mdone\x1b[0m (${topics.length})\n`);
 
   topics.sort((a, b) => {
     const aDate = new Date(a.created_at);
