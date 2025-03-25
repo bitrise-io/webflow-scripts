@@ -53,6 +53,11 @@ class ChangelogTagFactory {
       listItemTag.innerHTML = 'Step update';
       return listItemTag;
     }
+    if (tags.includes('api-update')) {
+      const listItemTag = this.tagBlueTemplate.cloneNode(true);
+      listItemTag.innerHTML = 'API update';
+      return listItemTag;
+    }
     if (tags.includes('deprecation')) {
       const listItemTag = this.tagYelowTemplate.cloneNode(true);
       listItemTag.innerHTML = 'Deprecation';

@@ -27,10 +27,24 @@ class ChangelogService {
    * @returns {Promise<ChangelogTopic>}
    */
   async loadTopic(topicSlugId) {
+    if (topicSlugId.match(/rm-\d+/)) {
+      const url = `${this.apiBase}/changelog.json`;
+      const response = await fetch(url);
+      const json = await response.json();
+      const topicJson = json.topic_list.topics.filter((topic) => topic.id === 0 && topic.slug === topicSlugId);
+      if (topicJson.length > 0) {
+        return new ChangelogTopic(topicJson[0]);
+      }
+    }
+
     const url = `${this.apiBase}/changelog/api/t/${topicSlugId}.json`;
     const response = await fetch(url);
     const json = await response.json();
-    return new ChangelogTopic(json);
+    if (!json.errors || json.errors.length === 0) {
+      return new ChangelogTopic(json);
+    }
+
+    throw new Error(`Topic not found: ${topicSlugId}`);
   }
 }
 

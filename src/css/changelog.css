@@ -150,6 +150,62 @@ aside.onebox .onebox-body h4 {
 
 /* aside.ondebox -- end */
 
+.rmcl {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-bottom: 2rem;
+}
+
+.rmcl h3, .rmcl p {
+  margin: 0;
+}
+
+.rmcl-http-method-tag {
+  background: #666;
+  border-radius: 3px;
+  padding: 0 10px;
+  color: #fff;
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: bold;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+}
+.rmcl-http-method-tag.rmcl-http-method-get {
+  background: #61AFFE;
+}
+.rmcl-http-method-tag.rmcl-http-method-post {
+  background: #49CC90;
+}
+.rmcl-http-method-tag.rmcl-http-method-put {
+  background: #FAA130;
+}
+.rmcl-http-method-tag.rmcl-http-method-delete {
+  background: #F93E3E;
+}
+.rmcl-http-method-tag.rmcl-http-method-patch {
+  background: #50E3C2;
+}
+
+.rmcl-api-endpoint-url {
+  font-family: IBM Plex Mono, monospace;
+  font-size: 1rem;
+  color: #666;
+  font-weight: bold;
+}
+.rmcl-inline-code {
+  font-family: IBM Plex Mono, monospace;
+  font-size: .9rem;
+  color: #666;
+  background: var(--neutral-95);
+  border-radius: 3px;
+  padding: 0 5px;
+  display: inline-block;
+  line-height: 1.5;
+}
+
 /* skeleton loading */ 
 
 .changelog-loading {

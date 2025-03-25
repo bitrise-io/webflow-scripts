@@ -55,9 +55,17 @@ changelogService.loadTopic(topicSlugId).then((topic) => {
     lightboxWrapper.replaceWith(figure);
   });
 
-  document.getElementById('changelog-topic-leave-feedback-button').href =
-    `https://discuss.bitrise.io/t/${topic.slug}/${topic.id}`;
-  document.getElementById('changelog-topic-leave-feedback-button').target = '_blank';
+  if (topic.id === 0) {
+    document.querySelector('.changelog-topic-footer > div').textContent = 'Read more on Release Management API';
+    document.getElementById('changelog-topic-leave-feedback-button').href =
+      'https://api.bitrise.io/release-management/api-docs/index.html';
+    document.getElementById('changelog-topic-leave-feedback-button').target = '_blank';
+    document.getElementById('changelog-topic-leave-feedback-button').textContent = 'API Documentation';
+  } else {
+    document.getElementById('changelog-topic-leave-feedback-button').href =
+      `https://discuss.bitrise.io/t/${topic.slug}/${topic.id}`;
+    document.getElementById('changelog-topic-leave-feedback-button').target = '_blank';
+  }
 });
 
 if (import.meta.webpackHot) {

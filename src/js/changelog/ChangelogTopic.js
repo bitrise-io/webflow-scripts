@@ -9,9 +9,10 @@
  *  created_at: string,
  *  pinned: boolean,
  *  tags: string[],
- *  post_stream: {
+ *  post_stream?: {
  *    posts: DiscoursePost[]
  *  }
+ *  changelog?: RMAPIChangelog[]
  * }} DiscourseTopic
  */
 
@@ -20,6 +21,19 @@
  *  id: number,
  *  cooked: string
  * }} DiscoursePost
+ */
+
+/**
+ * @typedef {{
+ *  id: string,
+ *  level: number,
+ *  operation: string,
+ *  operationId: string,
+ *  path: string,
+ *  section: string,
+ *  source: string,
+ *  text: string
+ * }} RMAPIChangelog
  */
 
 class ChangelogTopic {
@@ -59,6 +73,9 @@ class ChangelogTopic {
 
   /** @returns {string} */
   get webflowUrl() {
+    if (this.id === 0) {
+      return `/changelog/${this.slug}`;
+    }
     return `/changelog/${this.slug}/${this.id}`;
   }
 
@@ -77,13 +94,29 @@ class ChangelogTopic {
 
   /** @returns {string} */
   get content() {
+    if (this.data.slug.match(/rm-\d+/) && this.data.changelog) {
+      return this.data.changelog
+        .map(
+          (changelog) => `
+          <div class='rmcl'>
+            <h3>${changelog.operationId}</h3>
+            <div>
+              <span class="rmcl-http-method-tag rmcl-http-method-${changelog.operation.toLocaleLowerCase()}">${changelog.operation}</span>
+              <span class="rmcl-api-endpoint-url">${changelog.path}</span>
+            </div>
+            <p>${changelog.text.replaceAll(/'([^']+)'/g, '<span class="rmcl-inline-code">$1</span>')}</p>
+          </div>
+      `,
+        )
+        .join('');
+    }
     return this.posts.length ? this.posts[0].cooked : '';
   }
 
   /** @returns {ChangelogTag[]} */
   get tags() {
     return (this.data.tags || []).filter((tag) =>
-      ['new-feature', 'feature-update', 'step-update', 'deprecation'].includes(tag),
+      ['new-feature', 'feature-update', 'step-update', 'deprecation', 'api-update'].includes(tag),
     );
   }
 }
