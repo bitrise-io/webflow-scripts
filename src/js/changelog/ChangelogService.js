@@ -31,7 +31,9 @@ class ChangelogService {
       const url = `${this.apiBase}/changelog.json`;
       const response = await fetch(url);
       const json = await response.json();
-      const topicJson = json.topic_list.topics.filter((topic) => topic.id === 0 && topic.slug === topicSlugId);
+      const topicJson = json.topic_list.topics.filter(
+        (topic) => topic.id === 0 && topic.slug === topicSlugId.replace(/\/0/, ''),
+      );
       if (topicJson.length > 0) {
         return new ChangelogTopic(topicJson[0]);
       }
