@@ -6,6 +6,7 @@ class ChangelogTagFactory {
     this.tagPurpleFilledTemplate = this.initTag('#changelog-tag-purple-filled');
     this.tagPurpleTemplate = this.initTag('#changelog-tag-purple');
     this.tagBlueTemplate = this.initTag('#changelog-tag-blue');
+    this.tagGreenTemplate = this.initTag('#changelog-tag-green');
     this.tagYelowTemplate = this.initTag('#changelog-tag-yellow');
   }
 
@@ -54,7 +55,7 @@ class ChangelogTagFactory {
       return listItemTag;
     }
     if (tags.includes('api-update')) {
-      const listItemTag = this.tagBlueTemplate.cloneNode(true);
+      const listItemTag = this.tagGreenTemplate.cloneNode(true);
       listItemTag.innerHTML = 'API update';
       return listItemTag;
     }
