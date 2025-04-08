@@ -2,6 +2,7 @@ import DepartmentSectionFactory from './career-maps/DepartmentSectionFactory';
 import { fancyConsoleLog } from './shared/common';
 
 import '../css/career-maps.css';
+import { createSlug } from './career-maps/tools';
 
 fancyConsoleLog('Bitrise.io Career Maps');
 
@@ -9,6 +10,7 @@ fancyConsoleLog('Bitrise.io Career Maps');
  * @typedef {{
  *  name: string,
  *  description?: string,
+ *  priority?: number,
  *  teams: Team[]
  * }} Department
  */
@@ -48,12 +50,6 @@ fancyConsoleLog('Bitrise.io Career Maps');
  *  highEnd: number,
  * }} SalaryRange
  */
-
-/**
- * @param {string} text
- * @returns {string}
- */
-const createSlug = (text) => text.toLowerCase().replace(/ /g, '-');
 
 /**
  *
@@ -156,30 +152,30 @@ const resetDocument = [];
  * @param {Team} team
  * @param {Job} job
  */
-const renderJobDropdown = (templateContainer, team, job) => {
-  const jobList = Object.keys(team.jobs).map((jobName) => {
-    return {
-      slug: createSlug(jobName),
-      name: jobName,
-      defaultLevelSlug: createSlug(Object.keys(team.jobs[jobName]).shift()),
-    };
-  });
+// const renderJobDropdown = (templateContainer, team, job) => {
+//   const jobList = Object.keys(team.jobs).map((jobName) => {
+//     return {
+//       slug: createSlug(jobName),
+//       name: jobName,
+//       defaultLevelSlug: createSlug(Object.keys(team.jobs[jobName]).shift()),
+//     };
+//   });
 
-  const jobsDropdown = templateContainer.querySelector('#cm-jobs-dropdown');
-  jobsDropdown.querySelector('.w-dropdown-toggle .replace-text').textContent = job.name;
-  const jobsDropownItemTemplate = jobsDropdown.querySelector('.w-dropdown-link').cloneNode(true);
-  jobsDropdown.querySelector('.w-dropdown-list').innerHTML = '';
-  jobList.forEach((jobListItem) => {
-    const jobDropdownItem = jobsDropownItemTemplate.cloneNode(true);
-    jobDropdownItem.textContent = jobListItem.name;
-    jobDropdownItem.setAttribute('data-dropdown', jobListItem.slug);
-    jobDropdownItem.href = `/careers/maps/${team.slug}/${jobListItem.slug}/${jobListItem.defaultLevelSlug}`;
-    jobsDropdown.querySelector('.w-dropdown-list').appendChild(jobDropdownItem);
-  });
-  jobsDropdown.querySelector('.w-dropdown-toggle').addEventListener('click', () => {
-    jobsDropdown.classList.toggle('w--open');
-  });
-};
+//   const jobsDropdown = templateContainer.querySelector('#cm-jobs-dropdown');
+//   jobsDropdown.querySelector('.w-dropdown-toggle .replace-text').textContent = job.name;
+//   const jobsDropownItemTemplate = jobsDropdown.querySelector('.w-dropdown-link').cloneNode(true);
+//   jobsDropdown.querySelector('.w-dropdown-list').innerHTML = '';
+//   jobList.forEach((jobListItem) => {
+//     const jobDropdownItem = jobsDropownItemTemplate.cloneNode(true);
+//     jobDropdownItem.textContent = jobListItem.name;
+//     jobDropdownItem.setAttribute('data-dropdown', jobListItem.slug);
+//     jobDropdownItem.href = `/careers/maps/${team.slug}/${jobListItem.slug}/${jobListItem.defaultLevelSlug}`;
+//     jobsDropdown.querySelector('.w-dropdown-list').appendChild(jobDropdownItem);
+//   });
+//   jobsDropdown.querySelector('.w-dropdown-toggle').addEventListener('click', () => {
+//     jobsDropdown.classList.toggle('w--open');
+//   });
+// };
 
 /**
  *
@@ -189,29 +185,29 @@ const renderJobDropdown = (templateContainer, team, job) => {
  * @param {Level} level
  * @returns {() => void}
  */
-const renderLevelTabs = (templateContainer, team, job, level) => {
-  const levelTabs = templateContainer.querySelector('#cm-level-tabs');
-  const originalTemplateContent = levelTabs.innerHTML;
+// const renderLevelTabs = (templateContainer, team, job, level) => {
+//   const levelTabs = templateContainer.querySelector('#cm-level-tabs');
+//   const originalTemplateContent = levelTabs.innerHTML;
 
-  const levelTabClassName = levelTabs.querySelector('#cm-level-tab').className;
-  const selectedLevelTabClassName = levelTabs.querySelector('#cm-level-tab-selected').className;
-  const levelTabTemplate = levelTabs.querySelector('#cm-level-tab').cloneNode(true);
-  levelTabTemplate.removeAttribute('id');
+//   const levelTabClassName = levelTabs.querySelector('#cm-level-tab').className;
+//   const selectedLevelTabClassName = levelTabs.querySelector('#cm-level-tab-selected').className;
+//   const levelTabTemplate = levelTabs.querySelector('#cm-level-tab').cloneNode(true);
+//   levelTabTemplate.removeAttribute('id');
 
-  levelTabs.innerHTML = '';
+//   levelTabs.innerHTML = '';
 
-  job.levels.forEach((jobLevel) => {
-    const levelTab = levelTabTemplate.cloneNode(true);
-    levelTab.textContent = jobLevel.name;
-    levelTab.href = `/careers/maps/${team.slug}/${job.slug}/${jobLevel.slug}`;
-    levelTab.className = jobLevel.slug === level.slug ? selectedLevelTabClassName : levelTabClassName;
-    levelTabs.appendChild(levelTab);
-  });
+//   job.levels.forEach((jobLevel) => {
+//     const levelTab = levelTabTemplate.cloneNode(true);
+//     levelTab.textContent = jobLevel.name;
+//     levelTab.href = `/careers/maps/${team.slug}/${job.slug}/${jobLevel.slug}`;
+//     levelTab.className = jobLevel.slug === level.slug ? selectedLevelTabClassName : levelTabClassName;
+//     levelTabs.appendChild(levelTab);
+//   });
 
-  return () => {
-    levelTabs.innerHTML = originalTemplateContent;
-  };
-};
+//   return () => {
+//     levelTabs.innerHTML = originalTemplateContent;
+//   };
+// };
 
 /**
  *
@@ -230,6 +226,9 @@ const formatSalary = (salary) => {
  * @param {Level} level
  */
 const renderLevelDescription = (level) => {
+  const levelHeading = document.querySelector('#cm-level-heading');
+  levelHeading.textContent = level.name;
+
   const compensationSection = document.querySelector('#cm-compensation-section');
   const salaryTableContainer = compensationSection.querySelector('#cm-compensation-table');
   const salaryTable = salaryTableContainer.querySelector('table');
@@ -301,6 +300,92 @@ const renderLevelDescription = (level) => {
   });
 };
 
+/**
+ *
+ * @param {HTMLElement} newTeamSidebarJobSection
+ * @param {string} jobName
+ * @param {Team} team
+ * @param {Job} job
+ * @param {Level} level
+ * @returns {HTMLElement}
+ */
+const renderTeamSidebarJobSection = (newTeamSidebarJobSection, jobName, team, job, level) => {
+  const teamSidebarJobSectionHeading = newTeamSidebarJobSection.querySelector('#cm-team-sidebar-job-heading');
+  teamSidebarJobSectionHeading.textContent = teamSidebarJobSectionHeading.textContent.replace('{job_name}', job.name);
+  teamSidebarJobSectionHeading.removeAttribute('id');
+
+  const teamSidebarLevelsList = newTeamSidebarJobSection.querySelector('#cm-team-sidebar-level-list');
+  teamSidebarLevelsList.removeAttribute('id');
+  const teamSidebarLevelsListItemTemplate = teamSidebarLevelsList
+    .querySelector('#cm-team-sidebar-level-item')
+    .cloneNode(true);
+  teamSidebarLevelsListItemTemplate.removeAttribute('id');
+  const teamSidebarLevelsListItemSelectedClassName = teamSidebarLevelsListItemTemplate.querySelector('a').className;
+  teamSidebarLevelsListItemTemplate.querySelector('a').className = '';
+  teamSidebarLevelsList.innerHTML = '';
+  Object.keys(team.jobs[jobName]).forEach((levelShortName) => {
+    const jobLevel = team.jobs[jobName][levelShortName];
+    const teamSidebarLevelsListItem = teamSidebarLevelsListItemTemplate.cloneNode(true);
+    const teamSidebarLevelsListItemLink = teamSidebarLevelsListItem.querySelector('a');
+    teamSidebarLevelsListItemLink.textContent = teamSidebarLevelsListItemLink.textContent.replace(
+      '{level_name}',
+      jobLevel.name,
+    );
+    teamSidebarLevelsListItemLink.href = `/careers/maps/${team.slug}/${job.slug}/${createSlug(levelShortName)}`;
+    if (jobLevel.name === level.name) {
+      teamSidebarLevelsListItemLink.className = teamSidebarLevelsListItemSelectedClassName;
+    }
+    teamSidebarLevelsList.appendChild(teamSidebarLevelsListItem);
+  });
+
+  return newTeamSidebarJobSection;
+};
+
+/**
+ *
+ * @param {Team} team
+ * @param {Job} job
+ * @param {Level} level
+ * @returns {() => void}
+ */
+const rednerTeamSidebar = (team, job, level) => {
+  const jobSidebar = document.querySelector('#cm-team-sidebar');
+  const jobSidebarOriginalContent = jobSidebar.innerHTML;
+
+  const teamSidebarJobSection = jobSidebar.querySelector('#cm-team-sidebar-job-section');
+  const teamSidebarJobSectionContainer = teamSidebarJobSection.parentNode;
+  const teamSidebarJobSectionTemplate = teamSidebarJobSection.cloneNode(true);
+  teamSidebarJobSectionTemplate.removeAttribute('id');
+  teamSidebarJobSectionContainer.innerHTML = '';
+
+  const teamSidebarToggleButton = jobSidebar.querySelector('#cm-sidebar-toggle');
+  teamSidebarToggleButton.addEventListener('click', () => {
+    const dividerDisplay = jobSidebar.querySelector('.cm-sidebar-divider').style.display;
+    if (dividerDisplay === '' || dividerDisplay === 'none') {
+      jobSidebar.querySelector('.cm-sidebar-divider').style.display = 'block';
+      jobSidebar.querySelector('.cm-sidebar-list').style.display = 'block';
+    } else {
+      jobSidebar.querySelector('.cm-sidebar-divider').style.display = 'none';
+      jobSidebar.querySelector('.cm-sidebar-list').style.display = 'none';
+    }
+  });
+
+  Object.keys(team.jobs).forEach((jobName) => {
+    const newTeamSidebarJobSection = renderTeamSidebarJobSection(
+      teamSidebarJobSectionTemplate.cloneNode(true),
+      jobName,
+      team,
+      job,
+      level,
+    );
+    teamSidebarJobSectionContainer.appendChild(newTeamSidebarJobSection);
+  });
+
+  return () => {
+    jobSidebar.innerHTML = jobSidebarOriginalContent;
+  };
+};
+
 (async () => {
   const response = await fetch('/careers/maps/data.json');
   /** @type {Department[]} */
@@ -312,6 +397,21 @@ const renderLevelDescription = (level) => {
   });
 
   if (document.location.pathname.match(/^\/careers\/maps\/?$/)) {
+    careerMaps.forEach((department) => {
+      if (department.name === 'Research and Development') department.priority = 1;
+      if (department.name === 'Go To Market') department.priority = 2;
+      if (department.name === 'General & Administrative') {
+        department.name = 'General and Administrative';
+        department.priority = 3;
+      }
+      return department;
+    });
+    careerMaps.sort((a, b) => {
+      if (a.priority && b.priority) {
+        return a.priority - b.priority;
+      }
+      return a.name.localeCompare(b.name);
+    });
     resetDocument.push(renderCareerMaps(careerMaps));
     return;
   }
@@ -328,14 +428,15 @@ const renderLevelDescription = (level) => {
       window.history.replaceState({}, '', `/careers/maps/${teamSlug}/${job.slug}/${level.slug}`);
     }
 
-    const templateContainer = document.querySelector('#cm-jobs-dropdown').parentNode;
+    // const templateContainer = document.querySelector('#cm-jobs-dropdown').parentNode;
 
     document.querySelector('#cm-team-page-title').textContent = document
       .querySelector('#cm-team-page-title')
       .textContent.replace('{team_name}', team.name);
 
-    resetDocument.push(renderJobDropdown(templateContainer, team, job));
-    resetDocument.push(renderLevelTabs(templateContainer, team, job, level));
+    resetDocument.push(rednerTeamSidebar(team, job, level));
+    // resetDocument.push(renderJobDropdown(templateContainer, team, job));
+    // resetDocument.push(renderLevelTabs(templateContainer, team, job, level));
     resetDocument.push(renderLevelDescription(level));
   }
 })();

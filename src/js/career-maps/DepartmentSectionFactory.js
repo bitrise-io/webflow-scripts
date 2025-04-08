@@ -1,3 +1,5 @@
+import { createSlug } from './tools';
+
 class DepartmentSectionFactory {
   /**
    * @param {HTMLElement} templateElement
@@ -55,6 +57,27 @@ class DepartmentSectionFactory {
         /** @type {HTMLElement} */
         const teamLinkElement = teamCardElement.querySelector('[data-template-id="cm-team-link"]');
         teamLinkElement.textContent = teamLinkElement.textContent.replace('{team_name}', team.name);
+        teamLinkElement.href = `/careers/maps/${team.slug}`;
+
+        /** @type {HTMLUListElement} */
+        const teamJobListElement = teamCardElement.querySelector('[data-template-id="cm-team-job-list"]');
+        /** @type {HTMLLIElement} */
+        const teamJobListItemTemplate = teamJobListElement
+          .querySelector('[data-template-id="cm-team-job-list-item"]')
+          .cloneNode(true);
+        teamJobListElement.innerHTML = '';
+        Object.keys(team.jobs).forEach((jobName) => {
+          /** @type {HTMLLIElement} */
+          const teamJobListItemElement = teamJobListItemTemplate.cloneNode(true);
+          /** @type {HTMLAnchorElement} */
+          const teamJobListItemLinkElement = teamJobListItemElement.querySelector('a');
+          teamJobListItemLinkElement.textContent = teamJobListItemLinkElement.textContent.replace(
+            '{job_name}',
+            jobName,
+          );
+          teamJobListItemLinkElement.href = `/careers/maps/${team.slug}/${createSlug(jobName)}`;
+          teamJobListElement.appendChild(teamJobListItemElement);
+        });
 
         teamGrid.appendChild(teamCardElement);
       }
