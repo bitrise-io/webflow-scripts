@@ -20,7 +20,7 @@
 }
 #cm-way-of-working-description table tr th:first-child,
 #cm-way-of-working-description table tr td:first-child {
-  width: 25%;
+  /* width: 25%; */
 }
 
 
