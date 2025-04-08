@@ -311,7 +311,7 @@ const renderLevelDescription = (level) => {
  */
 const renderTeamSidebarJobSection = (newTeamSidebarJobSection, jobName, team, job, level) => {
   const teamSidebarJobSectionHeading = newTeamSidebarJobSection.querySelector('#cm-team-sidebar-job-heading');
-  teamSidebarJobSectionHeading.textContent = teamSidebarJobSectionHeading.textContent.replace('{job_name}', job.name);
+  teamSidebarJobSectionHeading.textContent = teamSidebarJobSectionHeading.textContent.replace('{job_name}', jobName);
   teamSidebarJobSectionHeading.removeAttribute('id');
 
   const teamSidebarLevelsList = newTeamSidebarJobSection.querySelector('#cm-team-sidebar-level-list');
