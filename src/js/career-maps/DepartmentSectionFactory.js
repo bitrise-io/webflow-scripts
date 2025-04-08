@@ -7,6 +7,7 @@ class DepartmentSectionFactory {
   constructor(templateElement) {
     /** @type {HTMLElement} */
     this.templateElement = templateElement.cloneNode(true);
+    this.templateElement.className = 'cm-loaded'; // remove .cm-loading
     this.templateElement.style.display = 'none';
   }
 
@@ -84,41 +85,6 @@ class DepartmentSectionFactory {
     });
 
     return departmentSection;
-  }
-
-  /**
-   * Creates a loading skeleton for the department section
-   * @returns {HTMLElement}
-   */
-  createLoadingSection() {
-    /** @type {HTMLElement} */
-    const loadingSection = this.templateElement.cloneNode(true);
-    loadingSection.style.display = '';
-
-    /** @type {HTMLElement} */
-    const departmentNameElement = loadingSection.querySelector('[data-template-id="cm-department-name"]');
-    departmentNameElement.innerHTML = '<span class="cm-loading">Loading department...</span>';
-
-    /** @type {HTMLElement} */
-    const departmentDescriptionElement = loadingSection.querySelector('[data-template-id="cm-department-description"]');
-    departmentDescriptionElement.remove();
-
-    /** @type {HTMLElement} */
-    const teamGrid = loadingSection.querySelector('[data-template-id="cm-team-grid"]');
-
-    /** @type {HTMLElement} */
-    const teamCardTemplate = teamGrid.querySelector('[data-template-id="cm-team"]').cloneNode(true);
-
-    teamGrid.innerHTML = '';
-    for (let i = 0; i < 3; i++) {
-      /** @type {HTMLAnchorElement} */
-      const teamCardElement = teamCardTemplate.cloneNode(true);
-      teamCardElement.href = '#javascript:void(0)';
-      teamCardElement.className += ' cm-loading';
-      teamGrid.appendChild(teamCardElement);
-    }
-
-    return loadingSection;
   }
 }
 

@@ -28,18 +28,55 @@
 
 /* skeleton loading */ 
 
-.cm-loading {
+.cm-loading #cm-level-heading,
+.cm-loading #cm-tenure-section > *,
+.cm-loading #cm-compensation-section > *,
+.cm-loading #cm-way-of-working-section > *,
+.cm-loading .cm-sidebar-list .heading-style-h5 {
+  margin: 0 auto 0 0;
+}
+.cm-loading #cm-compensation-table {
+  width: 100%;
+}
+.cm-loading [data-template-id="cm-department-description"],
+.cm-loading [data-template-id="cm-department-name"] {
+  margin: 0 auto;
+}
+.cm-loading #cm-level-heading,
+.cm-loading #cm-tenure-section > *,
+.cm-loading #cm-compensation-section > *,
+.cm-loading #cm-way-of-working-section > *,
+.cm-loading .cm-sidebar-list .heading-style-h5,
+.cm-loading .cm-sidebar-list ul li,
+.cm-loading [data-template-id="cm-team"],
+.cm-loading [data-template-id="cm-department-description"],
+.cm-loading [data-template-id="cm-department-name"] {
   color: transparent;
   background: #dedede;
   border-radius: 5px;
   position: relative;
   overflow: hidden;
 }
-.cm-loading * {
+.cm-loading #cm-level-heading *,
+.cm-loading #cm-tenure-section > * *,
+.cm-loading #cm-compensation-section > * *,
+.cm-loading #cm-way-of-working-section > * *,
+.cm-loading .cm-sidebar-list .heading-style-h5 *,
+.cm-loading .cm-sidebar-list ul li *,
+.cm-loading [data-template-id="cm-team"] *,
+.cm-loading [data-template-id="cm-department-description"] *,
+.cm-loading [data-template-id="cm-department-name"] * {
   visibility: hidden;
 }
-
-.cm-loading:before {
+.cm-loading #cm-level-heading:before,
+.cm-loading #cm-tenure-section > *:before,
+.cm-loading #cm-compensation-section > *:before,
+.cm-loading #cm-way-of-working-section > *:before,
+.cm-loading .cm-sidebar-list .heading-style-h5:before,
+.cm-loading .cm-sidebar-list ul li:before,
+.cm-loading [data-template-id="cm-team"]:before,
+.cm-loading [data-template-id="cm-department-description"]:before,
+.cm-loading [data-template-id="cm-department-name"]:before {
   content: "";
   position: absolute;
   top: 0;

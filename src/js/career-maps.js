@@ -67,11 +67,6 @@ const renderCareerMaps = (departments) => {
   const dsf = new DepartmentSectionFactory(departmentTemplate);
 
   departmentListContainer.innerHTML = '';
-
-  const loadingSection = dsf.createLoadingSection();
-  departmentListContainer.appendChild(loadingSection);
-
-  departmentListContainer.innerHTML = '';
   departments.forEach((department) => {
     const departmentSection = dsf.createDepartmentSection(department);
     departmentListContainer.appendChild(departmentSection);
@@ -288,6 +283,8 @@ const renderLevelDescription = (level) => {
       if (row.querySelectorAll('th').length > 1) {
         row.querySelectorAll('th')[0].className = 'fs-table_header';
         row.querySelectorAll('th')[1].className = 'fs-table_header';
+      } else if (row.querySelectorAll('th').length === 1 && row.querySelectorAll('th')[0].colSpan === 2) {
+        row.querySelectorAll('th')[0].className = 'fs-table_header';
       } else if (row.querySelectorAll('td').length > 1) {
         row.querySelectorAll('td')[0].className = 'fs-table_header';
         row.querySelectorAll('td')[1].className = 'fs-table_cell is-white';
@@ -429,14 +426,17 @@ const rednerTeamSidebar = (team, job, level) => {
     }
 
     // const templateContainer = document.querySelector('#cm-jobs-dropdown').parentNode;
+    // resetDocument.push(renderJobDropdown(templateContainer, team, job));
+    // resetDocument.push(renderLevelTabs(templateContainer, team, job, level));
 
+    document.querySelector('.cm-loading').className = 'cm-loaded';
+    resetDocument.push(() => {
+      document.querySelector('.cm-loaded').className = 'cm-loading';
+    });
     document.querySelector('#cm-team-page-title').textContent = document
       .querySelector('#cm-team-page-title')
       .textContent.replace('{team_name}', team.name);
-
     resetDocument.push(rednerTeamSidebar(team, job, level));
-    // resetDocument.push(renderJobDropdown(templateContainer, team, job));
-    // resetDocument.push(renderLevelTabs(templateContainer, team, job, level));
     resetDocument.push(renderLevelDescription(level));
   }
 })();
