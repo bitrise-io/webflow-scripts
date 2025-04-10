@@ -1,6 +1,7 @@
-import { detectTopicFromUrl, fancyConsoleLog } from './shared/common';
+import { detectTopicFromUrl, fancyConsoleLog, formatDate } from './shared/common';
 
 import '../css/stacks.css';
+import StacksService from './stacks/StacksService';
 
 const stacksAPIBase = 'https://stacks.bitrise.io/';
 
@@ -43,29 +44,35 @@ const formatHtml = (html) => {
   const pageType = pagePath.split('/')[0];
 
   if (pageType === '') {
-    const response = await fetch(`${stacksAPIBase}index.html`);
-    /** @type {StacksPageData} */
-    const html = await response.text();
-    const match = html.match(/<main.*\/main>/gms);
+    const stackService = new StacksService();
+    const stacksLinks = await stackService.fetchStacksIndexJson();
 
-    const dataContainerId = 'stacks-data-container';
-    let dataContainer = document.getElementById(dataContainerId);
-    if (!dataContainer) {
-      dataContainer = document.createElement('div');
-      dataContainer.style.display = 'none';
-      dataContainer.id = dataContainerId;
-      document.querySelector('body').append(dataContainer);
-    }
-    [dataContainer.innerHTML] = match;
+    const announcementsList = document.getElementById('announcement-list');
+    const announcementTemplate = document.getElementById('announcement-template').cloneNode(true);
+    announcementTemplate.removeAttribute('id');
+    announcementsList.innerHTML = '';
 
-    const stacksLinks = {
-      announcements: {},
-      xcode: {},
-      ubuntu: {},
-      aws: {},
-      tools: {},
-      tips: {},
-    };
+    Object.values(stacksLinks.announcements).forEach((announcementLink) => {
+      const announcement = announcementTemplate.cloneNode(true);
+      const [path, title, date] = announcementLink;
+      announcement.querySelector('.changelog-title').innerHTML = title;
+      if (date) announcement.querySelector('.changelog-date').innerHTML = formatDate(new Date(date));
+      else announcement.querySelector('.changelog-date').remove();
+      announcement.querySelector('a').href = `/stacks/${path}`;
+      announcementsList.appendChild(announcement);
+    });
+
+    const tipsList = document.getElementById('stack-tips');
+    const tipTemplate = document.getElementById('stack-tip-template').cloneNode(true);
+    tipTemplate.removeAttribute('id');
+    tipsList.innerHTML = '';
+    Object.values(stacksLinks.tips).forEach((tipLink) => {
+      const tip = tipTemplate.cloneNode(true);
+      const [path, title] = tipLink;
+      tip.querySelector('a').innerHTML = title;
+      tip.querySelector('a').href = `/stacks/${path}`;
+      tipsList.appendChild(tip);
+    });
 
     const xcodeStackList = document.getElementById('xcode-stack-list');
     const xcodeStableOnlyStack = document.getElementById('xcode-stable-only').cloneNode(true);
@@ -108,127 +115,96 @@ const formatHtml = (html) => {
       }
     });
 
-    [...dataContainer.querySelectorAll('a')]
-      .map((link) => {
-        return [new URL(link.href).pathname.replace(/\/$/, ''), link.innerHTML];
-      })
-      .forEach(([pathname, title]) => {
-        const announcementsMatch = pathname.match(/announcements\/([^/]+)/);
-        if (announcementsMatch) {
-          stacksLinks.announcements[announcementsMatch[1]] = [pathname, title];
-        }
-        const toolsMatch = pathname.match(/tools\/([^/]+)/);
-        if (toolsMatch) {
-          stacksLinks.tools[toolsMatch[1]] = [pathname, title];
-        }
-        const tipsMatch = pathname.match(/tips\/([^/]+)/);
-        if (tipsMatch) {
-          stacksLinks.tips[tipsMatch[1]] = [pathname, title];
-        }
-        const awsMatch = pathname.match(/(stack_reports|changelogs)\/aws\/([^/]+)/);
-        if (awsMatch) {
-          const page = awsMatch[1];
-          const version = awsMatch[2];
-          if (!stacksLinks.aws[version]) stacksLinks.aws[version] = {};
-          stacksLinks.aws[version].title = title.replace(/ changelogs?/, '').trim();
-          stacksLinks.aws[version][page] = pathname;
-        }
-        const xcodeMatch = pathname.match(/(stack_reports|changelogs)\/([^/]+xcode[^/]+)/);
-        if (xcodeMatch) {
-          const page = xcodeMatch[1];
-          const edge = xcodeMatch[2].match(/-edge/) ? 'edge' : 'stable';
-          const version = xcodeMatch[2].replace(/-edge/, '');
-          if (!stacksLinks.xcode[version]) stacksLinks.xcode[version] = {};
-          if (!stacksLinks.xcode[version][edge]) stacksLinks.xcode[version][edge] = {};
-          stacksLinks.xcode[version].title = title.replace(/ with edge updates| changelogs?/, '').trim();
-          stacksLinks.xcode[version][edge][page] = pathname;
-        }
-        const ubuntuMatch = pathname.match(/(stack_reports|changelogs)\/(linux[^/]+)/);
-        if (ubuntuMatch) {
-          const page = ubuntuMatch[1];
-          const version = ubuntuMatch[2];
-          if (!stacksLinks.ubuntu[version]) stacksLinks.ubuntu[version] = {};
-          stacksLinks.ubuntu[version].title = title.replace(/ changelogs?/, '').trim();
-          stacksLinks.ubuntu[version][page] = pathname;
-        }
-      });
-
-    dataContainer.remove();
+    const renderStackLinks = (linksParent, reportsLink, changelogsLink) => {
+      const reportsLinkElement = linksParent.querySelector('.stack-link-reports');
+      const changelogsLinkElement = linksParent.querySelector('.stack-link-changelogs');
+      if (reportsLink) {
+        reportsLinkElement.href = `/stacks${reportsLink[0]}`;
+        reportsLinkElement.innerHTML = `${reportsLink[1]}`;
+        if (reportsLink[1]) reportsLinkElement.title = new Date(reportsLink[1]).toLocaleDateString();
+        reportsLinkElement.style.visibility = 'visible';
+      } else {
+        linksParent.querySelector('.stack-links-separator').style.visibility = 'hidden';
+        reportsLinkElement.style.visibility = 'hidden';
+      }
+      if (changelogsLink) {
+        changelogsLinkElement.href = `/stacks${changelogsLink[0]}`;
+        changelogsLinkElement.innerHTML = `${changelogsLink[1]}`;
+        if (changelogsLink[1]) changelogsLinkElement.title = new Date(changelogsLink[1]).toLocaleDateString();
+        changelogsLinkElement.style.visibility = 'visible';
+      } else {
+        linksParent.querySelector('.stack-links-separator').style.visibility = 'hidden';
+        changelogsLinkElement.style.visibility = 'hidden';
+      }
+    };
 
     Object.keys(stacksLinks.xcode)
       .sort()
-      .forEach((version, index) => {
+      .forEach((version) => {
         if (!stacksLinks.xcode[version].edge) {
           const row = xcodeStableOnlyStack.cloneNode(true);
           row.style.removeProperty('display');
           row.querySelector('.stack-version-title').innerHTML = stacksLinks.xcode[version].title;
-          row.querySelectorAll('.stack-links')[0].querySelector('.stack-link-reports').href =
-            `/stacks${stacksLinks.xcode[version].stable.stack_reports}`;
-          row.querySelectorAll('.stack-links')[0].querySelector('.stack-link-changelogs').href =
-            `/stacks${stacksLinks.xcode[version].stable.changelogs}`;
-          row.className = row.className.replace('stack-row-odd', '');
-          if (index % 2) row.className += ' stack-row-odd';
+          renderStackLinks(
+            row.querySelectorAll('.stack-links')[0],
+            stacksLinks.xcode[version].stable.stack_reports,
+            stacksLinks.xcode[version].stable.changelogs,
+          );
           xcodeStackList.appendChild(row);
         } else if (!stacksLinks.xcode[version].stable) {
           const row = xcodeEdgeOnlyStack.cloneNode(true);
           row.style.removeProperty('display');
           row.querySelector('.stack-version-title').innerHTML = stacksLinks.xcode[version].title;
-          row.querySelectorAll('.stack-links')[1].querySelector('.stack-link-reports').href =
-            `/stacks${stacksLinks.xcode[version].edge.stack_reports}`;
-          row.querySelectorAll('.stack-links')[1].querySelector('.stack-link-changelogs').href =
-            `/stacks${stacksLinks.xcode[version].edge.changelogs}`;
-          row.className = row.className.replace('stack-row-odd', '');
-          if (index % 2) row.className += ' stack-row-odd';
-          xcodeStackList.appendChild(row);
+          renderStackLinks(
+            row.querySelectorAll('.stack-links')[1],
+            stacksLinks.xcode[version].edge.stack_reports,
+            stacksLinks.xcode[version].edge.changelogs,
+          );
         } else {
           const row = xcodeStableAndEdgeStack.cloneNode(true);
           row.style.removeProperty('display');
           row.querySelector('.stack-version-title').innerHTML = stacksLinks.xcode[version].title;
-          row.querySelectorAll('.stack-links')[0].querySelector('.stack-link-reports').href =
-            `/stacks${stacksLinks.xcode[version].stable.stack_reports}`;
-          row.querySelectorAll('.stack-links')[0].querySelector('.stack-link-changelogs').href =
-            stacksLinks.xcode[version].stable.changelogs;
-          row.querySelectorAll('.stack-links')[1].querySelector('.stack-link-reports').href =
-            `/stacks${stacksLinks.xcode[version].edge.stack_reports}`;
-          row.querySelectorAll('.stack-links')[1].querySelector('.stack-link-changelogs').href =
-            `/stacks${stacksLinks.xcode[version].edge.changelogs}`;
-          row.className = row.className.replace('stack-row-odd', '');
-          if (index % 2) row.className += ' stack-row-odd';
+          renderStackLinks(
+            row.querySelectorAll('.stack-links')[0],
+            stacksLinks.xcode[version].stable.stack_reports,
+            stacksLinks.xcode[version].stable.changelogs,
+          );
+          renderStackLinks(
+            row.querySelectorAll('.stack-links')[1],
+            stacksLinks.xcode[version].edge.stack_reports,
+            stacksLinks.xcode[version].edge.changelogs,
+          );
           xcodeStackList.appendChild(row);
         }
       });
 
     Object.keys(stacksLinks.ubuntu)
       .sort()
-      .forEach((version, index) => {
+      .forEach((version) => {
         const row = ubuntuStack.cloneNode(true);
         row.style.removeProperty('display');
         row.querySelector('.stack-version-title').innerHTML = stacksLinks.ubuntu[version].title;
-        row.querySelectorAll('.stack-links')[0].querySelector('.stack-link-reports').href =
-          `/stacks${stacksLinks.ubuntu[version].stack_reports}`;
-        row.querySelectorAll('.stack-links')[0].querySelector('.stack-link-changelogs').href =
-          `/stacks${stacksLinks.ubuntu[version].changelogs}`;
-        row.className = row.className.replace('stack-row-odd', '');
-        if (index % 2) row.className += ' stack-row-odd';
+        renderStackLinks(
+          row.querySelectorAll('.stack-links')[0],
+          stacksLinks.ubuntu[version].stack_reports,
+          stacksLinks.ubuntu[version].changelogs,
+        );
         ubuntuStackList.appendChild(row);
       });
 
     Object.keys(stacksLinks.aws)
       .sort()
-      .forEach((version, index) => {
+      .forEach((version) => {
         const row = awsStack.cloneNode(true);
         row.style.removeProperty('display');
         row.querySelector('.stack-version-title').innerHTML = stacksLinks.aws[version].title;
-        row.querySelectorAll('.stack-links')[0].querySelector('.stack-link-reports').href =
-          `/stacks${stacksLinks.aws[version].stack_reports}`;
-        row.querySelectorAll('.stack-links')[0].querySelector('.stack-link-changelogs').href =
-          `/stacks${stacksLinks.aws[version].changelogs}`;
-        row.className = row.className.replace('stack-row-odd', '');
-        if (index % 2) row.className += ' stack-row-odd';
+        renderStackLinks(
+          row.querySelectorAll('.stack-links')[0],
+          stacksLinks.aws[version].stack_reports,
+          stacksLinks.aws[version].changelogs,
+        );
         awsStackList.appendChild(row);
       });
-
-    console.log(stacksLinks);
   } else if (pageType === 'changelogs' || pageType === 'announcements' || pageType === 'tools' || pageType === 'tips') {
     const response = await fetch(`${stacksAPIBase}${pagePath}/index.json`);
     /** @type {StacksPageData} */

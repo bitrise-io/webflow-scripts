@@ -139,7 +139,7 @@ app.get(/\/.*/, async (req, res) => {
 
         const text = await response.text();
 
-        process.stdout.write(`[info] Serving response with status ${res.statusCode}\n`);
+        process.stdout.write(`[info] Serving ${response.url} with status ${res.statusCode}\n`);
 
         res.end(
           text
