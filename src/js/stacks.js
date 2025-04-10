@@ -23,6 +23,8 @@ const stacksAPIBase = 'https://stacks.bitrise.io/';
  * }} StacksPageData
  */
 
+const resetScripts = [];
+
 const formatHtml = (html) => {
   return html
     .replaceAll(
@@ -48,6 +50,10 @@ const formatHtml = (html) => {
     const stacksLinks = await stackService.fetchStacksIndexJson();
 
     const announcementsList = document.getElementById('announcement-list');
+    const announcementsListOriginalContent = announcementsList.innerHTML;
+    resetScripts.push(() => {
+      announcementsList.innerHTML = announcementsListOriginalContent;
+    });
     const announcementTemplate = document.getElementById('announcement-template').cloneNode(true);
     announcementTemplate.removeAttribute('id');
     announcementsList.innerHTML = '';
@@ -58,14 +64,19 @@ const formatHtml = (html) => {
       announcement.querySelector('.changelog-title').innerHTML = title;
       if (date) announcement.querySelector('.changelog-date').innerHTML = formatDate(new Date(date));
       else announcement.querySelector('.changelog-date').remove();
-      announcement.querySelector('a').href = `/stacks/${path}`;
+      announcement.querySelector('a').href = `/stacks${path}`;
       announcementsList.appendChild(announcement);
     });
 
     const tipsList = document.getElementById('stack-tips');
+    const tipsListOriginalContent = tipsList.innerHTML;
+    resetScripts.push(() => {
+      tipsList.innerHTML = tipsListOriginalContent;
+    });
     const tipTemplate = document.getElementById('stack-tip-template').cloneNode(true);
     tipTemplate.removeAttribute('id');
     tipsList.innerHTML = '';
+
     Object.values(stacksLinks.tips).forEach((tipLink) => {
       const tip = tipTemplate.cloneNode(true);
       const [path, title] = tipLink;
@@ -75,12 +86,18 @@ const formatHtml = (html) => {
     });
 
     const xcodeStackList = document.getElementById('xcode-stack-list');
+    const xcodeStackListOriginalContent = xcodeStackList.innerHTML;
+    resetScripts.push(() => {
+      xcodeStackList.innerHTML = xcodeStackListOriginalContent;
+    });
     const xcodeStableOnlyStack = document.getElementById('xcode-stable-only').cloneNode(true);
     xcodeStableOnlyStack.removeAttribute('id');
     const xcodeStableAndEdgeStack = document.getElementById('xcode-stable-and-edge').cloneNode(true);
     xcodeStableAndEdgeStack.removeAttribute('id');
     const xcodeEdgeOnlyStack = document.getElementById('xcode-edge-only').cloneNode(true);
     xcodeEdgeOnlyStack.removeAttribute('id');
+    const xcodeStackMobileViewOnly = document.getElementById('xcode-mobile-view-only').cloneNode(true);
+    xcodeStackMobileViewOnly.removeAttribute('id');
     [...xcodeStackList.querySelectorAll('.stack-row')].forEach((row) => {
       if (row.className.match(/stack-row-header/)) {
         // leave header
@@ -92,6 +109,10 @@ const formatHtml = (html) => {
     });
 
     const ubuntuStackList = document.getElementById('ubuntu-stack-list');
+    const ubuntuStackListOriginalContent = ubuntuStackList.innerHTML;
+    resetScripts.push(() => {
+      ubuntuStackList.innerHTML = ubuntuStackListOriginalContent;
+    });
     const ubuntuStack = ubuntuStackList.querySelectorAll('.stack-row')[1].cloneNode(true);
     [...ubuntuStackList.querySelectorAll('.stack-row')].forEach((row, index) => {
       if (row.className.match(/stack-row-header/)) {
@@ -104,6 +125,10 @@ const formatHtml = (html) => {
     });
 
     const awsStackList = document.getElementById('aws-stack-list');
+    const awsStackListOriginalContent = awsStackList.innerHTML;
+    resetScripts.push(() => {
+      awsStackList.innerHTML = awsStackListOriginalContent;
+    });
     const awsStack = awsStackList.querySelectorAll('.stack-row')[1].cloneNode(true);
     [...awsStackList.querySelectorAll('.stack-row')].forEach((row, index) => {
       if (row.className.match(/stack-row-header/)) {
@@ -142,6 +167,7 @@ const formatHtml = (html) => {
       .sort()
       .forEach((version) => {
         if (!stacksLinks.xcode[version].edge) {
+          // stable only
           const row = xcodeStableOnlyStack.cloneNode(true);
           row.style.removeProperty('display');
           row.querySelector('.stack-version-title').innerHTML = stacksLinks.xcode[version].title;
@@ -152,6 +178,7 @@ const formatHtml = (html) => {
           );
           xcodeStackList.appendChild(row);
         } else if (!stacksLinks.xcode[version].stable) {
+          // edge only
           const row = xcodeEdgeOnlyStack.cloneNode(true);
           row.style.removeProperty('display');
           row.querySelector('.stack-version-title').innerHTML = stacksLinks.xcode[version].title;
@@ -160,6 +187,18 @@ const formatHtml = (html) => {
             stacksLinks.xcode[version].edge.stack_reports,
             stacksLinks.xcode[version].edge.changelogs,
           );
+          xcodeStackList.appendChild(row);
+
+          const rowMobileOnly = xcodeStackMobileViewOnly.cloneNode(true);
+          rowMobileOnly.style.removeProperty('display');
+          rowMobileOnly.querySelector('.stack-version-title').innerHTML =
+            `${stacksLinks.xcode[version].title}<br />with edge updates`;
+          renderStackLinks(
+            rowMobileOnly.querySelectorAll('.stack-links')[0],
+            stacksLinks.xcode[version].edge.stack_reports,
+            stacksLinks.xcode[version].edge.changelogs,
+          );
+          xcodeStackList.appendChild(rowMobileOnly);
         } else {
           const row = xcodeStableAndEdgeStack.cloneNode(true);
           row.style.removeProperty('display');
@@ -175,6 +214,17 @@ const formatHtml = (html) => {
             stacksLinks.xcode[version].edge.changelogs,
           );
           xcodeStackList.appendChild(row);
+
+          const rowMobileOnly = xcodeStackMobileViewOnly.cloneNode(true);
+          rowMobileOnly.style.removeProperty('display');
+          rowMobileOnly.querySelector('.stack-version-title').innerHTML =
+            `${stacksLinks.xcode[version].title}<br />with edge updates`;
+          renderStackLinks(
+            rowMobileOnly.querySelectorAll('.stack-links')[0],
+            stacksLinks.xcode[version].edge.stack_reports,
+            stacksLinks.xcode[version].edge.changelogs,
+          );
+          xcodeStackList.appendChild(rowMobileOnly);
         }
       });
 
@@ -245,4 +295,11 @@ const formatHtml = (html) => {
   fancyConsoleLog('Bitrise.io Stacks');
 })();
 
-if (import.meta.webpackHot) import.meta.webpackHot.accept();
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.dispose(() => {
+    resetScripts.forEach((resetScript) => {
+      resetScript();
+    });
+  });
+  import.meta.webpackHot.accept();
+}
