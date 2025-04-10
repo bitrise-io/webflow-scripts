@@ -99,3 +99,10 @@ div#stacks-content table tr td {
 div#stacks-content table tr:nth-child(2n) {
   background: var(--gray-100);
 }
+
+#stacks-meta code {
+  background: rgba(255,255,255,.2);
+  padding: .125rem .25rem;
+  border-radius: .25rem;
+  font-size: 1rem;
+}

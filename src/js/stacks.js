@@ -2,6 +2,7 @@ import { detectTopicFromUrl, fancyConsoleLog, formatDate } from './shared/common
 
 import '../css/stacks.css';
 import StacksService from './stacks/StacksService';
+import { githubIcon, messageAlertIcon } from './icons';
 
 const stacksAPIBase = 'https://stacks.bitrise.io/';
 
@@ -81,9 +82,15 @@ const formatHtml = (html) => {
       const tip = tipTemplate.cloneNode(true);
       const [path, title] = tipLink;
       tip.querySelector('a').innerHTML = title;
-      tip.querySelector('a').href = `/stacks/${path}`;
+      tip.querySelector('a').href = `/stacks${path}`;
       tipsList.appendChild(tip);
     });
+
+    const updateHistoryButton = document.getElementById('update-history-button');
+    updateHistoryButton.innerHTML = `${githubIcon} ${updateHistoryButton.innerHTML}`;
+
+    const getNotifiedButton = document.getElementById('get-notified-button');
+    getNotifiedButton.innerHTML = `${messageAlertIcon} ${getNotifiedButton.innerHTML}`;
 
     const xcodeStackList = document.getElementById('xcode-stack-list');
     const xcodeStackListOriginalContent = xcodeStackList.innerHTML;
@@ -165,6 +172,7 @@ const formatHtml = (html) => {
 
     Object.keys(stacksLinks.xcode)
       .sort()
+      .reverse()
       .forEach((version) => {
         if (!stacksLinks.xcode[version].edge) {
           // stable only
@@ -230,6 +238,7 @@ const formatHtml = (html) => {
 
     Object.keys(stacksLinks.ubuntu)
       .sort()
+      .reverse()
       .forEach((version) => {
         const row = ubuntuStack.cloneNode(true);
         row.style.removeProperty('display');
@@ -256,40 +265,52 @@ const formatHtml = (html) => {
         awsStackList.appendChild(row);
       });
   } else if (pageType === 'changelogs' || pageType === 'announcements' || pageType === 'tools' || pageType === 'tips') {
+    if (pagePath.split('/').length < 2 || pagePath.split('/')[1] === '') {
+      window.location.href = '/stacks';
+    }
     const response = await fetch(`${stacksAPIBase}${pagePath}/index.json`);
     /** @type {StacksPageData} */
     const data = await response.json();
 
     document.getElementById('stacks-title').innerHTML = data.title;
-    document.getElementById('stacks-content').innerHTML = `
-      <div id="stacks-meta">
-        <p><strong>${new Date(data.updated_at).toLocaleDateString()}</strong></p>
-      </div>
-
-      ${formatHtml(data.content_html)}
-    `;
+    document.getElementById('stacks-meta').innerHTML = `${formatDate(new Date(data.updated_at))}`;
+    document.getElementById('stacks-content').innerHTML = `${formatHtml(data.content_html)}`;
   } else if (pageType === 'stack_reports') {
     const response = await fetch(`${stacksAPIBase}${pagePath}/index.json`);
     /** @type {StacksPageData} */
     const data = await response.json();
 
+    let changelogPath = `/stacks/changelogs/${data.stack_id}`;
+    if (data.stack_id.match(/^aws/)) {
+      if (data.stack_id.match(/^aws-mac-virtualized/)) {
+        changelogPath = `/stacks/changelogs/aws/aws-mac-virtualized`;
+      } else {
+        changelogPath = `/stacks/changelogs/aws/${data.stack_id}`;
+      }
+    }
+
     document.getElementById('stacks-title').innerHTML = data.stack_name;
+    document.getElementById('stacks-meta').innerHTML = `Stack ID: <code>${data.stack_id}</code><br />${
+      data.stack_revision && `Current stack revision: <code>${data.stack_revision}</code><br />`
+    }<br />
+      <span class="button-group">
+        <a href="${changelogPath}" title="Changelogs" class="button">Changelogs</a>
+        <a href="https://github.com/bitrise-io/stacks/commits/main/data/${data.stack_id}" target="_blank" title="Update history" class="button is-secondary is-icon is-alternate">
+          ${githubIcon}
+          Update history
+        </a>
+        <a href="/stacks/tips/get-notified" title="Get notified" class="button is-secondary is-icon is-alternate">
+          ${messageAlertIcon}
+          Get notified
+        </a>
+      </span>
+    `;
     document.getElementById('stacks-content').innerHTML = `
-      <div id="stacks-meta">
-        <p>Stack ID: <code>${data.stack_id}</code></p>
-        <p>Current stack revision: <code>${data.stack_revision}</code></p>
-        <div class="button-group">
-          <a href="/stacks/changelogs/${data.stack_id}" title="Changelogs" class="button is-xsmall is-secondary">Changelogs</a>
-          <a href="https://github.com/bitrise-io/stacks/commits/main/data/${data.stack_id}" target="_blank" title="Update history" class="button is-xsmall is-secondary">Update history</a>
-          <a href="/stacks/tips/get-notified" title="Get notified" class="button is-xsmall is-secondary">Get notified</a>
-        </div>
-        <p>This Bitrise stack contains the following software:</p>
-      </div>
-      
+      <p>This Bitrise stack contains the following software:</p>
       ${formatHtml(data.content_html)}
     `;
   } else {
-    console.log(pageType);
+    window.location.href = '/stacks';
   }
 
   fancyConsoleLog('Bitrise.io Stacks');
