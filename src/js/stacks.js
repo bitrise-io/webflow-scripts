@@ -26,6 +26,11 @@ const stacksAPIBase = 'https://stacks.bitrise.io/';
 
 const resetScripts = [];
 
+/**
+ * Format HTML content
+ * @param {string} html
+ * @returns {string}
+ */
 const formatHtml = (html) => {
   return html
     .replaceAll(
@@ -147,13 +152,19 @@ const formatHtml = (html) => {
       }
     });
 
+    /**
+     * Render stack links
+     * @param {HTMLElement} linksParent
+     * @param {[string, string]} reportsLink
+     * @param {[string, string]} changelogsLink
+     */
     const renderStackLinks = (linksParent, reportsLink, changelogsLink) => {
       const reportsLinkElement = linksParent.querySelector('.stack-link-reports');
       const changelogsLinkElement = linksParent.querySelector('.stack-link-changelogs');
       if (reportsLink) {
         reportsLinkElement.href = `/stacks${reportsLink[0]}`;
         reportsLinkElement.innerHTML = `${reportsLink[1]}`;
-        if (reportsLink[1]) reportsLinkElement.title = new Date(reportsLink[1]).toLocaleDateString();
+        if (reportsLink[2]) reportsLinkElement.title = formatDate(new Date(reportsLink[2]));
         reportsLinkElement.style.visibility = 'visible';
       } else {
         linksParent.querySelector('.stack-links-separator').style.visibility = 'hidden';
@@ -162,7 +173,7 @@ const formatHtml = (html) => {
       if (changelogsLink) {
         changelogsLinkElement.href = `/stacks${changelogsLink[0]}`;
         changelogsLinkElement.innerHTML = `${changelogsLink[1]}`;
-        if (changelogsLink[1]) changelogsLinkElement.title = new Date(changelogsLink[1]).toLocaleDateString();
+        if (changelogsLink[2]) changelogsLinkElement.title = formatDate(new Date(changelogsLink[2]));
         changelogsLinkElement.style.visibility = 'visible';
       } else {
         linksParent.querySelector('.stack-links-separator').style.visibility = 'hidden';
@@ -294,7 +305,7 @@ const formatHtml = (html) => {
       data.stack_revision && `Current stack revision: <code>${data.stack_revision}</code><br />`
     }<br />
       <span class="button-group">
-        <a href="${changelogPath}" title="Changelogs" class="button">Changelogs</a>
+        <a href="${changelogPath}" title="Changelog" class="button">Changelog</a>
         <a href="https://github.com/bitrise-io/stacks/commits/main/data/${data.stack_id}" target="_blank" title="Update history" class="button is-secondary is-icon is-alternate">
           ${githubIcon}
           Update history
