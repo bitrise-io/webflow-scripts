@@ -159,14 +159,14 @@ class StacksService {
             const version = awsMatch[1];
             if (!stacksLinks.aws[version]) stacksLinks.aws[version] = {};
             stacksLinks.aws[version].title = link.title.replace(/ stack reports?/, '').trim();
-            stacksLinks.aws[version].stack_reports = [link.path, 'Reports', link.updated_at];
+            stacksLinks.aws[version].stack_reports = [link.path, 'Report', link.updated_at];
           }
           const ubuntuMatch = link.path.match(/stack_reports\/(linux[^/]+)/);
           if (ubuntuMatch) {
             const version = ubuntuMatch[1];
             if (!stacksLinks.ubuntu[version]) stacksLinks.ubuntu[version] = {};
             stacksLinks.ubuntu[version].title = link.title.replace(/ stack reports?/, '').trim();
-            stacksLinks.ubuntu[version].stack_reports = [link.path, 'Reports', link.updated_at];
+            stacksLinks.ubuntu[version].stack_reports = [link.path, 'Report', link.updated_at];
           }
           const xcodeMatch = link.path.match(/stack_reports\/([^/]+xcode[^/]+)/);
           if (xcodeMatch) {
@@ -175,7 +175,7 @@ class StacksService {
             if (!stacksLinks.xcode[version]) stacksLinks.xcode[version] = {};
             if (!stacksLinks.xcode[version][edge]) stacksLinks.xcode[version][edge] = {};
             stacksLinks.xcode[version].title = link.title.replace(/( with edge updates| stack reports?)/g, '').trim();
-            stacksLinks.xcode[version][edge].stack_reports = [link.path, 'Reports', link.updated_at];
+            stacksLinks.xcode[version][edge].stack_reports = [link.path, 'Report', link.updated_at];
           }
         });
       }
@@ -246,7 +246,7 @@ class StacksService {
             stacksLinks.aws[version].changelogs = [pathname, 'Changelog', null];
           }
           if (awsMatch[1] === 'stack_reports') {
-            stacksLinks.aws[version].stack_reports = [pathname, 'Reports', null];
+            stacksLinks.aws[version].stack_reports = [pathname, 'Report', null];
           }
         }
         const xcodeMatch = pathname.match(/(stack_reports|changelogs)\/([^/]+xcode[^/]+)/);
@@ -260,7 +260,7 @@ class StacksService {
             stacksLinks.xcode[version][edge].changelogs = [pathname, 'Changelog', null];
           }
           if (xcodeMatch[1] === 'stack_reports') {
-            stacksLinks.xcode[version][edge].stack_reports = [pathname, 'Reports', null];
+            stacksLinks.xcode[version][edge].stack_reports = [pathname, 'Report', null];
           }
         }
         const ubuntuMatch = pathname.match(/(stack_reports|changelogs)\/(linux[^/]+)/);
@@ -272,7 +272,7 @@ class StacksService {
             stacksLinks.ubuntu[version].changelogs = [pathname, 'Changelog', null];
           }
           if (ubuntuMatch[1] === 'stack_reports') {
-            stacksLinks.ubuntu[version].stack_reports = [pathname, 'Reports', null];
+            stacksLinks.ubuntu[version].stack_reports = [pathname, 'Report', null];
           }
         }
       });

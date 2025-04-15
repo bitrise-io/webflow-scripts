@@ -92,10 +92,10 @@ const formatHtml = (html) => {
     });
 
     const updateHistoryButton = document.getElementById('update-history-button');
-    updateHistoryButton.innerHTML = `${githubIcon} ${updateHistoryButton.innerHTML}`;
+    updateHistoryButton.innerHTML = `${githubIcon} ${updateHistoryButton.textContent}`;
 
     const getNotifiedButton = document.getElementById('get-notified-button');
-    getNotifiedButton.innerHTML = `${messageAlertIcon} ${getNotifiedButton.innerHTML}`;
+    getNotifiedButton.innerHTML = `${messageAlertIcon} ${getNotifiedButton.textContent}`;
 
     const xcodeStackList = document.getElementById('xcode-stack-list');
     const xcodeStackListOriginalContent = xcodeStackList.innerHTML;
@@ -163,7 +163,7 @@ const formatHtml = (html) => {
       const changelogsLinkElement = linksParent.querySelector('.stack-link-changelogs');
       if (reportsLink) {
         reportsLinkElement.href = `/stacks${reportsLink[0]}`;
-        reportsLinkElement.innerHTML = `${reportsLink[1]}`;
+        // reportsLinkElement.innerHTML = `${reportsLink[1]}`;
         if (reportsLink[2]) reportsLinkElement.title = formatDate(new Date(reportsLink[2]));
         reportsLinkElement.style.visibility = 'visible';
       } else {
@@ -172,7 +172,7 @@ const formatHtml = (html) => {
       }
       if (changelogsLink) {
         changelogsLinkElement.href = `/stacks${changelogsLink[0]}`;
-        changelogsLinkElement.innerHTML = `${changelogsLink[1]}`;
+        // changelogsLinkElement.innerHTML = `${changelogsLink[1]}`;
         if (changelogsLink[2]) changelogsLinkElement.title = formatDate(new Date(changelogsLink[2]));
         changelogsLinkElement.style.visibility = 'visible';
       } else {
@@ -211,7 +211,7 @@ const formatHtml = (html) => {
           const rowMobileOnly = xcodeStackMobileViewOnly.cloneNode(true);
           rowMobileOnly.style.removeProperty('display');
           rowMobileOnly.querySelector('.stack-version-title').innerHTML =
-            `${stacksLinks.xcode[version].title}<br />with edge updates`;
+            `${stacksLinks.xcode[version].title} (Edge version)`;
           renderStackLinks(
             rowMobileOnly.querySelectorAll('.stack-links')[0],
             stacksLinks.xcode[version].edge.stack_reports,
