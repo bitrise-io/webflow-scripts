@@ -3,6 +3,7 @@
  *  path: string;
  *  title: string;
  *  updated_at: string;
+ *  archived: boolean;
  * }} StacksJsonLink
  * @typedef {{
  *  announcements: StacksJsonLink[];
@@ -104,6 +105,7 @@ class StacksService {
         /** @type {StacksJsonAnnouncementsSection} */
         const currentSection = section;
         currentSection.announcements.forEach((link) => {
+          if (link.archived) return;
           stacksLinks.announcements[link.path] = [link.path, link.title, link.updated_at];
         });
       }
@@ -111,6 +113,7 @@ class StacksService {
         /** @type {StacksJsonToolsSection} */
         const currentSection = section;
         currentSection.tools.forEach((link) => {
+          if (link.archived) return;
           stacksLinks.tools[link.path] = [link.path, link.title, link.updated_at];
         });
       }
@@ -118,6 +121,7 @@ class StacksService {
         /** @type {StacksJsonTipsSection} */
         const currentSection = section;
         currentSection.tips.forEach((link) => {
+          if (link.archived) return;
           stacksLinks.tips[link.path] = [link.path, link.title, link.updated_at];
         });
       }
@@ -125,6 +129,7 @@ class StacksService {
         /** @type {StacksJsonChangelogsSection} */
         const currentSection = section;
         currentSection.changelogs.forEach((link) => {
+          if (link.archived) return;
           const awsMatch = link.path.match(/changelogs\/aws\/([^/]+)/);
           if (awsMatch) {
             const version = awsMatch[1];
@@ -154,6 +159,7 @@ class StacksService {
         /** @type {StacksJsonStackReportsSection} */
         const currentSection = section;
         currentSection.stack_reports.forEach((link) => {
+          if (link.archived) return;
           const awsMatch = link.path.match(/stack_reports\/aws\/([^/]+)/);
           if (awsMatch) {
             const version = awsMatch[1];
