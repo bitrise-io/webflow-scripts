@@ -287,6 +287,10 @@ const formatHtml = (html) => {
     document.getElementById('stacks-meta').innerHTML = `${formatDate(new Date(data.updated_at))}`;
     document.getElementById('stacks-content').innerHTML = `${formatHtml(data.content_html)}`;
   } else if (pageType === 'stack_reports') {
+    if (pagePath.split('/').length < 2 || pagePath.split('/')[1] === '') {
+      window.location.href = '/stacks';
+    }
+
     const response = await fetch(`${stacksAPIBase}${pagePath}/index.json`);
     /** @type {StacksPageData} */
     const data = await response.json();
