@@ -94,21 +94,6 @@ const app = express();
 app.use(devMiddleware(compiler, devMiddlewareOptions));
 if (webpackConfig.mode === 'development') app.use(hotMiddleware(compiler));
 
-app.use('/pwa/', express.static(path.join(__dirname, 'dist/pwa')));
-
-app.post('/api/save-subscription', async (req, res) => {
-  const body = [];
-  req.on('data', (chunk) => {
-    body.push(chunk);
-  });
-  req.on('end', () => {
-    const subscription = JSON.parse(Buffer.concat(body).toString());
-    process.stdout.write(`[info] Subscription received: ${JSON.stringify(subscription)}\n`);
-    res.statusCode = 200;
-    res.json({ message: 'Subscription saved' });
-  });
-});
-
 app.get(/\/.*/, async (req, res) => {
   const urlObject = new URL(`http://${req.hostname}${req.url}`);
 
