@@ -1,6 +1,7 @@
 div#stacks-content {
   --gray-100: #f8f9fa;
   --gray-200: #e9ecef;
+  font-variant-ligatures: none;
 }
 
 div#stacks-content p {
