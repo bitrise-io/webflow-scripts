@@ -182,6 +182,10 @@ class StacksService {
             if (!stacksLinks.xcode[version][edge]) stacksLinks.xcode[version][edge] = {};
             stacksLinks.xcode[version].title = link.title.replace(/( with edge updates| stack reports?)/g, '').trim();
             stacksLinks.xcode[version][edge].stack_reports = [link.path, 'Report', link.updated_at];
+            if (version.match(/16\.\d/)) {
+              stacksLinks.xcode[version][edge].deprecated =
+                'This edge stack is deprecated and will be removed on June 18th.'; // Mark Xcode 16.x as deprecated
+            }
           }
         });
       }

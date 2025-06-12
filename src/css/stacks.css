@@ -107,3 +107,9 @@ div#stacks-content table tr:nth-child(2n) {
   border-radius: .25rem;
   font-size: 1rem;
 }
+
+.deprecated-stack {
+  display: inline-block;
+  height: 1rem;
+  width: 1rem;
+}

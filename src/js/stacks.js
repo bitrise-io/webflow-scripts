@@ -157,8 +157,9 @@ const formatHtml = (html) => {
      * @param {HTMLElement} linksParent
      * @param {[string, string]} reportsLink
      * @param {[string, string]} changelogsLink
+     * @param {boolean} [deprecated=false]
      */
-    const renderStackLinks = (linksParent, reportsLink, changelogsLink) => {
+    const renderStackLinks = (linksParent, reportsLink, changelogsLink, deprecated = false) => {
       const reportsLinkElement = linksParent.querySelector('.stack-link-reports');
       const changelogsLinkElement = linksParent.querySelector('.stack-link-changelogs');
       if (reportsLink) {
@@ -178,6 +179,13 @@ const formatHtml = (html) => {
       } else {
         linksParent.querySelector('.stack-links-separator').style.visibility = 'hidden';
         changelogsLinkElement.style.visibility = 'hidden';
+      }
+      if (deprecated) {
+        const deprecatedElement = document.createElement('span');
+        deprecatedElement.title = deprecated;
+        deprecatedElement.textContent = '⚠️';
+        deprecatedElement.className = 'deprecated-stack';
+        linksParent.appendChild(deprecatedElement);
       }
     };
 
@@ -205,6 +213,7 @@ const formatHtml = (html) => {
             row.querySelectorAll('.stack-links')[1],
             stacksLinks.xcode[version].edge.stack_reports,
             stacksLinks.xcode[version].edge.changelogs,
+            stacksLinks.xcode[version].edge.deprecated,
           );
           xcodeStackList.appendChild(row);
 
@@ -216,6 +225,7 @@ const formatHtml = (html) => {
             rowMobileOnly.querySelectorAll('.stack-links')[0],
             stacksLinks.xcode[version].edge.stack_reports,
             stacksLinks.xcode[version].edge.changelogs,
+            stacksLinks.xcode[version].edge.deprecated,
           );
           xcodeStackList.appendChild(rowMobileOnly);
         } else {
@@ -231,6 +241,7 @@ const formatHtml = (html) => {
             row.querySelectorAll('.stack-links')[1],
             stacksLinks.xcode[version].edge.stack_reports,
             stacksLinks.xcode[version].edge.changelogs,
+            stacksLinks.xcode[version].edge.deprecated,
           );
           xcodeStackList.appendChild(row);
 
@@ -242,6 +253,7 @@ const formatHtml = (html) => {
             rowMobileOnly.querySelectorAll('.stack-links')[0],
             stacksLinks.xcode[version].edge.stack_reports,
             stacksLinks.xcode[version].edge.changelogs,
+            stacksLinks.xcode[version].edge.deprecated,
           );
           xcodeStackList.appendChild(rowMobileOnly);
         }
