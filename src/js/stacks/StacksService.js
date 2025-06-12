@@ -48,6 +48,7 @@
  * @typedef {{
  *  stack_reports: [string, string, string];
  *  changelogs: [string, string, string];
+ *  deprecated?: string;
  * }} StackLink
  * @typedef {{
  *  announcements: Record<string, [string, string, string]>;
@@ -66,6 +67,13 @@
  *  }>;
  * }} StacksLinks
  */
+
+const deprecations = [
+  {
+    versionPattern: /xcode-16[.x0-9]+-edge/,
+    message: 'This edge stack is deprecated and will be removed on June 18th.',
+  },
+];
 
 class StacksService {
   constructor() {
@@ -146,12 +154,17 @@ class StacksService {
           }
           const xcodeMatch = link.path.match(/changelogs\/([^/]+xcode[^/]+)/);
           if (xcodeMatch) {
-            const edge = xcodeMatch[1].match(/-edge/) ? 'edge' : 'stable';
+            const edgeOrStable = xcodeMatch[1].match(/-edge/) ? 'edge' : 'stable';
             const version = xcodeMatch[1].replace(/-edge/, '');
             if (!stacksLinks.xcode[version]) stacksLinks.xcode[version] = {};
-            if (!stacksLinks.xcode[version][edge]) stacksLinks.xcode[version][edge] = {};
+            if (!stacksLinks.xcode[version][edgeOrStable]) stacksLinks.xcode[version][edgeOrStable] = {};
             stacksLinks.xcode[version].title = link.title.replace(/( with edge updates| changelogs?)/g, '').trim();
-            stacksLinks.xcode[version][edge].changelogs = [link.path, 'Changelog', link.updated_at];
+            stacksLinks.xcode[version][edgeOrStable].changelogs = [link.path, 'Changelog', link.updated_at];
+            deprecations.forEach(({ versionPattern, message }) => {
+              if (versionPattern.test(xcodeMatch[1])) {
+                stacksLinks.xcode[version][edgeOrStable].deprecated = message; // Mark deprecated stacks
+              }
+            });
           }
         });
       }
@@ -176,16 +189,17 @@ class StacksService {
           }
           const xcodeMatch = link.path.match(/stack_reports\/([^/]+xcode[^/]+)/);
           if (xcodeMatch) {
-            const edge = xcodeMatch[1].match(/-edge/) ? 'edge' : 'stable';
+            const edgeOrStable = xcodeMatch[1].match(/-edge/) ? 'edge' : 'stable';
             const version = xcodeMatch[1].replace(/-edge/, '');
             if (!stacksLinks.xcode[version]) stacksLinks.xcode[version] = {};
-            if (!stacksLinks.xcode[version][edge]) stacksLinks.xcode[version][edge] = {};
+            if (!stacksLinks.xcode[version][edgeOrStable]) stacksLinks.xcode[version][edgeOrStable] = {};
             stacksLinks.xcode[version].title = link.title.replace(/( with edge updates| stack reports?)/g, '').trim();
-            stacksLinks.xcode[version][edge].stack_reports = [link.path, 'Report', link.updated_at];
-            if (version.match(/16\.\d/)) {
-              stacksLinks.xcode[version][edge].deprecated =
-                'This edge stack is deprecated and will be removed on June 18th.'; // Mark Xcode 16.x as deprecated
-            }
+            stacksLinks.xcode[version][edgeOrStable].stack_reports = [link.path, 'Report', link.updated_at];
+            deprecations.forEach(({ versionPattern, message }) => {
+              if (versionPattern.test(xcodeMatch[1])) {
+                stacksLinks.xcode[version][edgeOrStable].deprecated = message; // Mark deprecated stacks
+              }
+            });
           }
         });
       }
