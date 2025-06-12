@@ -70,7 +70,8 @@
 
 const deprecations = [
   {
-    versionPattern: /xcode-16[.x0-9]+-edge/,
+    edgeOrStable: 'edge',
+    versionPattern: /xcode-16.*/,
     message: 'This edge stack is deprecated and will be removed on June 18th.',
   },
 ];
@@ -160,11 +161,6 @@ class StacksService {
             if (!stacksLinks.xcode[version][edgeOrStable]) stacksLinks.xcode[version][edgeOrStable] = {};
             stacksLinks.xcode[version].title = link.title.replace(/( with edge updates| changelogs?)/g, '').trim();
             stacksLinks.xcode[version][edgeOrStable].changelogs = [link.path, 'Changelog', link.updated_at];
-            deprecations.forEach(({ versionPattern, message }) => {
-              if (versionPattern.test(xcodeMatch[1])) {
-                stacksLinks.xcode[version][edgeOrStable].deprecated = message; // Mark deprecated stacks
-              }
-            });
           }
         });
       }
@@ -195,15 +191,21 @@ class StacksService {
             if (!stacksLinks.xcode[version][edgeOrStable]) stacksLinks.xcode[version][edgeOrStable] = {};
             stacksLinks.xcode[version].title = link.title.replace(/( with edge updates| stack reports?)/g, '').trim();
             stacksLinks.xcode[version][edgeOrStable].stack_reports = [link.path, 'Report', link.updated_at];
-            deprecations.forEach(({ versionPattern, message }) => {
-              if (versionPattern.test(xcodeMatch[1])) {
-                stacksLinks.xcode[version][edgeOrStable].deprecated = message; // Mark deprecated stacks
-              }
-            });
           }
         });
       }
     });
+
+    Object.keys(stacksLinks.xcode).forEach((version) => {
+      deprecations.forEach(({ versionPattern, message, edgeOrStable }) => {
+        if (versionPattern.test(version)) {
+          if (stacksLinks.xcode[version][edgeOrStable]) {
+            stacksLinks.xcode[version][edgeOrStable].deprecated = message; // Mark deprecated stacks
+          }
+        }
+      });
+    });
+
     return stacksLinks;
   }
 

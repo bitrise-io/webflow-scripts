@@ -202,6 +202,7 @@ const formatHtml = (html) => {
             row.querySelectorAll('.stack-links')[0],
             stacksLinks.xcode[version].stable.stack_reports,
             stacksLinks.xcode[version].stable.changelogs,
+            stacksLinks.xcode[version].stable.deprecated,
           );
           xcodeStackList.appendChild(row);
         } else if (!stacksLinks.xcode[version].stable) {
@@ -236,6 +237,7 @@ const formatHtml = (html) => {
             row.querySelectorAll('.stack-links')[0],
             stacksLinks.xcode[version].stable.stack_reports,
             stacksLinks.xcode[version].stable.changelogs,
+            stacksLinks.xcode[version].stable.deprecated,
           );
           renderStackLinks(
             row.querySelectorAll('.stack-links')[1],
