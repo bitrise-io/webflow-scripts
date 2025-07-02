@@ -146,7 +146,7 @@ class StacksService {
             stacksLinks.aws[version].title = link.title.replace(/ changelogs?/, '').trim();
             stacksLinks.aws[version].changelogs = [link.path, 'Changelog', link.updated_at];
           }
-          const ubuntuMatch = link.path.match(/changelogs\/(linux[^/]+)/);
+          const ubuntuMatch = link.path.match(/changelogs\/(linux[^/]+|ubuntu[^/]+)/);
           if (ubuntuMatch) {
             const version = ubuntuMatch[1];
             if (!stacksLinks.ubuntu[version]) stacksLinks.ubuntu[version] = {};
@@ -176,7 +176,7 @@ class StacksService {
             stacksLinks.aws[version].title = link.title.replace(/ stack reports?/, '').trim();
             stacksLinks.aws[version].stack_reports = [link.path, 'Report', link.updated_at];
           }
-          const ubuntuMatch = link.path.match(/stack_reports\/(linux[^/]+)/);
+          const ubuntuMatch = link.path.match(/stack_reports\/(linux[^/]+|ubuntu[^/]+)/);
           if (ubuntuMatch) {
             const version = ubuntuMatch[1];
             if (!stacksLinks.ubuntu[version]) stacksLinks.ubuntu[version] = {};
@@ -289,7 +289,7 @@ class StacksService {
             stacksLinks.xcode[version][edge].stack_reports = [pathname, 'Report', null];
           }
         }
-        const ubuntuMatch = pathname.match(/(stack_reports|changelogs)\/(linux[^/]+)/);
+        const ubuntuMatch = pathname.match(/(stack_reports|changelogs)\/(linux[^/]+|ubuntu[^/]+)/);
         if (ubuntuMatch) {
           const version = ubuntuMatch[2];
           if (!stacksLinks.ubuntu[version]) stacksLinks.ubuntu[version] = {};
