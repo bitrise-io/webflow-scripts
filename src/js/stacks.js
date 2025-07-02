@@ -328,7 +328,6 @@ const getStackRemovalDate = async (pagePath) => {
     const data = await response.json();
 
     const deprecated = await getStackRemovalDate(pagePath);
-    console.log('Deprecated:', deprecated);
     const deprecationNotice = deprecated
       ? `<blockquote class="book-hint warning">
         ⚠️ &nbsp; This stack is deprecated and will be removed on ${deprecated}.
@@ -338,6 +337,8 @@ const getStackRemovalDate = async (pagePath) => {
     let metaDescription = null;
     if (pageType === 'changelogs') {
       metaDescription = `Last updated: ${formatDate(new Date(data.updated_at))}`;
+    } else {
+      metaDescription = data.summary ? data.summary.replace(/(<.*?>|\n)/g, '') : null;
     }
     document.title = `${data.title} | Bitrise Stack Updates`;
     document.querySelector("link[rel='canonical']").setAttribute('href', `https://bitrise.io/stacks/${pagePath}`);
@@ -360,7 +361,6 @@ const getStackRemovalDate = async (pagePath) => {
     const data = await response.json();
 
     const deprecated = await getStackRemovalDate(pagePath);
-    console.log('Deprecated:', deprecated);
     const deprecationNotice = deprecated
       ? `<blockquote class="book-hint warning">
         ⚠️ This stack is deprecated and will be removed on ${deprecated}.
@@ -376,14 +376,14 @@ const getStackRemovalDate = async (pagePath) => {
       }
     }
 
-    const metaDescription = 'Operating system deatils and the list of included software versions.';
+    const metaDescription = data.summary ? data.summary.replace(/(<.*?>|\n)/g, '') : null;
     document.title = `${data.stack_name} | Bitrise Stack Updates`;
     document.querySelector("link[rel='canonical']").setAttribute('href', `https://bitrise.io/stacks/${pagePath}`);
-    setMetaContent({ name: 'description' }, metaDescription);
+    if (metaDescription) setMetaContent({ name: 'description' }, metaDescription);
     setMetaContent({ property: 'og:title' }, `${data.stack_name} | Bitrise Stack Updates`);
-    setMetaContent({ property: 'og:description' }, metaDescription);
+    if (metaDescription) setMetaContent({ property: 'og:description' }, metaDescription);
     setMetaContent({ property: 'twitter:title' }, `${data.stack_name} | Bitrise Stack Updates`);
-    setMetaContent({ property: 'twitter:description' }, metaDescription);
+    if (metaDescription) setMetaContent({ property: 'twitter:description' }, metaDescription);
 
     document.getElementById('stacks-title').innerHTML = data.stack_name;
     document.getElementById('stacks-meta').innerHTML = `Stack ID: <code>${data.stack_id}</code><br />${
