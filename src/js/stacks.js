@@ -277,7 +277,20 @@ const formatHtml = (html) => {
       });
 
     Object.keys(stacksLinks.aws)
-      .sort()
+      .sort((aVersion, bVersion) => {
+        const aVersionNumeric = aVersion
+          .replace('tahoe', '16-')
+          .replace('sonoma', '14-')
+          .replace('ventura', '13-')
+          .replace('sequoia', '15-');
+        const bVersionNumeric = bVersion
+          .replace('tahoe', '16-')
+          .replace('sonoma', '14-')
+          .replace('ventura', '13-')
+          .replace('sequoia', '15-');
+        return aVersionNumeric.localeCompare(bVersionNumeric, undefined, { numeric: true, sensitivity: 'base' });
+      })
+      .reverse()
       .forEach((version) => {
         const row = awsStack.cloneNode(true);
         row.style.removeProperty('display');
