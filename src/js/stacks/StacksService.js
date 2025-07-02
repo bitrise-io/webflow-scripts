@@ -1,3 +1,5 @@
+import { formatDate } from '../shared/common';
+
 /**
  * @typedef {{
  *  path: string;
@@ -27,6 +29,7 @@
  *      cloud: "aws" | null;
  *      flavor: "stable" | "edge" | null;
  *      platform: "macOS" | "Linux";
+ *      removal_date: string | null;
  *      stack_id: string;
  *      xcode: string | null;
  *    };
@@ -67,14 +70,6 @@
  *  }>;
  * }} StacksLinks
  */
-
-const deprecations = [
-  {
-    edgeOrStable: 'edge',
-    versionPattern: /xcode-16.*/,
-    message: 'This edge stack is deprecated and will be removed on June 18th.',
-  },
-];
 
 class StacksService {
   constructor() {
@@ -169,12 +164,16 @@ class StacksService {
         const currentSection = section;
         currentSection.stack_reports.forEach((link) => {
           if (link.archived) return;
+          const deprecated = link.stack_meta.removal_date ? formatDate(new Date(link.stack_meta.removal_date)) : null;
           const awsMatch = link.path.match(/stack_reports\/aws\/([^/]+)/);
           if (awsMatch) {
             const version = awsMatch[1];
             if (!stacksLinks.aws[version]) stacksLinks.aws[version] = {};
             stacksLinks.aws[version].title = link.title.replace(/ stack reports?/, '').trim();
             stacksLinks.aws[version].stack_reports = [link.path, 'Report', link.updated_at];
+            stacksLinks.aws[version].deprecated = deprecated
+              ? `This stack is deprecated and will be removed on ${deprecated}.`
+              : null;
           }
           const ubuntuMatch = link.path.match(/stack_reports\/(linux[^/]+|ubuntu[^/]+)/);
           if (ubuntuMatch) {
@@ -182,6 +181,9 @@ class StacksService {
             if (!stacksLinks.ubuntu[version]) stacksLinks.ubuntu[version] = {};
             stacksLinks.ubuntu[version].title = link.title.replace(/ stack reports?/, '').trim();
             stacksLinks.ubuntu[version].stack_reports = [link.path, 'Report', link.updated_at];
+            stacksLinks.ubuntu[version].deprecated = deprecated
+              ? `This stack is deprecated and will be removed on ${deprecated}.`
+              : null;
           }
           const xcodeMatch = link.path.match(/stack_reports\/([^/]+xcode[^/]+)/);
           if (xcodeMatch) {
@@ -191,19 +193,12 @@ class StacksService {
             if (!stacksLinks.xcode[version][edgeOrStable]) stacksLinks.xcode[version][edgeOrStable] = {};
             stacksLinks.xcode[version].title = link.title.replace(/( with edge updates| stack reports?)/g, '').trim();
             stacksLinks.xcode[version][edgeOrStable].stack_reports = [link.path, 'Report', link.updated_at];
+            stacksLinks.xcode[version][edgeOrStable].deprecated = deprecated
+              ? `This stack is deprecated and will be removed on ${deprecated}.`
+              : null;
           }
         });
       }
-    });
-
-    Object.keys(stacksLinks.xcode).forEach((version) => {
-      deprecations.forEach(({ versionPattern, message, edgeOrStable }) => {
-        if (versionPattern.test(version)) {
-          if (stacksLinks.xcode[version][edgeOrStable]) {
-            stacksLinks.xcode[version][edgeOrStable].deprecated = message; // Mark deprecated stacks
-          }
-        }
-      });
     });
 
     return stacksLinks;

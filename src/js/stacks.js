@@ -1,4 +1,4 @@
-import { detectTopicFromUrl, fancyConsoleLog, formatDate } from './shared/common';
+import { detectTopicFromUrl, fancyConsoleLog, formatDate, setMetaContent } from './shared/common';
 
 import '../css/stacks.css';
 import StacksService from './stacks/StacksService';
@@ -44,6 +44,21 @@ const formatHtml = (html) => {
     .replaceAll(/\s+<\/code>/g, '</code>')
     .replaceAll(/href="\//g, 'href="/stacks/')
     .replaceAll(stacksAPIBase, '/stacks/');
+};
+
+/**
+ * Get the stack removal date for a given stacks based on the page path.
+ * @param {string} pagePath
+ * @returns {Promise<string|null>} The formatted removal date or null if not available.
+ */
+const getStackRemovalDate = async (pagePath) => {
+  const stacksResponse = await fetch(`${stacksAPIBase}index.json`);
+  const stacksData = await stacksResponse.json();
+  const stackReportsSection = stacksData?.sections?.find((section) => section.stack_reports);
+  const stackReport = stackReportsSection?.stack_reports?.find(
+    (report) => report.path === `/${pagePath.replace('changelogs/', 'stack_reports/')}`,
+  );
+  return stackReport?.stack_meta?.removal_date ? formatDate(new Date(stackReport.stack_meta.removal_date)) : null;
 };
 
 (async () => {
@@ -272,6 +287,7 @@ const formatHtml = (html) => {
           row.querySelectorAll('.stack-links')[0],
           stacksLinks.ubuntu[version].stack_reports,
           stacksLinks.ubuntu[version].changelogs,
+          stacksLinks.ubuntu[version].deprecated,
         );
         ubuntuStackList.appendChild(row);
       });
@@ -299,6 +315,7 @@ const formatHtml = (html) => {
           row.querySelectorAll('.stack-links')[0],
           stacksLinks.aws[version].stack_reports,
           stacksLinks.aws[version].changelogs,
+          stacksLinks.aws[version].deprecated,
         );
         awsStackList.appendChild(row);
       });
@@ -310,9 +327,29 @@ const formatHtml = (html) => {
     /** @type {StacksPageData} */
     const data = await response.json();
 
+    const deprecated = await getStackRemovalDate(pagePath);
+    console.log('Deprecated:', deprecated);
+    const deprecationNotice = deprecated
+      ? `<blockquote class="book-hint warning">
+        ⚠️ &nbsp; This stack is deprecated and will be removed on ${deprecated}.
+      </blockquote>`
+      : '';
+
+    let metaDescription = null;
+    if (pageType === 'changelogs') {
+      metaDescription = `Last updated: ${formatDate(new Date(data.updated_at))}`;
+    }
+    document.title = `${data.title} | Bitrise Stack Updates`;
+    document.querySelector("link[rel='canonical']").setAttribute('href', `https://bitrise.io/stacks/${pagePath}`);
+    if (metaDescription) setMetaContent({ name: 'description' }, metaDescription);
+    setMetaContent({ property: 'og:title' }, `${data.title} | Bitrise Stack Updates`);
+    if (metaDescription) setMetaContent({ property: 'og:description' }, metaDescription);
+    setMetaContent({ property: 'twitter:title' }, `${data.title} | Bitrise Stack Updates`);
+    if (metaDescription) setMetaContent({ property: 'twitter:description' }, metaDescription);
+
     document.getElementById('stacks-title').innerHTML = data.title;
     document.getElementById('stacks-meta').innerHTML = `${formatDate(new Date(data.updated_at))}`;
-    document.getElementById('stacks-content').innerHTML = `${formatHtml(data.content_html)}`;
+    document.getElementById('stacks-content').innerHTML = `${deprecationNotice}${formatHtml(data.content_html)}`;
   } else if (pageType === 'stack_reports') {
     if (pagePath.split('/').length < 2 || pagePath.split('/')[1] === '') {
       window.location.href = '/stacks';
@@ -322,6 +359,14 @@ const formatHtml = (html) => {
     /** @type {StacksPageData} */
     const data = await response.json();
 
+    const deprecated = await getStackRemovalDate(pagePath);
+    console.log('Deprecated:', deprecated);
+    const deprecationNotice = deprecated
+      ? `<blockquote class="book-hint warning">
+        ⚠️ This stack is deprecated and will be removed on ${deprecated}.
+      </blockquote>`
+      : '';
+
     let changelogPath = `/stacks/changelogs/${data.stack_id}`;
     if (data.stack_id.match(/^aws/)) {
       if (data.stack_id.match(/^aws-mac-virtualized/)) {
@@ -330,6 +375,15 @@ const formatHtml = (html) => {
         changelogPath = `/stacks/changelogs/aws/${data.stack_id}`;
       }
     }
+
+    const metaDescription = 'Operating system deatils and the list of included software versions.';
+    document.title = `${data.stack_name} | Bitrise Stack Updates`;
+    document.querySelector("link[rel='canonical']").setAttribute('href', `https://bitrise.io/stacks/${pagePath}`);
+    setMetaContent({ name: 'description' }, metaDescription);
+    setMetaContent({ property: 'og:title' }, `${data.stack_name} | Bitrise Stack Updates`);
+    setMetaContent({ property: 'og:description' }, metaDescription);
+    setMetaContent({ property: 'twitter:title' }, `${data.stack_name} | Bitrise Stack Updates`);
+    setMetaContent({ property: 'twitter:description' }, metaDescription);
 
     document.getElementById('stacks-title').innerHTML = data.stack_name;
     document.getElementById('stacks-meta').innerHTML = `Stack ID: <code>${data.stack_id}</code><br />${
@@ -348,6 +402,7 @@ const formatHtml = (html) => {
       </span>
     `;
     document.getElementById('stacks-content').innerHTML = `
+      ${deprecationNotice}
       <p>This Bitrise stack contains the following software:</p>
       ${formatHtml(data.content_html)}
     `;
