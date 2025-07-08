@@ -76,6 +76,7 @@ class SidebarSection {
           title: category.getName(),
           selected: categoryFilter && icaseEqual(category.name, categoryFilter),
           disabled: false,
+          count: matchingSteps.length,
         });
       } else {
         categoryItems.push({
@@ -83,6 +84,7 @@ class SidebarSection {
           title: category.getName(),
           selected: categoryFilter && icaseEqual(category.name, categoryFilter),
           disabled: true,
+          count: 0,
         });
       }
     });

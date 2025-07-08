@@ -3,7 +3,8 @@
  *  url: string,
  *  title: string,
  *  selected: boolean,
- *  disabled: boolean
+ *  disabled: boolean,
+ *  count?: number,
  * }} NavigationItem
  */
 
@@ -36,7 +37,7 @@ class NavigationList {
 
     items.forEach((item) => {
       const newNavItem = this.navItemTemplate.cloneNode(true);
-      newNavItem.innerHTML = item.title;
+      newNavItem.innerHTML = `${item.title} ${item.count ? `<span>(${item.count})</span>` : ''}`;
       if (item.selected) {
         this.markNavItemSelected(newNavItem);
       }

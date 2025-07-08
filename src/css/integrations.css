@@ -7,7 +7,13 @@
   z-index: 100;
 }
 
-.w-nav-link.disabled, .w-dropdown-link.disabled {
+.integrations-sidebar .w-dropdown-link span,
+.integrations-sidebar .integrations-filter-item span {
+  opacity: .5;
+} 
+
+.integrations-sidebar .w-nav-link.disabled,
+.integrations-sidebar .w-dropdown-link.disabled {
   pointer-events: none;
   opacity: .3;
 }

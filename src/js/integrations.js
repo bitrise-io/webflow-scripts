@@ -19,10 +19,10 @@ searchField.value = queryFilter;
 
 IntegrationsService.loadIntegrations().then((integrations) => {
   sidebar.render(integrations, platformFilter, categoryFilter, queryFilter);
-
   content.render(integrations, platformFilter, categoryFilter, queryFilter);
 
   searchField.addEventListener('keyup', (event) => {
+    sidebar.render(integrations, platformFilter, categoryFilter, event.target.value);
     content.render(integrations, platformFilter, categoryFilter, event.target.value);
   });
 
