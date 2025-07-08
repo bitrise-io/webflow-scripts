@@ -43,16 +43,16 @@ After cloning, install dependencies
 npm install
 ```
 
-and start local proxy server with
+and start local proxy server with *Webflow staging (default)*
 
 ```sh
-npm run proxy_staging
+npm run dev
 ```
 
-or 
+or with *Webflow production*
 
 ```sh
-npm run proxy_prod
+npm run dev -- bitrise.io
 ```
 
 The server will proxy paths from staging or prod and replace already embedded scripts in the page with the local one.

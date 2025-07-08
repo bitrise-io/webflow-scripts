@@ -5,12 +5,12 @@ const express = require('express');
 const webpack = require('webpack');
 const devMiddleware = require('webpack-dev-middleware');
 const hotMiddleware = require('webpack-hot-middleware');
-const webpackConfig = require('./webpack.dev.js');
+const webpackConfig = require('./webpack.config.js');
 
-const hostname = process.argv[3] || '127.0.0.1';
+const hostname = '127.0.0.1';
 const port = 3000;
 
-const webflowDomain = process.argv[2] || 'webflow.bitrise.io';
+const webflowDomain = process.argv[2] || 'test-e93bfd.webflow.io';
 
 const importedWorkers = {};
 
@@ -85,14 +85,14 @@ async function getWorker(urlObject) {
   };
 }
 
-const compiler = webpack(webpackConfig);
+const compiler = webpack(webpackConfig('development'));
 const devMiddlewareOptions = {
   // writeToDisk: true,
 };
 const app = express();
 
 app.use(devMiddleware(compiler, devMiddlewareOptions));
-if (webpackConfig.mode === 'development') app.use(hotMiddleware(compiler));
+app.use(hotMiddleware(compiler));
 
 app.get(/\/.*/, async (req, res) => {
   const urlObject = new URL(`http://${req.hostname}${req.url}`);
@@ -160,5 +160,5 @@ app.get(/\/.*/, async (req, res) => {
 });
 
 app.listen(port, hostname, () => {
-  process.stdout.write(`Server running at http://${hostname}:${port}/\n`);
+  process.stdout.write(`Local dev proxy started: https://${webflowDomain}/ -> http://${hostname}:${port}/\n`);
 });
