@@ -23,18 +23,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup NodeJS with yarn
+      - name: Setup NodeJS with npm
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
+          cache: 'npm'
+
       - name: Install NodeJS dependencies
-        run: yarn install
+        run: npm ci
+
       - name: Build
-        run: yarn build_prod
+        run: npm run build_prod
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

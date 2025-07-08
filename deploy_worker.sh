@@ -4,6 +4,6 @@ cp -rf src/js/$1/wrangler.toml ./
 
 shift 1
 
-yarn wrangler deploy $@
+npx wrangler deploy $@
 
 rm ./wrangler.toml

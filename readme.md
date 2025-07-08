@@ -40,19 +40,19 @@ https://webflow-scripts.bitrise.io/my-script.js
 After cloning, install dependencies
 
 ```sh
-yarn install
+npm install
 ```
 
 and start local proxy server with
 
 ```sh
-yarn proxy_staging
+npm run proxy_staging
 ```
 
 or 
 
 ```sh
-yarn proxy_prod
+npm run proxy_prod
 ```
 
 The server will proxy paths from staging or prod and replace already embedded scripts in the page with the local one.
