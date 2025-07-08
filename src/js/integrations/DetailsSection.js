@@ -35,12 +35,19 @@ class DetailsSection {
    * @param {Step} step
    */
   render(integrations, step) {
+    const deprecationNotice = step.isDeprecated()
+      ? `<blockquote class="book-hint warning">
+        ⚠️ &nbsp; ${step.deprecateNotes}
+      </blockquote>`
+      : '';
+
     this.githubButton.href = step.sourceCodeUrl;
-    this.descriptionContainer.innerHTML = step.formattedDescription;
+    this.descriptionContainer.innerHTML = `${deprecationNotice}${step.formattedDescription}`;
 
     this.similarStepsContainer.innerHTML = '';
 
     const similarSteps = Object.values(integrations.steps)
+      .filter((step2) => !step2.isDeprecated())
       .map((step2) => {
         return {
           step: step2,

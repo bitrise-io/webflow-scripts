@@ -1,0 +1,29 @@
+#integrations-step-details-description > h2 {
+  display: none;
+}
+
+div.step-description {
+  blockquote.book-hint {
+    margin: 1rem 0;
+    padding: .5rem 1rem .5rem .75rem;
+    border-left: .25rem solid #e9ecef;
+    border-radius: .25rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+
+    &.info {
+      border-color: #6bf;
+      background-color: rgba(102, 187, 255, .1);
+    }
+
+    &.warning {
+      border-color: #fd6;
+      background-color: rgba(255, 221, 102, .1);
+    }
+
+    &.danger {
+      border-color: #f66;
+      background-color: rgba(255, 102, 102, .1);
+    }
+  }
+}

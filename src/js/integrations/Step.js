@@ -26,14 +26,20 @@ class Step {
     return this.latestVersion.type_tags || ['other'];
   }
 
-  /** @returns {?string[]} */
+  /** @returns {string[]|null} */
   get platforms() {
     return this.latestVersion.project_type_tags || null;
   }
 
-  /** @returns {?string} */
+  /** @returns {string|null} */
   get svgIcon() {
-    return this.latestVersion.asset_urls ? this.latestVersion.asset_urls['icon.svg'] : null;
+    if (this.info.asset_urls && this.info.asset_urls['icon.svg']) {
+      return this.info.asset_urls['icon.svg'];
+    }
+    if (this.latestVersion.asset_urls && this.latestVersion.asset_urls['icon.svg']) {
+      return this.latestVersion.asset_urls['icon.svg'];
+    }
+    return null;
   }
 
   /** @returns {string} */
@@ -70,6 +76,21 @@ class Step {
   /** @returns {string} */
   get sourceCodeUrl() {
     return this.latestVersion.source_code_url;
+  }
+
+  /** @returns {string} */
+  get removalDate() {
+    return this.info.removal_date || null;
+  }
+
+  /** @returns {string} */
+  get deprecateNotes() {
+    return this.info.deprecate_notes || null;
+  }
+
+  /** @returns {boolean} */
+  isDeprecated() {
+    return !!this.info.deprecate_notes;
   }
 
   /**

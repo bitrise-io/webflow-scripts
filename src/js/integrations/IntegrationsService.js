@@ -2,32 +2,53 @@ import Integrations from './Integrations';
 import Step from './Step';
 
 /**
- * @typedef {object} StepInfo
- * @property {{"icon.svg": ?string}} asset_urls
- * @property {string} maintainer
+ * @typedef {{
+ *  description: string,
+ *  published_at: string,
+ *  source: {
+ *    git: string,
+ *    commit: string
+ *  },
+ *  source_code_url: string,
+ *  summary: string,
+ *  support_url: string,
+ *  title: string,
+ *  website: string,
+ *  asset_urls?: {"icon.svg": string},
+ *  type_tags?: string[],
+ *  project_type_tags?: string[],
+ *  host_os_tags?: string[],
+ * }} StepVersion
  */
 
 /**
- * @typedef {object} StepVersion
- * @property {{"icon.svg": ?string}} asset_urls
- * @property {string} description
- * @property {string[]|undefined} host_os_tags
- * @property {string[]|undefined} project_type_tags
- * @property {string} published_at
- * @property {{git: string, commit: string}} source
- * @property {string} source_code_url
- * @property {string} summary
- * @property {string} support_url
- * @property {string} title
- * @property {{[key: string]: {package_name: string}}|undefined} toolkit
- * @property {string[]|undefined} type_tags
- * @property {string} website
+ * @typedef {{
+ *  maintainer: string,
+ *  asset_urls?: {"icon.svg": string},
+ *  deprecate_notes?: string,
+ *  removal_date?: string,
+ * }} StepInfo
  */
 
 /**
- * @typedef {object} StepData
- * @property {StepInfo} info
- * @property {{[key: string]: StepVersion}} versions
+ * @typedef {{
+ *  info: StepInfo,
+ *  versions: {[key: string]: StepVersion},
+ * }} StepData
+ */
+
+/**
+ * @typedef {{
+ *  assets_download_base_uri: string,
+ *  download_locations: {
+ *    type: "zip" | "git",
+ *    src: string,
+ *  }[],
+ *  format_version: string,
+ *  generated_at_timestamp: number,
+ *  steplib_source: string,
+ *  steps: {[key: string]: StepData},
+ * }} SteplibResponse
  */
 
 class IntegrationsService {
@@ -39,7 +60,7 @@ class IntegrationsService {
   async loadIntegrations() {
     const response = await fetch(this.url);
 
-    /** @type {{"steps": {[key: string]: StepData}}} */
+    /** @type {SteplibResponse} */
     const json = await response.json();
 
     const integrations = new Integrations();

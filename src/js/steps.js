@@ -3,6 +3,8 @@ import HeaderSection from './integrations/HeaderSection';
 import IntegrationsService from './integrations/IntegrationsService';
 import { fancyConsoleLog, setMetaContent } from './shared/common';
 
+import '../css/steps.css';
+
 /**
  * @param {URL} url
  * @returns {?string}
@@ -43,6 +45,10 @@ IntegrationsService.loadIntegrations().then((integrations) => {
     setMetaContent({ property: 'twitter:title' }, `${step.title} | Bitrise Integration Steps`);
     setMetaContent({ property: 'twitter:description' }, step.summary.replace(/\s+/g, ' '));
     setMetaContent({ property: 'twitter:image' }, step.svgIcon);
+
+    if (step.isDeprecated()) {
+      setMetaContent({ name: 'robots' }, 'noindex');
+    }
 
     header.render(integrations, step);
     details.render(integrations, step);

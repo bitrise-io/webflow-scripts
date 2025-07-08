@@ -63,6 +63,7 @@ class SidebarSection {
       /** @type {string[]} */
       const matchingSteps = category.steps.filter((slug) => {
         return (
+          !integrations.steps[slug].isDeprecated() &&
           integrations.steps[slug].fitsCategory(categoryFilter) &&
           integrations.steps[slug].fitsPlatform(platformFilter) &&
           integrations.steps[slug].fitsQuery(queryFilter)
