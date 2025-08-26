@@ -1,10 +1,12 @@
 import ChangelogService from './changelog/ChangelogService';
 import ChangelogTagFactory from './changelog/ChangelogTagFactory';
+import YouTubeLoader from './changelog/YouTubeLoader';
 import { detectTopicFromUrl, formatDate, setMetaContent } from './shared/common';
 
 import '../css/changelog.css';
 
 const tagFactory = new ChangelogTagFactory();
+const youTubeLoader = new YouTubeLoader();
 
 /** @type {HTMLDivElement} */
 const topicMetaSeparator = document.querySelector('#changelog-topic-meta-separator');
@@ -66,12 +68,15 @@ changelogService.loadTopic(topicSlugId).then((topic) => {
     document.getElementById('changelog-topic-leave-feedback-button').href =
       `https://discuss.bitrise.io/t/${topic.slug}/${topic.id}`;
     document.getElementById('changelog-topic-leave-feedback-button').target = '_blank';
+
+    youTubeLoader.loadVideos();
   }
 });
 
 if (import.meta.webpackHot) {
   import.meta.webpackHot.dispose(() => {
     tagFactory.reset();
+    youTubeLoader.reset();
   });
   import.meta.webpackHot.accept();
 }
