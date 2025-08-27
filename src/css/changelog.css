@@ -28,11 +28,9 @@
 .changelog-topic-content img {
   height: auto;
 }
-.changelog-topic-content figure {
-  padding: .5rem;
-}
 .changelog-topic-content figure img {
   margin: 0 auto;
+  width: 100%;
 }
 .changelog-topic-content figure + br {
   display: none;
@@ -76,6 +74,11 @@
   margin-bottom: 1rem;
 }
 
+.changelog-topic-content .md-table {
+  overflow-y: auto;
+  margin: 1em 0;
+}
+
 .changelog-topic-content table thead th {
   text-align: left;
   padding: 0.25rem 0.5rem;
@@ -86,12 +89,34 @@
   font-size: .9rem;
 } 
 .changelog-topic-content table tr {
-  border-width: 1px 0 0 0;
+  border-width: 0 0 1px 0;
   border-style: solid;
   border-color: var(--neutral-90);
 }
 .changelog-topic-content table thead tr {
   border-width: 0 0 3px 0;
+}
+
+.changelog-topic-content {
+  p > code,
+  li > code,
+  strong > code,
+  em > code,
+  td > code,
+  th > code,
+  a > code {
+    padding: 2px 4px;
+    background: #e9ecef;
+    white-space: pre-wrap;
+    font-size: 0.8em;
+  }
+
+  code.hljs {
+    border-radius: 4px;
+    background: rgb(53, 28, 72);
+    font-size: 0.8rem;
+    line-height: 1.25rem;
+  }
 }
 
 /* aside.ondebox from discuss */ 

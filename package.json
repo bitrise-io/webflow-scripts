@@ -6,6 +6,7 @@
   "author": "Antal Orcsik <antal.orcsik@bitrise.io>",
   "license": "MIT",
   "dependencies": {
+    "@highlightjs/cdn-assets": "^11.11.1",
     "markdown-it": "^13.0.1"
   },
   "devDependencies": {

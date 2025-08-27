@@ -1,0 +1,98 @@
+/* Monaco Editor Dark Theme for Highlight.js */
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  background: #1e1e1e; /* Monaco dark background */
+  color: #d4d4d4;      /* Default foreground */
+  padding: 1em;
+  border-radius: 4px;
+}
+
+/* Comments and Documentation */
+.hljs-comment,
+.hljs-quote {
+  color: #6a9955;
+  font-style: italic;
+}
+
+/* Keywords (if, else, for, while, etc.) */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-doctag,
+.hljs-meta-keyword {
+  color: #569cd6;
+  font-weight: 600;
+}
+
+/* Numbers, Builtin Constants */
+.hljs-number,
+.hljs-literal,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-variable,
+.hljs-template-variable {
+  color: #b5cea8;
+}
+
+/* Strings */
+.hljs-string,
+.hljs-title,
+.hljs-section,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #ce9178;
+}
+
+/* Titles, class names */
+.hljs-title.class_,
+.hljs-title.class_.inherited-class {
+  color: #4ec9b0;
+  font-weight: 600;
+}
+
+/* Functions and Methods */
+.hljs-function,
+.hljs-function .hljs-title {
+  color: #dcdcaa;
+}
+
+/* Operators */
+.hljs-operator,
+.hljs-regexp,
+.hljs-link {
+  color: #d4d4d4;
+}
+
+/* Attributes and JSON keys */
+.hljs-attr,
+.hljs-attribute {
+  color: #9cdcfe;
+}
+
+/* Builtin functions and types */
+.hljs-built_in,
+.hljs-type,
+.hljs-symbol,
+.hljs-builtin-name {
+  color: #4ec9b0;
+}
+
+/* Important / Bold */
+.hljs-strong {
+  font-weight: 700;
+  color: #569cd6;
+}
+
+/* Emphasis / Italic */
+.hljs-emphasis {
+  font-style: italic;
+  color: #808080;
+}
+
+/* Punctuation */
+.hljs-punctuation {
+  color: #d4d4d4;
+}

@@ -1,3 +1,6 @@
+import hljs from '@highlightjs/cdn-assets/es/highlight.js';
+import '../css/hljs.css'; // import '@highlightjs/cdn-assets/styles/vs2015.css';
+
 import ChangelogService from './changelog/ChangelogService';
 import ChangelogTagFactory from './changelog/ChangelogTagFactory';
 import YouTubeLoader from './changelog/YouTubeLoader';
@@ -70,6 +73,11 @@ changelogService.loadTopic(topicSlugId).then((topic) => {
     document.getElementById('changelog-topic-leave-feedback-button').target = '_blank';
 
     youTubeLoader.loadVideos();
+
+    document.querySelectorAll('pre code').forEach((block) => {
+      block.className = '';
+      hljs.highlightElement(block);
+    });
   }
 });
 
