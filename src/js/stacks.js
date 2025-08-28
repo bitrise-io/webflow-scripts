@@ -114,8 +114,23 @@ const getStackRemovalDate = async (pagePath) => {
 
     const xcodeStackList = document.getElementById('xcode-stack-list');
     const xcodeStackListOriginalContent = xcodeStackList.innerHTML;
+
+    const xcodeStackListContainer = xcodeStackList.parentElement;
+    xcodeStackListContainer.classList.add('stack-list-container');
+
+    const xcodeStackUpdatePolicyNotice = document.createElement('div');
+    xcodeStackUpdatePolicyNotice.innerHTML = `<blockquote class="book-hint info">
+      <div>
+        <strong>macOS stack update policy</strong><br />
+        Learn more about how macOS stacks are updated.
+      </div>
+      <a href="https://docs.bitrise.io/en/bitrise-platform/infrastructure/build-stacks/macos-stack-update-policy.html" target="_blank">Learn more</a>
+    </blockquote>`;
+    xcodeStackListContainer.appendChild(xcodeStackUpdatePolicyNotice);
+
     resetScripts.push(() => {
       xcodeStackList.innerHTML = xcodeStackListOriginalContent;
+      xcodeStackUpdatePolicyNotice.remove();
     });
     const xcodeStableOnlyStack = document.getElementById('xcode-stable-only').cloneNode(true);
     xcodeStableOnlyStack.removeAttribute('id');
@@ -137,8 +152,25 @@ const getStackRemovalDate = async (pagePath) => {
 
     const ubuntuStackList = document.getElementById('ubuntu-stack-list');
     const ubuntuStackListOriginalContent = ubuntuStackList.innerHTML;
+
+    const ubuntuStackListContainer = ubuntuStackList.parentElement;
+    ubuntuStackListContainer.classList.add('stack-list-container');
+
+    ubuntuStackListContainer.querySelector('.stacks-heading-h3').innerHTML = 'Linux';
+
+    const ubuntuStackUpdatePolicyNotice = document.createElement('div');
+    ubuntuStackUpdatePolicyNotice.innerHTML = `<blockquote class="book-hint info">
+      <div>
+        <strong>Linux stack update policy</strong><br />
+        Learn more about how Linux stacks are updated.
+      </div>
+      <a href="https://docs.bitrise.io/en/bitrise-platform/infrastructure/build-stacks/linux-stack-update-policy.html" target="_blank">Learn more</a>
+    </blockquote>`;
+    ubuntuStackListContainer.appendChild(ubuntuStackUpdatePolicyNotice);
+
     resetScripts.push(() => {
       ubuntuStackList.innerHTML = ubuntuStackListOriginalContent;
+      ubuntuStackListContainer.remove();
     });
     const ubuntuStack = ubuntuStackList.querySelectorAll('.stack-row')[1].cloneNode(true);
     [...ubuntuStackList.querySelectorAll('.stack-row')].forEach((row, index) => {

@@ -1,3 +1,4 @@
+.stack-list-container,
 div#stacks-content {
   --gray-100: #f8f9fa;
   --gray-200: #e9ecef;
@@ -67,29 +68,75 @@ div#stacks-content details[open] summary svg {
   transform: rotateZ(180deg);
 } 
 
+.stack-list-container .book-hint.info,
 div#stacks-content .book-hint.info {
-  border-color: #6bf;
-  background-color: rgba(102, 187, 255, .1);
+  border-color: #99D1F5;
+  background-color: #ECF8FD;
+  & > a {
+    color: #2582D0;
+    border-color: #2582D0;
+  }
 }
-
+.stack-list-container .book-hint.warning,
 div#stacks-content .book-hint.warning {
-  border-color: #fd6;
-  background-color: rgba(255, 221, 102, .1);
+  border-color: #F9CC15;
+  background-color: #FFF6D1;
+  & > a {
+    color: #B27E00;
+    border-color: #B27E00;
+  }
 }
-
+.stack-list-container .book-hint.danger,
 div#stacks-content .book-hint.danger {
-  border-color: #f66;
-  background-color: rgba(255, 102, 102, .1);
+  border-color: #FFA8B5;
+  background-color: #FFF0F3;
+  & > a {
+    color: #D72D40;
+    border-color: #D72D40;
+  }
+}
+.stack-list-container .book-hint.success,
+div#stacks-content .book-hint.success {
+  border-color: #A1DEB2;
+  background-color: #EEF9F1;
+  & > a {
+    color: #2A9D4C;
+    border-color: #2A9D4C;
+  }
+}
+.stack-list-container .book-hint.progress,
+div#stacks-content .book-hint.progress {
+  border-color: #D5ADEB;
+  background-color: #F9F2FD;
+  & > a {
+    color: #7B3BA5;
+    border-color: #7B3BA5;
+  }
 }
 
+.stack-list-container blockquote,
 div#stacks-content blockquote {
   margin: 1rem 0;
   padding: .5rem 1rem .5rem .75rem;
-  border-inline-start: .25rem solid var(--gray-200);
+  background-color: #F6F4F6;
+  border-inline-start: .25rem solid #DFDAE1;
   border-radius: .25rem;
   font-size: 1rem;
   line-height: 1.5rem;
+  display: flex;
+  align-items: center;
+
+  & > a {
+    border: 1px solid #6B6071;
+    display: block;
+    padding: .25rem .5rem;
+    margin-left: auto;
+    border-radius: .25rem;
+    color: #6B6071;
+  }
 }
+
+
 
 div#stacks-content table tr th,
 div#stacks-content table tr td {
