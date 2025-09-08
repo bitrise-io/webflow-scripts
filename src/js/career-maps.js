@@ -238,6 +238,9 @@ const renderLevelDescription = (level) => {
   }
 
   Object.keys(level.salary).forEach((country) => {
+    if (!country.match(/(HUF|USD|GBP)/)) {
+      return; // skip non-primary hiring locations
+    }
     const salaryTableRow = salaryTableRowTemplate.cloneNode(true);
     salaryTableRow.querySelector('td').textContent = country;
     salaryTableRow.querySelectorAll('td')[1].textContent = formatSalary(level.salary[country].lowEnd);
