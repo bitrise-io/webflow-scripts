@@ -1,8 +1,10 @@
+import MarkdownIt from 'markdown-it';
 import { detectTopicFromUrl, fancyConsoleLog, formatDate, setMetaContent } from './shared/common';
 
-import '../css/stacks.css';
 import StacksService from './stacks/StacksService';
 import { githubIcon, messageAlertIcon } from './icons';
+
+import '../css/stacks.css';
 
 const stacksAPIBase = 'https://stacks.bitrise.io/';
 
@@ -44,6 +46,25 @@ const formatHtml = (html) => {
     .replaceAll(/\s+<\/code>/g, '</code>')
     .replaceAll(/href="\//g, 'href="/stacks/')
     .replaceAll(stacksAPIBase, '/stacks/');
+};
+
+const postprocessContent = () => {
+  document.querySelectorAll('#stacks-content blockquote.book-hint').forEach((blockquote) => {
+    if (blockquote.innerHTML.match(/\]\(/)) {
+      const linkMatches = blockquote.innerHTML.match(/\]\(.*?\)/g);
+      let innerHtml = blockquote.innerHTML;
+      linkMatches.forEach((linkMatch) => {
+        innerHtml = innerHtml.replace(
+          linkMatch,
+          linkMatch
+            .toLowerCase()
+            .replace(/(\s|%20)+/, '-')
+            .replace(/\.md/, ''),
+        );
+      });
+      blockquote.innerHTML = `<div>${MarkdownIt().renderInline(innerHtml)}</div>`;
+    }
+  });
 };
 
 /**
@@ -383,6 +404,7 @@ const getStackRemovalDate = async (pagePath) => {
     document.getElementById('stacks-title').innerHTML = data.title;
     document.getElementById('stacks-meta').innerHTML = `${formatDate(new Date(data.updated_at))}`;
     document.getElementById('stacks-content').innerHTML = `${deprecationNotice}${formatHtml(data.content_html)}`;
+    postprocessContent();
   } else if (pageType === 'stack_reports') {
     if (pagePath.split('/').length < 2 || pagePath.split('/')[1] === '') {
       window.location.href = '/stacks';
@@ -438,6 +460,7 @@ const getStackRemovalDate = async (pagePath) => {
       <p>This Bitrise stack contains the following software:</p>
       ${formatHtml(data.content_html)}
     `;
+    postprocessContent();
   } else {
     window.location.href = '/stacks';
   }
