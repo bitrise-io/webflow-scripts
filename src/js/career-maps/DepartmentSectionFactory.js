@@ -1,4 +1,5 @@
 import { createSlug } from './tools';
+import careerImages from './images';
 
 class DepartmentSectionFactory {
   /**
@@ -54,6 +55,11 @@ class DepartmentSectionFactory {
         /** @type {HTMLElement} */
         const teamNameElement = teamCardElement.querySelector('[data-template-id="cm-team-name"]');
         teamNameElement.textContent = teamNameElement.textContent.replace('{team_name}', team.name);
+
+        const teamIllustration = teamNameElement.nextSibling;
+        teamIllustration.src = careerImages.getImageBySlug(team.slug.replace(/-/g, '_'));
+        teamIllustration.alt = '';
+        teamIllustration.removeAttribute('srcset');
 
         /** @type {HTMLElement} */
         const teamLinkElement = teamCardElement.querySelector('[data-template-id="cm-team-link"]');
