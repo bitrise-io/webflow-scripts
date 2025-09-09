@@ -278,6 +278,7 @@ const getStackRemovalDate = async (pagePath) => {
           const row = xcodeEdgeOnlyStack.cloneNode(true);
           row.style.removeProperty('display');
           row.querySelector('.stack-version-title').innerHTML = stacksLinks.xcode[version].title;
+          row.querySelectorAll('.stack-links')[0].innerHTML = 'Coming soon...';
           renderStackLinks(
             row.querySelectorAll('.stack-links')[1],
             stacksLinks.xcode[version].edge.stack_reports,
