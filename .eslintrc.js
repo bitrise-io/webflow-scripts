@@ -28,6 +28,7 @@ module.exports = {
       files: ['./index.js'],
       rules: {
         'no-eval': 'off',
+        'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
       },
     },
   ],

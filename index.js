@@ -137,15 +137,25 @@ app.get(/\/.*/, async (req, res) => {
             responseLocation.replace(webflowDomain, `${hostname}:${port}`).replace('https', 'http'),
           );
 
-        const text = await response.text();
-
         process.stdout.write(`[info] Serving ${response.url} with status ${res.statusCode}\n`);
 
-        res.end(
-          text
-            .replace("document.location.host === 'test-e93bfd.webflow.io'", 'true')
-            .replace('https://webflow-scripts.bitrise.io/', '/'),
-        );
+        let text = (await response.text())
+          .replace("document.location.host === 'test-e93bfd.webflow.io'", 'true')
+          .replace('https://webflow-scripts.bitrise.io/', '/');
+
+        // testing the 404 page
+        if (text.match(/404 - Page Not Found/) && !text.match(/id="bitrise-status"/)) {
+          text = text.replace(
+            '</body>',
+            `<div id="bitrise-status" style="margin: 1rem auto">
+              <a href="https://status.bitrise.io/" rel="noreferrer" target="_blank">Status</a>
+            </div>
+            <script src="/404.js"></script>
+            </body>`,
+          );
+        }
+
+        res.end(text);
       },
     };
 

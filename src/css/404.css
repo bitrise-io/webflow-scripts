@@ -1,0 +1,50 @@
+div#bitrise-status {
+  --radii-4: 0.25rem;
+
+  --space-8: 0.5rem;
+  --space-12: 0.75rem;
+
+  --neutral-10: #201b22;
+  --purple-80: #ead4f2;
+  --red-70: #ff8091;
+  --green-70: #77cf8f;
+  --orange-70: #fd9730;
+  --yellow-70: #ebba00;
+}
+
+div#bitrise-status a {
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: var(--radii-4);
+  display: inline-block;
+  padding: calc(var(--space-8) - 1px) calc(var(--space-12) - 1px);
+  border: 1px solid var(--purple-80);
+  color: var(--purple-80);
+}
+
+div#bitrise-status a.severity-critical {
+  background-color: var(--red-70);
+  border-color: var(--red-70);
+  color: var(--neutral-10);
+}
+
+div#bitrise-status a.severity-major {
+  background-color: var(--orange-70);
+  border-color: var(--orange-70);
+  color: var(--neutral-10);
+}
+
+div#bitrise-status a.severity-minor {
+  background-color: var(--yellow-70);
+  border-color: var(--yellow-70);
+  color: var(--neutral-10);
+}
+
+div#bitrise-status a.severity-none {
+  background-color: var(--green-70);
+  border-color: var(--green-70);
+  color: var(--neutral-10);
+}
