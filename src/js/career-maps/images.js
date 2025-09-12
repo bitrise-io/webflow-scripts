@@ -3,6 +3,7 @@ import customerSuccessUrl from '../../images/careers/customer_success.svg';
 import dataUrl from '../../images/careers/data.svg';
 import engineeringUrl from '../../images/careers/engineering.svg';
 import financeUrl from '../../images/careers/finance.svg';
+import legalUrl from '../../images/careers/legal.svg';
 import marketingUrl from '../../images/careers/marketing.svg';
 import peopleUrl from '../../images/careers/people.svg';
 import productDesignUrl from '../../images/careers/product_design.svg';
@@ -23,6 +24,8 @@ const careerImages = {
         return engineeringUrl;
       case 'finance':
         return financeUrl;
+      case 'legal':
+        return legalUrl;
       case 'marketing':
         return marketingUrl;
       case 'people':
