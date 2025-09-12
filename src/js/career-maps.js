@@ -393,7 +393,7 @@ const rednerTeamSidebar = (team, job, level) => {
 };
 
 (async () => {
-  const response = await fetch('/careers/maps/data.json');
+  const response = await fetch(`/careers/maps/data.json?v=${Date.now()}`);
   /** @type {Department[]} */
   const careerMaps = await response.json();
   careerMaps.forEach((department) => {
