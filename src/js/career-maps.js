@@ -290,7 +290,13 @@ const renderLevelDescription = (level) => {
         row.querySelectorAll('th')[0].className = 'fs-table_header';
       } else if (row.querySelectorAll('td').length > 1) {
         row.querySelectorAll('td')[0].className = 'fs-table_header';
-        row.querySelectorAll('td')[1].className = 'fs-table_cell is-white';
+        if (row.querySelectorAll('td')[1].textContent.trim()) {
+          row.querySelectorAll('td')[1].className = 'fs-table_cell is-white';
+        } else {
+          row.querySelectorAll('td')[0].colSpan =
+            1 + (row.querySelectorAll('td')[1].colSpan ? row.querySelectorAll('td')[1].colSpan : 1);
+          row.querySelectorAll('td')[1].remove();
+        }
       } else if (row.querySelectorAll('td').length === 1 && row.querySelectorAll('td')[0].colSpan === 2) {
         row.querySelectorAll('td')[0].className = 'fs-table_header';
       } else {
