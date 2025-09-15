@@ -54,8 +54,8 @@ const generateChangelogRSS = async (changelogPath, rssPath) => {
         .join('');
       return `    <item>
       <title>${escape(topic.fancy_title || topic.title)}</title>
-      <link>https://discuss.bitrise.io/t/${topic.slug}/${topic.id}</link>
-      <guid>https://discuss.bitrise.io/t/${topic.slug}/${topic.id}</guid>
+      <link>https://bitrise.io/changelog/${topic.slug}/${topic.id}</link>
+      <guid>https://bitrise.io/changelog/${topic.slug}/${topic.id}</guid>
       <pubDate>${new Date(topic.created_at).toUTCString()}</pubDate>
       <description>Visit the link for full details and discussion.</description>
       ${categories}
