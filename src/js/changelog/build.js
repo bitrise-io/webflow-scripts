@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 const fs = require('fs');
+const { generateChangelogRSS } = require('./generate-rss');
 
 /**
  *
@@ -143,6 +144,10 @@ async function buildChangelog() {
     }),
   );
 
+  process.stdout.write(` \x1b[32mdone\x1b[0m\n`);
+
+  process.stdout.write('Generating RSS feed: ');
+  await generateChangelogRSS(filename, './changelog.xml');
   process.stdout.write(` \x1b[32mdone\x1b[0m\n`);
 }
 

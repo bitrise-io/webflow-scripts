@@ -36,6 +36,10 @@ addEventListener('fetch', (event) => {
     urlObject.hostname = 'web-cdn.bitrise.io';
     urlObject.pathname = 'changelog_latest.json';
     useCors = true;
+  } else if (urlObject.pathname.match(/^\/changelog\.xml$/)) {
+    urlObject.hostname = 'web-cdn.bitrise.io';
+    urlObject.pathname = 'changelog.xml';
+    useCors = true;
   } else if (urlObject.pathname.match(/^\/changelog\/.+/)) {
     urlObject.pathname = '/changelog/topic';
   }

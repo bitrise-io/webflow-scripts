@@ -5,6 +5,7 @@ yarn.lock
 dist/*.js
 career-maps.json
 changelog.json
+changelog.xml
 changelog_latest.json
 .DS_Store
 .env
