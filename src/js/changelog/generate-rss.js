@@ -53,7 +53,7 @@ const generateChangelogRSS = async (changelogPath, rssPath) => {
         .map((tag) => `<category>${escape(kebabToSentenceCase(tag))}</category>`)
         .join('');
       return `    <item>
-      <title>${escape(topic.fancy_title || topic.title)}</title>
+      <title>${escape(topic.title)}</title>
       <link>https://bitrise.io/changelog/${topic.slug}/${topic.id}</link>
       <guid>https://bitrise.io/changelog/${topic.slug}/${topic.id}</guid>
       <pubDate>${new Date(topic.created_at).toUTCString()}</pubDate>
@@ -83,3 +83,5 @@ module.exports = { generateChangelogRSS };
 if (require.main === module) {
   generateChangelogRSS(process.argv[2], process.argv[3]);
 }
+
+// <link rel="alternate" type="application/rss+xml" title="Bitrise Changelog" href="https://bitrise.io/changelog.xml?v1" />
