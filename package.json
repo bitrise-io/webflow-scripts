@@ -31,6 +31,8 @@
     "dev": "node ./index.js",
     "build": "node ./build.js",
     "build_changelog": "node ./src/js/changelog/build.js",
-    "build_career_maps": "node ./src/js/career-maps/build.js"
+    "build_career_maps": "node ./src/js/career-maps/build.js",
+    "check_cert:bitrise": "node ./src/js/tools/cert_check.js bitrise.io",
+    "check_cert:docs": "node ./src/js/tools/cert_check.js docs.bitrise.io"
   }
 }
