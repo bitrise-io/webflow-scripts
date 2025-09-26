@@ -125,7 +125,11 @@ const changelogSettingsTriggerClickHandler = () => {
 };
 
 const changelogSettingsChangeHandler = () => {
-  if (changelogLoadMoreButton && !changelogLoadMoreButton.disabled) {
+  if (
+    changelogLoadMoreButton &&
+    !changelogLoadMoreButton.disabled &&
+    changelogLoadMoreButton.style.display !== 'none'
+  ) {
     renderLatestChangelog('/changelog_latest.json');
     loadMoreClickHandler();
   }
