@@ -36,20 +36,57 @@ document.cookie = `${cookieName}=${cookieValue};expires=${expires};${domain ? `d
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? '' : 'https://bitrise.io';
 const changelogService = new ChangelogService(apiBase);
 
+/** @type {HTMLElement} */
 const changelogList = new ChangelogList(document.getElementById('changelog-list'));
+
 /** @type {HTMLAnchorElement} */
 const changelogLoadMoreButton = document.getElementById('changelog-load-more-button');
+
+/** @type {HTMLElement} */
+const changelogSettingsTrigger = document.querySelector('.changelog-settings-trigger');
+
+/** @type {HTMLElement} */
+const changelogSettingsContainer = document.querySelector('.changelog-settings-container');
+
+/** @type {HTMLInputElement} */
+const changelogSettingsInput = document.querySelector('#changelog-search');
+if (changelogSettingsInput)
+  changelogSettingsInput.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.keyIdentifier === 'U+000A' || e.keyIdentifier === 'Enter' || e.keyCode === 13) {
+        if (e.target.nodeName === 'INPUT' && e.target.type === 'text') {
+          e.preventDefault();
+          return false;
+        }
+      }
+    },
+    true,
+  );
+
+/** @type {HTMLInputElement[]} */
+const changelogFilterRadios = document.querySelectorAll('.changelog-settings-container input[name="changelog-filter"]');
+
+/** @returns {{search: string, showTags: string[]}} */
+const getChangelogSettings = () => {
+  return {
+    search: changelogSettingsInput ? changelogSettingsInput.value : '',
+    showTags: Array.from(changelogFilterRadios)
+      .filter((r) => r.checked)
+      .map((r) => r.id.replace('changelog-filter-', '')),
+  };
+};
 
 /**
  * @param {string} fullUrl
  */
 const renderFullChangelog = async (fullUrl) => {
   const topics = await changelogService.loadTopics(fullUrl);
-  changelogList.render(topics, lastVisitDate);
+  changelogList.render(topics, lastVisitDate, getChangelogSettings());
 };
 
 const loadMoreClickHandler = async (event) => {
-  event.preventDefault();
+  if (event) event.preventDefault();
 
   const oldButtonLabel = changelogLoadMoreButton.innerHTML;
   changelogLoadMoreButton.innerHTML = 'Loading...';
@@ -62,36 +99,63 @@ const loadMoreClickHandler = async (event) => {
   changelogLoadMoreButton.style.setProperty('display', 'none');
 };
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      changelogLoadMoreButton.dispatchEvent(new CustomEvent('click', { target: entry.target }));
-      observer.unobserve(changelogLoadMoreButton);
-    }
-  });
-});
+// const observer = new IntersectionObserver((entries) => {
+//   entries.forEach((entry) => {
+//     if (entry.isIntersecting) {
+//       changelogLoadMoreButton.dispatchEvent(new CustomEvent('click', { target: entry.target }));
+//       observer.unobserve(changelogLoadMoreButton);
+//     }
+//   });
+// });
 
 /**
  * @param {string} latestUrl
- * @param {boolean} autoLoad
  */
-const renderLatestChangelog = async (latestUrl, autoLoad) => {
+const renderLatestChangelog = async (latestUrl) => {
   const topics = await changelogService.loadTopics(latestUrl);
-  changelogList.render(topics, lastVisitDate);
-
-  if (autoLoad) observer.observe(changelogLoadMoreButton);
-
-  changelogLoadMoreButton.addEventListener('click', loadMoreClickHandler);
+  changelogList.render(topics, lastVisitDate, getChangelogSettings());
 };
 
-renderLatestChangelog('/changelog_latest.json', false);
+const changelogSettingsTriggerClickHandler = () => {
+  if (changelogSettingsContainer.style.display === 'none' || !changelogSettingsContainer.style.display) {
+    changelogSettingsContainer.style.display = 'block';
+  } else {
+    changelogSettingsContainer.style.display = 'none';
+  }
+};
+
+const changelogSettingsChangeHandler = () => {
+  if (changelogLoadMoreButton && !changelogLoadMoreButton.disabled) {
+    renderLatestChangelog('/changelog_latest.json');
+    loadMoreClickHandler();
+  }
+};
+
+renderLatestChangelog('/changelog_latest.json');
+// observer.observe(changelogLoadMoreButton);
+if (changelogLoadMoreButton) changelogLoadMoreButton.addEventListener('click', loadMoreClickHandler);
+
+if (changelogSettingsTrigger) changelogSettingsTrigger.addEventListener('click', changelogSettingsTriggerClickHandler);
+if (changelogSettingsInput) changelogSettingsInput.addEventListener('input', changelogSettingsChangeHandler);
+
+changelogFilterRadios.forEach((radio) => {
+  radio.addEventListener('change', changelogSettingsChangeHandler);
+});
 
 if (import.meta.webpackHot) {
   import.meta.webpackHot.dispose(() => {
     changelogList.reset();
-    observer.unobserve(changelogLoadMoreButton);
-    changelogLoadMoreButton.removeEventListener('click', loadMoreClickHandler);
-    changelogLoadMoreButton.style.removeProperty('display');
+    // observer.unobserve(changelogLoadMoreButton);
+    if (changelogLoadMoreButton) {
+      changelogLoadMoreButton.removeEventListener('click', loadMoreClickHandler);
+      changelogLoadMoreButton.style.removeProperty('display');
+    }
+    if (changelogSettingsTrigger)
+      changelogSettingsTrigger.removeEventListener('click', changelogSettingsTriggerClickHandler);
+    if (changelogSettingsInput) changelogSettingsInput.removeEventListener('input', changelogSettingsChangeHandler);
+    changelogFilterRadios.forEach((radio) => {
+      radio.removeEventListener('change', changelogSettingsChangeHandler);
+    });
   });
   import.meta.webpackHot.accept();
 }

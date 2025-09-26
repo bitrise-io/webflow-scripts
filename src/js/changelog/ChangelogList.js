@@ -69,11 +69,19 @@ class ChangelogList {
   /**
    * @param {ChangelogTopic[]} topics
    * @param {Date} lastVisitedDate
+   * @param {{search?: string}} filters
    */
-  render(topics, lastVisitedDate) {
+  render(topics, lastVisitedDate, filters = {}) {
     this.list.innerHTML = '';
     let timestamp = null;
     topics.forEach((topic) => {
+      if (filters.search && !topic.title.toLowerCase().includes(filters.search.toLowerCase())) {
+        return;
+      }
+      if (filters.showTags && !topic.tags.some((t) => filters.showTags.includes(t))) {
+        return;
+      }
+
       if (timestamp !== formatDate(topic.createdAt)) {
         timestamp = formatDate(topic.createdAt);
         const timestampListItem = this.timestampListItemTemplate.cloneNode(true);
@@ -85,6 +93,9 @@ class ChangelogList {
       const listItem = this.renderListItem(topic, isUnread);
       this.list.append(listItem);
     });
+    if (this.list.innerHTML === '') {
+      this.list.innerHTML = '<li class="changelog-no-results">Nothing matches the filters</li>';
+    }
   }
 
   reset() {

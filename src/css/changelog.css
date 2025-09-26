@@ -236,6 +236,28 @@ aside.onebox .onebox-body h4 {
   line-height: 1.5;
 }
 
+.changelog-settings-container label.display-flex {
+  gap: 0;
+  padding: 0;
+}
+.changelog-settings-container input[type="checkbox"] {
+  display: none;
+}
+.changelog-settings-container input[type="checkbox"] + .tag {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.changelog-settings-container input[type="checkbox"]:checked + .tag {
+  filter: none;
+  opacity: 1;
+}
+
+.changelog-no-results {
+  color: var(--neutral-60);
+  font-style: italic;
+}
+
+
 /* skeleton loading */ 
 
 .changelog-loading {
