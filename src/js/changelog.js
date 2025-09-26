@@ -132,6 +132,8 @@ const changelogSettingsChangeHandler = () => {
   ) {
     renderLatestChangelog('/changelog_latest.json');
     loadMoreClickHandler();
+  } else {
+    renderFullChangelog('/changelog.json');
   }
 };
 
