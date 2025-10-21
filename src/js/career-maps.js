@@ -353,6 +353,9 @@ const renderTeamSidebarJobSection = (newTeamSidebarJobSection, jobName, team, jo
 
   if (isActiveJobSection) {
     newTeamSidebarJobSection.style.display = 'block';
+    document.querySelector('#cm-team-page-title').textContent = document
+      .querySelector('#cm-team-page-title')
+      .textContent.replace('{job_name}', jobName);
   } else {
     newTeamSidebarJobSection.style.display = 'none';
   }
