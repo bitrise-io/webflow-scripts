@@ -18,15 +18,12 @@
 #cm-way-of-working-description table tr th {
   text-align: left;
 }
-#cm-way-of-working-description table tr th:first-child,
+/* #cm-way-of-working-description table tr th:first-child,
 #cm-way-of-working-description table tr td:first-child {
-  /* width: 25%; */
-}
+  width: 25%;
+} */
 
-
-
-
-/* skeleton loading */ 
+/* skeleton loading -- start */ /*
 
 .cm-loading #cm-level-heading,
 .cm-loading #cm-tenure-section > *,
@@ -46,8 +43,9 @@
 .cm-loading #cm-tenure-section > *,
 .cm-loading #cm-compensation-section > *,
 .cm-loading #cm-way-of-working-section > *,
+.cm-loading .cm-team-sidebar-job-heading,
 .cm-loading .cm-sidebar-list .heading-style-h5,
-.cm-loading .cm-sidebar-list ul li,
+.cm-loading .cm-sidebar-list ul li .cm-level-name,
 .cm-loading [data-template-id="cm-team"],
 .cm-loading [data-template-id="cm-department-description"],
 .cm-loading [data-template-id="cm-department-name"] {
@@ -61,8 +59,9 @@
 .cm-loading #cm-tenure-section > * *,
 .cm-loading #cm-compensation-section > * *,
 .cm-loading #cm-way-of-working-section > * *,
+.cm-loading .cm-team-sidebar-job-heading > *,
 .cm-loading .cm-sidebar-list .heading-style-h5 *,
-.cm-loading .cm-sidebar-list ul li *,
+.cm-loading .cm-sidebar-list ul li .cm-level-name > *,
 .cm-loading [data-template-id="cm-team"] *,
 .cm-loading [data-template-id="cm-department-description"] *,
 .cm-loading [data-template-id="cm-department-name"] * {
@@ -72,8 +71,9 @@
 .cm-loading #cm-tenure-section > *:before,
 .cm-loading #cm-compensation-section > *:before,
 .cm-loading #cm-way-of-working-section > *:before,
+.cm-loading .cm-team-sidebar-job-heading:before,
 .cm-loading .cm-sidebar-list .heading-style-h5:before,
-.cm-loading .cm-sidebar-list ul li:before,
+.cm-loading .cm-sidebar-list ul li .cm-level-name:before,
 .cm-loading [data-template-id="cm-team"]:before,
 .cm-loading [data-template-id="cm-department-description"]:before,
 .cm-loading [data-template-id="cm-department-name"]:before {
@@ -100,4 +100,4 @@
   }
 }
 
-/* skeleton loading -- end */ 
+*//* skeleton loading -- end */ 
