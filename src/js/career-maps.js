@@ -266,7 +266,11 @@ const renderLevelDescription = (level) => {
   }
 
   const tenureSection = document.querySelector('#cm-tenure-section');
-  tenureSection.querySelector('#cm-tenure-description').innerHTML = level.tenure;
+  if (level.tenure) {
+    tenureSection.querySelector('#cm-tenure-description').innerHTML = level.tenure;
+  } else {
+    tenureSection.style.display = 'none';
+  }
 
   const wayOfWorkingSection = document.querySelector('#cm-way-of-working-section');
   wayOfWorkingSection.querySelector('#cm-way-of-working-description').innerHTML = level.description
@@ -316,6 +320,8 @@ const renderLevelDescription = (level) => {
  * @returns {HTMLElement}
  */
 const renderTeamSidebarJobSection = (newTeamSidebarJobSection, jobName, team, job, level) => {
+  let isActiveJobSection = false;
+
   const teamSidebarJobSectionHeading = newTeamSidebarJobSection.querySelector('#cm-team-sidebar-job-heading');
   teamSidebarJobSectionHeading.textContent = teamSidebarJobSectionHeading.textContent.replace('{job_name}', jobName);
   teamSidebarJobSectionHeading.removeAttribute('id');
@@ -340,9 +346,16 @@ const renderTeamSidebarJobSection = (newTeamSidebarJobSection, jobName, team, jo
     teamSidebarLevelsListItemLink.href = `/careers/maps/${team.slug}/${job.slug}/${createSlug(levelShortName)}`;
     if (jobLevel.name === level.name) {
       teamSidebarLevelsListItemLink.className = teamSidebarLevelsListItemSelectedClassName;
+      isActiveJobSection = true;
     }
     teamSidebarLevelsList.appendChild(teamSidebarLevelsListItem);
   });
+
+  if (isActiveJobSection) {
+    newTeamSidebarJobSection.style.display = 'block';
+  } else {
+    newTeamSidebarJobSection.style.display = 'none';
+  }
 
   return newTeamSidebarJobSection;
 };

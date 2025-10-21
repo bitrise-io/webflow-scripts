@@ -127,6 +127,12 @@ const getCompetencyFramworks = async () => {
 };
 
 (async () => {
+  const debug = process.argv.includes('--debug');
+
+  if (debug) {
+    process.stdout.write('Debug mode is ON\n');
+  }
+
   try {
     const departments = await getCompetencyFramworks();
 
@@ -149,6 +155,114 @@ const getCompetencyFramworks = async () => {
       });
     });
 
+    const addWarning = (level, message) => {
+      level.warnings.push(message);
+      if (debug) {
+        process.stderr.write(`Warning in ${level.name}: ${message}\n`);
+      }
+    };
+
+    const sameLocations = [['Hungary (HUF)', 'Hungary', 'HU']];
+
+    const hasSalary = (element) => {
+      return element.querySelector('th')?.textContent.match(/Salary ranges for this (position|level)/);
+    };
+
+    const getSalaryData = (element) => {
+      const salary = {};
+      [...element.querySelectorAll('tr')]
+        .filter((row) => row.querySelector('td'))
+        .forEach((row) => {
+          const [location, lowEnd, midPoint, highEnd] = [...row.querySelectorAll('td')].map((cell) => cell.textContent);
+
+          if (location && lowEnd && midPoint && highEnd) {
+            let locationName = location;
+            sameLocations.forEach((loc) => {
+              if (locationName.match(new RegExp(loc.join('|'), 'i'))) {
+                [locationName] = loc;
+              }
+            });
+
+            salary[locationName] = {
+              lowEnd: parseInt(lowEnd.replaceAll(/,/g, '').trim(), 10),
+              midPoint: parseInt(midPoint.replaceAll(/,/g, '').trim(), 10),
+              highEnd: parseInt(highEnd.replaceAll(/,/g, '').trim(), 10),
+            };
+          }
+        });
+      return salary;
+    };
+
+    const getVariablePayComissionOrBonusData = (element, labelPattern) => {
+      const bonusRow = [...element.querySelectorAll('tr')].find((row) =>
+        [...row.querySelectorAll('th')].find((th) => th.textContent.match(labelPattern)),
+      );
+      if (bonusRow) {
+        let dataCell;
+        const bonusCells = bonusRow.querySelectorAll('td, th');
+        if (bonusCells.length > 1) {
+          [, dataCell] = bonusCells;
+        } else {
+          dataCell = [...bonusRow.querySelectorAll('th')].find((th) => th.textContent.match(labelPattern));
+        }
+        if (dataCell) {
+          const data = dataCell.textContent.trim().replace(/,/, '.').replace(/ %/, '%');
+          return data;
+        }
+      }
+      return null;
+    };
+
+    const hasVariablePay = (element) => {
+      return [...element.querySelectorAll('tr')].some((row) =>
+        [...row.querySelectorAll('th')].find((th) => th.textContent.match(/Variable pay percentage for this position/)),
+      );
+    };
+
+    const getVariablePayData = (element) => {
+      return getVariablePayComissionOrBonusData(element, /Variable pay percentage for this position/);
+    };
+
+    const hasCommission = (element) => {
+      return [...element.querySelectorAll('tr')].some((row) =>
+        [...row.querySelectorAll('th')].find((th) => th.textContent.match(/Commission percentage for this position/)),
+      );
+    };
+
+    const getCommissionData = (element) => {
+      return getVariablePayComissionOrBonusData(element, /Commission percentage for this position/);
+    };
+
+    const hasBonus = (element) => {
+      return [...element.querySelectorAll('tr')].some((row) =>
+        [...row.querySelectorAll('th')].find((th) => th.textContent.match(/Bonus percentage for this position/)),
+      );
+    };
+
+    const getBonusData = (element) => {
+      return getVariablePayComissionOrBonusData(element, /Bonus percentage for this position/);
+    };
+
+    const hasTenure = (element) => {
+      return [...element.querySelectorAll('th')].find((th) => th.textContent === 'Tenure') !== undefined;
+    };
+
+    const getTenureData = (element) => {
+      const tenureTableRow = [...element.querySelectorAll('tr')].find((row) =>
+        [...row.querySelectorAll('th')].find((th) => th.textContent === 'Tenure'),
+      );
+      if (tenureTableRow) {
+        let dataCell = tenureTableRow.querySelector('td');
+        if (!dataCell) {
+          dataCell = [...tenureTableRow.querySelectorAll('th')].find((th) => th.textContent !== 'Tenure');
+        }
+        if (dataCell) {
+          return dataCell.innerHTML;
+        }
+      }
+      return null;
+    };
+
     process.stdout.write('Reading Level Pages: ');
     let flatLevel = flatLevels.pop();
     while (flatLevel) {
@@ -157,109 +271,24 @@ const getCompetencyFramworks = async () => {
       const levelPageDom = new JSDOM(levelPage.body);
       process.stdout.write('.');
 
-      // console.log(levelPage.title);
-
-      const sameLocations = [['Hungary (HUF)', 'Hungary', 'HU']];
-
       level.warnings = [];
 
       const elements = [...levelPageDom.window.document.querySelector('body').children].filter((element) =>
         element.textContent.trim(),
       );
       let element = elements.shift();
+
       while (element) {
-        if (element.querySelector('th')?.textContent === 'Salary ranges for this position') {
-          level.salary = {};
-          [...element.querySelectorAll('tr')]
-            .filter((row) => row.querySelector('td'))
-            .forEach((row) => {
-              const [location, lowEnd, midPoint, highEnd] = [...row.querySelectorAll('td')].map(
-                (cell) => cell.textContent,
-              );
-
-              if (location && lowEnd && midPoint && highEnd) {
-                let locationName = location;
-                sameLocations.forEach((loc) => {
-                  if (locationName.match(new RegExp(loc.join('|'), 'i'))) {
-                    [locationName] = loc;
-                  }
-                });
-
-                level.salary[locationName] = {
-                  lowEnd: parseInt(lowEnd.replaceAll(/,/g, '').trim(), 10),
-                  midPoint: parseInt(midPoint.replaceAll(/,/g, '').trim(), 10),
-                  highEnd: parseInt(highEnd.replaceAll(/,/g, '').trim(), 10),
-                };
-              }
-            });
-        } else if (
-          [...element.querySelectorAll('th')].find(
-            (th) => th.textContent === 'Variable pay percentage for this position',
-          )
-        ) {
-          const variablePayTableRow = [...element.querySelectorAll('tr')].find((row) =>
-            [...row.querySelectorAll('th')].find(
-              (th) => th.textContent === 'Variable pay percentage for this position',
-            ),
-          );
-          if (variablePayTableRow) {
-            let dataCell = variablePayTableRow.querySelector('td');
-            if (!dataCell) {
-              dataCell = [...variablePayTableRow.querySelectorAll('th')].find(
-                (th) => th.textContent !== 'Variable pay percentage for this position',
-              );
-            }
-            if (dataCell) {
-              level.variablePay = dataCell.textContent.trim().replace(/,/, '.').replace(/ %/, '%');
-            }
-          }
-        } else if (
-          [...element.querySelectorAll('th')].find((th) => th.textContent === 'Bonus percentage for this position')
-        ) {
-          const bonusTableRow = [...element.querySelectorAll('tr')].find((row) =>
-            [...row.querySelectorAll('th')].find((th) => th.textContent === 'Bonus percentage for this position'),
-          );
-          if (bonusTableRow) {
-            let dataCell = bonusTableRow.querySelector('td');
-            if (!dataCell) {
-              dataCell = [...bonusTableRow.querySelectorAll('th')].find(
-                (th) => th.textContent !== 'Bonus percentage for this position',
-              );
-            }
-            if (dataCell) {
-              level.bonus = dataCell.textContent.trim().replace(/,/, '.').replace(/ %/, '%');
-            }
-          }
-        } else if (
-          [...element.querySelectorAll('th')].find((th) => th.textContent === 'Commission percentage for this position')
-        ) {
-          const comissionTableRow = [...element.querySelectorAll('tr')].find((row) =>
-            [...row.querySelectorAll('th')].find((th) => th.textContent === 'Commission percentage for this position'),
-          );
-          if (comissionTableRow) {
-            let dataCell = comissionTableRow.querySelector('td');
-            if (!dataCell) {
-              dataCell = [...comissionTableRow.querySelectorAll('th')].find(
-                (th) => th.textContent !== 'Commission percentage for this position',
-              );
-            }
-            if (dataCell) {
-              level.commission = dataCell.textContent.trim().replace(/,/, '.').replace(/ %/, '%');
-            }
-          }
-        } else if ([...element.querySelectorAll('th')].find((th) => th.textContent === 'Tenure')) {
-          const tenureTableRow = [...element.querySelectorAll('tr')].find((row) =>
-            [...row.querySelectorAll('th')].find((th) => th.textContent === 'Tenure'),
-          );
-          if (tenureTableRow) {
-            let dataCell = tenureTableRow.querySelector('td');
-            if (!dataCell) {
-              dataCell = [...tenureTableRow.querySelectorAll('th')].find((th) => th.textContent !== 'Tenure');
-            }
-            if (dataCell) {
-              level.tenure = dataCell.innerHTML;
-            }
-          }
+        if (hasSalary(element)) {
+          level.salary = getSalaryData(element);
+        } else if (hasVariablePay(element)) {
+          level.variablePay = getVariablePayData(element);
+        } else if (hasBonus(element)) {
+          level.bonus = getBonusData(element);
+        } else if (hasCommission(element)) {
+          level.commission = getCommissionData(element);
+        } else if (hasTenure(element)) {
+          level.tenure = getTenureData(element);
         } else if (!element.outerHTML.match(/^<div class="confluence-information-macro/)) {
           if (!level.description) {
             level.description = '';
@@ -270,19 +299,22 @@ const getCompetencyFramworks = async () => {
         element = elements.shift();
       }
 
-      if (Object.keys(level.salary).length === 0) {
-        level.warnings.push('Salary is missing!');
+      if (!level.salary || Object.keys(level.salary).length === 0) {
+        addWarning(level, 'Salary is missing!');
       }
       if (!level.tenure) {
-        level.warnings.push('Tenure is missing!');
+        addWarning(level, 'Tenure is missing!');
       }
       if (!level.bonus && !level.commission && !level.variablePay) {
-        level.warnings.push('Variable pay, bonus, and commission are missing!');
+        addWarning(level, 'Variable pay, bonus, and commission are missing!');
       }
       if (!level.description) {
-        level.warnings.push('Description is missing!');
+        addWarning(level, 'Description is missing!');
       } else {
-        // level.description = level.description.replaceAll(/(<[a-z]+)\s[^>]+/g, '$1');
+        level.description = level.description
+          .replace(/confluenceTh/g, 'fs-table_header')
+          .replace(/<h1/g, '<h5')
+          .replace(/<\/h1>/g, '</h5>');
       }
 
       // console.log(level);
@@ -296,6 +328,12 @@ const getCompetencyFramworks = async () => {
     await fs.promises.writeFile('./career-maps.json', JSON.stringify(departments, null, 2));
     process.stdout.write('Done\n');
   } catch (err) {
-    process.stderr.write(`Failed\n${err}\n`);
+    process.stderr.write(`Failed\n\n`);
+    if (debug) {
+      process.stderr.write(`${err.stack}\n`);
+    } else {
+      process.stderr.write(`${err}\n`);
+    }
+    process.exit(1);
   }
 })();
