@@ -1,7 +1,7 @@
 const { exec } = require('child_process');
 
 const dnsConfig = {
-  'bitrise.io': 'proxy-ssl.webflow.com',
+  'bitrise.io': 'cdn.webflow.com',
   'docs.bitrise.io': 'bitrise-io.github.io',
 };
 
