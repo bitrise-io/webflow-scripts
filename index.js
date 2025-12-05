@@ -12,13 +12,15 @@ const port = 3000;
 
 const webflowDomain = process.argv[2] || 'test-e93bfd.webflow.io';
 
+const workers = [];
 const importedWorkers = {};
 
 /**
+ * @param {string} workerName
  * @param {string} workerPath
  * @returns {Promise<Function>}
  */
-async function importWorker(workerPath) {
+async function importWorker(workerName, workerPath) {
   const workerContent = (await fs.promises.readFile(workerPath, 'utf8'))
     .toString()
     .replaceAll('webflow.bitrise.io', webflowDomain)
@@ -28,14 +30,15 @@ async function importWorker(workerPath) {
     )
     .replaceAll(/\/\*(.|[\n\r])*?\*\//gm, '')
     .replaceAll(/\/\/.*$/g, '');
-  const workerName = `${workerPath}-${crypto.createHash('md5').update(workerContent).digest('hex')}`;
-  if (!importedWorkers[workerName]) {
+  const workerNameWithHash = `${workerName}-${crypto.createHash('md5').update(workerContent).digest('hex')}`;
+  if (!importedWorkers[workerNameWithHash]) {
     if (workerContent.match(/addEventListener\('fetch',/)) {
       // Service Worker Syntax
       eval(`(() => {
         function addEventListener(_, cb) {
-          importedWorkers['${workerName}'] = { type: "Service" };
-          importedWorkers['${workerName}'].handler = cb;
+          importedWorkers['${workerNameWithHash}'] = { type: "Service" };
+          importedWorkers['${workerNameWithHash}'].name = '${workerName}';
+          importedWorkers['${workerNameWithHash}'].handler = cb;
         };
         ${workerContent}
       })();`);
@@ -46,14 +49,53 @@ async function importWorker(workerPath) {
         ${workerContent.replace(
           /export default {/,
           `
-          importedWorkers['${workerName}'] = { type: "ES6 Module" };
-          importedWorkers['${workerName}'].handler = {`,
+          importedWorkers['${workerNameWithHash}'] = { type: "ES6 Module" };
+          importedWorkers['${workerNameWithHash}'].name = '${workerName}';
+          importedWorkers['${workerNameWithHash}'].handler = {`,
         )}
       })();`);
     }
-    process.stdout.write(`[info] Registered new ${importedWorkers[workerName].type} Worker: ${workerName}\n`);
+    process.stdout.write(`[info] Registered new Worker: ${workerName} (${importedWorkers[workerNameWithHash].type})\n`);
   }
-  return importedWorkers[workerName];
+  return importedWorkers[workerNameWithHash];
+}
+
+/**
+ *
+ * @param {string}dir
+ */
+async function discoverWorkers(dir) {
+  const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+
+  await Promise.all(
+    entries.map(async (entry) => {
+      const fullPath = path.join(dir, entry.name);
+
+      if (entry.isDirectory()) {
+        await discoverWorkers(fullPath);
+      } else if (entry.name === 'wrangler.toml') {
+        const tomlContent = await fs.promises.readFile(fullPath, 'utf8');
+        // Basic TOML parsing - you may want to use a proper TOML parser library
+        const config = {};
+        const lines = tomlContent.split('\n');
+        lines.forEach((line) => {
+          const match = line.match(/^(\w+)\s*=\s*["']?([^"'\n]+)["']?/);
+          if (match) {
+            const [, key, value] = match;
+            config[key] = value;
+          }
+        });
+
+        workers.push({
+          name: path.basename(path.dirname(fullPath)),
+          path: fullPath,
+          config,
+        });
+
+        process.stdout.write(`[info] Found worker config: ${fullPath}\n`);
+      }
+    }),
+  );
 }
 
 /**
@@ -61,20 +103,28 @@ async function importWorker(workerPath) {
  * @returns {Promise<{ type: string; handler: Function; }>}
  */
 async function getWorker(urlObject) {
-  if (urlObject.pathname.match(/^\/integrations/)) {
-    return importWorker('./src/js/integrations/worker.js');
+  if (workers.length === 0) {
+    await discoverWorkers('./src/js');
   }
-  if (urlObject.pathname.match(/^\/changelog/)) {
-    return importWorker('./src/js/changelog/worker.js');
+
+  const matchedWorker = workers.filter((worker) => {
+    let routePattern = worker.config.route.replace('bitrise.io', '^');
+    if (routePattern.endsWith('*')) {
+      routePattern = routePattern.slice(0, -1);
+    } else {
+      routePattern = `${routePattern}$`;
+    }
+    return urlObject.pathname.match(new RegExp(routePattern));
+  });
+
+  if (matchedWorker.length > 0) {
+    const worker = matchedWorker[0];
+    return importWorker(worker.config.name, path.join(path.dirname(worker.path), worker.config.main));
   }
-  if (urlObject.pathname.match(/^\/stacks/)) {
-    return importWorker('./src/js/stacks/worker.js');
-  }
-  if (urlObject.pathname.match(/^\/careers\/maps\//)) {
-    return importWorker('./src/js/career-maps/worker.js');
-  }
+
   return {
     type: 'ES6 Module',
+    name: 'express-proxy',
     handler: {
       async fetch(request) {
         const url = new URL(request.url);
@@ -118,7 +168,7 @@ app.get(/\/.*/, async (req, res) => {
   } catch (error) {
     const requestHandler = await getWorker(urlObject);
 
-    process.stdout.write(`[info] Using request handler ${requestHandler.type}\n`);
+    process.stdout.write(`[info] Using request handler ${requestHandler.name} (${requestHandler.type})\n`);
 
     const fetchEvent = {
       request: {
@@ -128,6 +178,11 @@ app.get(/\/.*/, async (req, res) => {
         const response = await buffer;
         res.statusCode = response.status;
 
+        const responseAccessControlAllowOrigin = response.headers.get('Access-Control-Allow-Origin');
+        if (responseAccessControlAllowOrigin)
+          res.setHeader('Access-Control-Allow-Origin', responseAccessControlAllowOrigin);
+        const responseVary = response.headers.get('Vary');
+        if (responseVary) res.setHeader('Vary', responseVary);
         const responseContentType = response.headers.get('Content-Type');
         if (responseContentType) res.setHeader('Content-Type', response.headers.get('Content-Type'));
         const responseLocation = response.headers.get('Location');
@@ -137,7 +192,7 @@ app.get(/\/.*/, async (req, res) => {
             responseLocation.replace(webflowDomain, `${hostname}:${port}`).replace('https', 'http'),
           );
 
-        process.stdout.write(`[info] Serving ${response.url} with status ${res.statusCode}\n`);
+        process.stdout.write(`[info] Serving ${urlObject.href} with status ${res.statusCode}\n`);
 
         let text = (await response.text())
           .replace("document.location.host === 'test-e93bfd.webflow.io'", 'true')
