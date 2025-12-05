@@ -19,8 +19,21 @@ export default {
     }
 
     if (urlObject.pathname.match(/^\/stacks\/.+\/.+/)) {
+      const originalPath = urlObject.pathname;
       urlObject.pathname = '/stacks/subpage';
-    } else if (urlObject.pathname.match(/\/stacks$|stacks\/(.*)/)) {
+      const response = await fetch(urlObject);
+      const data = (await response.text()).replace(
+        'https://bitrise.io/stacks/subpage',
+        `https://bitrise.io${originalPath}`,
+      );
+      return new Response(data, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+      });
+    }
+
+    if (urlObject.pathname.match(/\/stacks$|stacks\/(.*)/)) {
       urlObject.pathname = '/stacks';
     }
 
