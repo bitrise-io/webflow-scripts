@@ -42,10 +42,13 @@ class DetailsSection {
       : '';
 
     this.githubButton.href = step.sourceCodeUrl;
-    this.descriptionContainer.innerHTML = `${deprecationNotice}${step.formattedDescription}`;
+
+    const description = step.formattedDescription
+      .replace(/www\.bitrise\.io/gi, 'bitrise.io')
+      .replace(/http:/gi, 'https:');
+    this.descriptionContainer.innerHTML = `${deprecationNotice}${description}`;
 
     this.similarStepsContainer.innerHTML = '';
-
     const similarSteps = Object.values(integrations.steps)
       .filter((step2) => !step2.isDeprecated())
       .map((step2) => {
