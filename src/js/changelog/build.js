@@ -59,8 +59,9 @@ async function fetchCategory(category) {
     process.stdout.write('.');
 
     json.topic_list.topics.forEach((topic) => {
+      const topicTags = topic.tags.map((tag) => (typeof tag === 'object' ? tag.slug : tag));
       if (topic.pinned) return; // skip if pinned
-      if (skipTag && topic.tags.includes(skipTag)) return; // skip if has skip tag
+      if (skipTag && topicTags.includes(skipTag)) return; // skip if has skip tag
       if (skipTopics.includes(topic.id)) return; // skip if in skip id list
 
       topics.push({
@@ -69,7 +70,7 @@ async function fetchCategory(category) {
         fancy_title: topic.fancy_title,
         slug: topic.slug,
         created_at: topic.created_at,
-        tags: topic.tags,
+        tags: topicTags,
       });
     });
 

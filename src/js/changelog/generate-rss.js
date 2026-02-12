@@ -6,6 +6,7 @@ const fs = require('fs');
  * @returns {string}
  */
 function kebabToSentenceCase(str) {
+  if (typeof str !== 'string') throw new Error(`Expected a string but got ${typeof str}`);
   if (!str) return '';
   return str
     .split('-')
