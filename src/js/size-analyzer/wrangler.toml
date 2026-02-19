@@ -1,6 +1,6 @@
-name = "size-analyser"
+name = "size-analyzer"
 main = "./worker.js"
 compatibility_date = "2026-02-18"
-route = "bitrise.io/size-analyser*"
+route = "bitrise.io/size-analyzer*"
 no_bundle = true
 workers_dev = true
