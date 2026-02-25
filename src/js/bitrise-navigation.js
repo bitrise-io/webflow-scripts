@@ -10,8 +10,8 @@
 
 // Importing BitriseNavigation registers the <bitrise-navigation> custom element
 // and sets up the global loader callback. This runs in both dev and production.
-import { connectedInstances, cachedData, setCachedData, init } from './navigation/BitriseNavigation';
-import { renderNavigation } from './navigation/render';
+import { connectedInstances, cachedData, setCachedData, init } from './bitrise-navigation/BitriseNavigation';
+import { renderNavigation } from './bitrise-navigation/render';
 
 // Explicit initialization — registers the custom element and global callback.
 init();

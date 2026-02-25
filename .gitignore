@@ -7,7 +7,7 @@ career-maps.json
 changelog.json
 changelog.xml
 changelog_latest.json
-navigation_loader.js
+bitrise-navigation-loader.js
 .DS_Store
 .env
 /wrangler.toml

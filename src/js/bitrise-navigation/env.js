@@ -1,7 +1,7 @@
 /** Loader script URLs per environment. */
 export const LOADER_URLS = {
-  development: '/navigation_loader.js',
-  production: 'https://web-cdn.bitrise.io/navigation_loader.js',
+  development: '/bitrise-navigation-loader.js',
+  production: 'https://web-cdn.bitrise.io/bitrise-navigation-loader.js',
 };
 
 /**
