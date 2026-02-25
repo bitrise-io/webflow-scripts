@@ -6,7 +6,7 @@ const fs = require('fs');
 async function buildNavigation() {
   const outputPath = process.argv[2];
   if (!outputPath) {
-    console.error('Usage: node build.js <output-path>');
+    process.stderr.write('Usage: node build.js <output-path>\n');
     process.exit(1);
   }
 
@@ -55,7 +55,7 @@ async function buildNavigation() {
   process.stdout.write(` \x1b[32mdone\x1b[0m\n`);
 
   if (error) {
-    console.warn('Warnings:', error);
+    process.stderr.write(`Warnings: ${error.join(', ')}\n`);
   }
 }
 
