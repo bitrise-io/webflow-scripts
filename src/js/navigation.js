@@ -1,16 +1,16 @@
 // ---------------------------------------------------------------------------
-// <webflow-navigation> custom element — entry point
+// <bitrise-navigation> custom element — entry point
 //
-// Usage:  <webflow-navigation></webflow-navigation>
-//         <webflow-navigation env="development"></webflow-navigation>
+// Usage:  <bitrise-navigation></bitrise-navigation>
+//         <bitrise-navigation position="smart"></bitrise-navigation>
 //
 // All logic lives in src/js/navigation/*.js — this file only re-exports
 // the custom element registration and handles webpack HMR.
 // ---------------------------------------------------------------------------
 
-// Importing WebflowNavigation registers the <webflow-navigation> custom element
+// Importing BitriseNavigation registers the <bitrise-navigation> custom element
 // and sets up the global loader callback. This runs in both dev and production.
-import { connectedInstances, cachedData, setCachedData, init } from './navigation/WebflowNavigation';
+import { connectedInstances, cachedData, setCachedData, init } from './navigation/BitriseNavigation';
 import { renderNavigation } from './navigation/render';
 
 // Explicit initialization — registers the custom element and global callback.
@@ -22,7 +22,7 @@ if (import.meta.webpackHot) {
     setCachedData(window.webflowNavHMRData);
     delete window.webflowNavHMRData;
     // Re-render existing instances with the updated render function.
-    document.querySelectorAll('webflow-navigation').forEach((el) => {
+    document.querySelectorAll('bitrise-navigation').forEach((el) => {
       if (el.isConnected && el.shadowRoot) {
         connectedInstances.add(el);
         renderNavigation(el, cachedData());
@@ -33,7 +33,7 @@ if (import.meta.webpackHot) {
   import.meta.webpackHot.dispose(() => {
     // Persist data across HMR cycles.
     window.webflowNavHMRData = cachedData();
-    document.querySelectorAll('webflow-navigation').forEach((el) => {
+    document.querySelectorAll('bitrise-navigation').forEach((el) => {
       if (el.shadowRoot) {
         el.shadowRoot.innerHTML = '';
         if ('adoptedStyleSheets' in Document.prototype) {
@@ -41,8 +41,8 @@ if (import.meta.webpackHot) {
         }
       }
     });
-    document.querySelector('style[data-webflow-navigation-fonts]')?.remove();
-    document.querySelector('script[data-webflow-navigation-loader]')?.remove();
+    document.querySelector('style[data-bitrise-navigation-fonts]')?.remove();
+    document.querySelector('script[data-bitrise-navigation-loader]')?.remove();
   });
 
   import.meta.webpackHot.accept();

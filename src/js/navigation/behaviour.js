@@ -164,6 +164,45 @@ function bindMobileToggle(toggle, navMenu, navOverlay) {
 }
 
 // ---------------------------------------------------------------------------
+// Smart scroll (hide on scroll-down, reveal on scroll-up)
+// ---------------------------------------------------------------------------
+
+/**
+ * Bind a scroll listener that hides the host on scroll-down and reveals it
+ * on scroll-up.  Returns a cleanup function.
+ * @param {HTMLElement} host - The <bitrise-navigation> custom element.
+ * @returns {() => void}
+ */
+export function bindSmartScroll(host) {
+  let lastScrollY = window.scrollY;
+  let hidden = false;
+  const THRESHOLD = 5; // px of delta before toggling
+
+  /** Scroll handler — compares delta to threshold and toggles visibility. */
+  function onScroll() {
+    const currentY = window.scrollY;
+    const delta = currentY - lastScrollY;
+
+    if (delta > THRESHOLD && currentY > host.offsetHeight && !hidden) {
+      host.style.transform = 'translateY(-100%)';
+      hidden = true;
+    } else if (delta < -THRESHOLD && hidden) {
+      host.style.transform = '';
+      hidden = false;
+    }
+
+    lastScrollY = currentY;
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  return () => {
+    window.removeEventListener('scroll', onScroll);
+    host.style.transform = '';
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Main entry
 // ---------------------------------------------------------------------------
 

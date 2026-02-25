@@ -1,7 +1,7 @@
 import { detectEnv, LOADER_URLS } from './env';
 import { renderNavigation } from './render';
 
-/** All currently-connected <webflow-navigation> elements. */
+/** All currently-connected <bitrise-navigation> elements. */
 export const connectedInstances = new Set();
 
 /** Cached payload from the loader script — shared across all instances. */
@@ -22,8 +22,24 @@ export function setCachedData(data) {
 
 // ---- Custom element ----------------------------------------------------------
 
-/** @type {typeof WebflowNavigation} */
-export class WebflowNavigation extends HTMLElement {
+/** @type {typeof BitriseNavigation} */
+export class BitriseNavigation extends HTMLElement {
+  static get observedAttributes() {
+    return ['position'];
+  }
+
+  /**
+   * Re-render when the `position` attribute changes at runtime.
+   * @param {string} name - Attribute name.
+   * @param {string|null} oldValue - Previous value.
+   * @param {string|null} newValue - New value.
+   */
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'position' && oldValue !== newValue && this.shadowRoot && cachedDataInternal) {
+      renderNavigation(this, cachedDataInternal);
+    }
+  }
+
   /** Attach shadow root, register instance, render if data is ready. */
   connectedCallback() {
     if (!this.shadowRoot) {
@@ -40,6 +56,11 @@ export class WebflowNavigation extends HTMLElement {
 
   /** Clean up shadow content and shared resources. */
   disconnectedCallback() {
+    if (this.cleanupSmartScroll) {
+      this.cleanupSmartScroll();
+      this.cleanupSmartScroll = null;
+    }
+
     connectedInstances.delete(this);
 
     if (this.shadowRoot) {
@@ -51,35 +72,35 @@ export class WebflowNavigation extends HTMLElement {
 
     // Remove font-face styles only when no instances remain.
     if (connectedInstances.size === 0) {
-      document.querySelector('style[data-webflow-navigation-fonts]')?.remove();
+      document.querySelector('style[data-bitrise-navigation-fonts]')?.remove();
     }
   }
 
   /** Append the loader script to head (once globally). */
   ensureLoader() {
-    if (document.querySelector('script[data-webflow-navigation-loader]')) return;
-    const env = detectEnv(this.getAttribute('env'));
+    if (document.querySelector('script[data-bitrise-navigation-loader]')) return;
+    const env = detectEnv();
     const script = document.createElement('script');
-    script.setAttribute('data-webflow-navigation-loader', '');
+    script.setAttribute('data-bitrise-navigation-loader', '');
     script.src = LOADER_URLS[env] || LOADER_URLS.production;
     document.head.appendChild(script);
   }
 }
 
 /**
- * Register the <webflow-navigation> custom element and set up the global
+ * Register the <bitrise-navigation> custom element and set up the global
  * loader callback. Must be called once by the entry point.
  */
 export function init() {
   // Set up the global callback the loader script invokes with the payload.
-  window.webflowNavigationLoaded = (data) => {
+  window.bitriseNavigationLoaded = (data) => {
     if (data.error) return;
     cachedDataInternal = data;
     connectedInstances.forEach((el) => renderNavigation(el, data));
   };
 
   // Register the custom element (idempotent).
-  if (!customElements.get('webflow-navigation')) {
-    customElements.define('webflow-navigation', WebflowNavigation);
+  if (!customElements.get('bitrise-navigation')) {
+    customElements.define('bitrise-navigation', BitriseNavigation);
   }
 }

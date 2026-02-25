@@ -80,8 +80,8 @@ async function buildNavigation() {
   const jsonPayload = JSON.stringify(navigationData).replace(/<\/script>/gi, '<\\/script>');
 
   const output = `((data) => {
-  if (window.webflowNavigationLoaded) {
-    window.webflowNavigationLoaded(data);
+  if (window.bitriseNavigationLoaded) {
+    window.bitriseNavigationLoaded(data);
   }
 })(${jsonPayload})`;
 

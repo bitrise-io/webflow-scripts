@@ -33,9 +33,9 @@ export function processCSS(rawCSS) {
  */
 export function injectFontFaces(fontFaces) {
   if (fontFaces.length === 0) return;
-  document.querySelector('style[data-webflow-navigation-fonts]')?.remove();
+  document.querySelector('style[data-bitrise-navigation-fonts]')?.remove();
   const style = document.createElement('style');
-  style.setAttribute('data-webflow-navigation-fonts', '');
+  style.setAttribute('data-bitrise-navigation-fonts', '');
   style.textContent = fontFaces.join('\n');
   document.head.appendChild(style);
 }
@@ -43,13 +43,25 @@ export function injectFontFaces(fontFaces) {
 /**
  * Wrap processed CSS with :host reset and override rules.
  * @param {string} processedCSS
+ * @param {'static'|'sticky'|'smart'} positionMode
  * @returns {string}
  */
-export function buildShadowCSS(processedCSS) {
+export function buildShadowCSS(processedCSS, positionMode = 'sticky') {
+  const stickyRules = `
+      position: sticky;
+      top: 0;
+      z-index: 9999;`;
+
+  const positionRules = {
+    static: '',
+    sticky: stickyRules,
+    smart: `${stickyRules}\n      transition: transform 0.3s ease;`,
+  };
+
   return `
     :host {
       all: initial;
-      display: block;
+      display: block;${positionRules[positionMode] || positionRules.sticky}
     }
     *, *::before, *::after {
       -webkit-font-smoothing: antialiased;

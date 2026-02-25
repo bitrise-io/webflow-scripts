@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>&lt;bitrise-navigation&gt; — Demo &amp; Documentation</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #1a1a2e;
+        line-height: 1.6;
+      }
+      .docs {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 4rem;
+      }
+      h1 { font-size: 1.75rem; margin: 2rem 0 0.25rem; }
+      h2 { font-size: 1.25rem; margin: 2.5rem 0 0.5rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.25rem; }
+      h3 { font-size: 1rem; margin: 1.5rem 0 0.25rem; }
+      p, li { font-size: 0.95rem; }
+      code {
+        background: #f4f4f8;
+        padding: 0.15em 0.35em;
+        border-radius: 3px;
+        font-size: 0.88em;
+      }
+      pre {
+        background: #1a1a2e;
+        color: #e0e0e0;
+        padding: 1rem 1.25rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+      pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
+      }
+      .comment { color: #6a9955; }
+      .tag { color: #569cd6; }
+      .attr { color: #9cdcfe; }
+      .str { color: #ce9178; }
+      .kw { color: #c586c0; }
+      .fn { color: #dcdcaa; }
+      .component { color: #4ec9b0; }
+      table { border-collapse: collapse; width: 100%; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+      th, td { text-align: left; padding: 0.4rem 0.75rem; border: 1px solid #e0e0e0; }
+      th { background: #f4f4f8; }
+      .badge {
+        display: inline-block;
+        background: #0d6; color: #fff;
+        font-size: 0.7rem; font-weight: 600;
+        padding: 0.15em 0.5em; border-radius: 3px;
+        vertical-align: middle; margin-left: 0.4em;
+      }
+      hr { border: none; border-top: 1px solid #e0e0e0; margin: 2rem 0; }
+    </style>
+  </head>
+  <body>
+
+    <!-- ====================================================================
+         LIVE DEMO — the navigation renders here
+         ==================================================================== -->
+    <bitrise-navigation></bitrise-navigation>
+
+    <!-- Load the component script (production: from CDN, dev: local) -->
+    <script src="/navigation.js"></script>
+
+    <!-- ====================================================================
+         DOCUMENTATION
+         ==================================================================== -->
+    <div class="docs">
+      <h1>&lt;bitrise-navigation&gt; <span class="badge">Web Component</span></h1>
+      <p>
+        A self-contained custom element that loads the Bitrise navigation bar
+        from Webflow within an isolated <strong>Shadow DOM</strong>.
+        Host-page styles cannot leak in, and the navigation's 43k-line CSS
+        cannot leak out.
+      </p>
+
+      <h2>Quick Start (no framework)</h2>
+      <p>Drop two lines into any HTML page:</p>
+<pre><code><span class="comment">&lt;!-- 1. Place the element where you want the nav --&gt;</span>
+<span class="tag">&lt;bitrise-navigation&gt;&lt;/bitrise-navigation&gt;</span>
+
+<span class="comment">&lt;!-- 2. Load the component script --&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="str">"https://web-cdn.bitrise.io/navigation.js"</span><span class="tag">&gt;&lt;/script&gt;</span></code></pre>
+
+      <p>That's it. The element:</p>
+      <ol>
+        <li>Attaches a Shadow DOM to itself</li>
+        <li>Injects a loader script that fetches the pre-built HTML + CSS payload</li>
+        <li>Renders the navigation inside its shadow root with full style isolation</li>
+        <li>Wires up dropdown hover, mobile hamburger menu, and keyboard interactions</li>
+      </ol>
+
+      <hr />
+
+      <h2>React Integration</h2>
+      <p>
+        Custom elements work natively in React. Since <code>&lt;bitrise-navigation&gt;</code>
+        has no props/events that need special binding, you can use it directly
+        in JSX — React treats unknown lowercase tags as custom elements.
+      </p>
+
+      <h3>1. Load the script</h3>
+      <p>
+        Add the CDN script to your <code>index.html</code>:
+      </p>
+<pre><code><span class="comment">&lt;!-- public/index.html --&gt;</span>
+<span class="tag">&lt;head&gt;</span>
+  ...
+  <span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="str">"https://web-cdn.bitrise.io/navigation.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;/head&gt;</span></code></pre>
+
+      <h3>2. Use in JSX</h3>
+<pre><code><span class="kw">export default function</span> <span class="component">Layout</span>({ <span class="attr">children</span> }) {
+  <span class="kw">return</span> (
+    &lt;&gt;
+      &lt;<span class="tag">bitrise-navigation</span> /&gt;
+      &lt;<span class="tag">main</span>&gt;{<span class="attr">children</span>}&lt;/<span class="tag">main</span>&gt;
+    &lt;/&gt;
+  );
+}</code></pre>
+
+      <h3>3. Optional: TypeScript support</h3>
+      <p>
+        Add a type declaration so TypeScript recognises the element in JSX:
+      </p>
+<pre><code><span class="comment">// bitrise-navigation.d.ts</span>
+<span class="kw">declare namespace</span> JSX {
+  <span class="kw">interface</span> <span class="component">IntrinsicElements</span> {
+    <span class="str">'bitrise-navigation'</span>: React.DetailedHTMLProps&lt;
+      React.HTMLAttributes&lt;HTMLElement&gt; &amp; { <span class="attr">position</span>?: <span class="str">'sticky'</span> | <span class="str">'static'</span> | <span class="str">'smart'</span> },
+      HTMLElement
+    &gt;;
+  }
+}</code></pre>
+
+      <hr />
+
+      <h2>Loading Order &amp; Timing</h2>
+      <p>
+        The <code>&lt;bitrise-navigation&gt;</code> element works correctly
+        regardless of whether the script or the element appears first. This is
+        a built-in property of the Custom Elements API:
+      </p>
+
+      <h3>Scenario A: element already in DOM when script loads</h3>
+      <ol>
+        <li>Browser encounters <code>&lt;bitrise-navigation&gt;</code> — treats it as an unknown element</li>
+        <li><code>navigation.js</code> loads → <code>init()</code> calls <code>customElements.define()</code></li>
+        <li>The browser <strong>upgrades</strong> the existing element and fires <code>connectedCallback</code></li>
+        <li><code>connectedCallback</code> attaches a Shadow DOM and calls <code>ensureLoader()</code></li>
+        <li>The loader script fetches the payload → the navigation renders</li>
+      </ol>
+
+      <h3>Scenario B: script loads first, element added later (React, SPA)</h3>
+      <ol>
+        <li><code>navigation.js</code> loads → <code>init()</code> registers the custom element</li>
+        <li>React renders <code>&lt;bitrise-navigation /&gt;</code> into the DOM</li>
+        <li>Browser immediately fires <code>connectedCallback</code></li>
+        <li>If the payload was already fetched (cached from another instance), it renders instantly</li>
+        <li>If not, <code>ensureLoader()</code> injects the loader script and rendering happens when it arrives</li>
+      </ol>
+
+      <h3>Scenario C: element is removed and re-added (React route change)</h3>
+      <ol>
+        <li>React unmounts the component → <code>disconnectedCallback</code> cleans up the shadow root</li>
+        <li>React re-mounts → <code>connectedCallback</code> fires again</li>
+        <li>Cached payload exists → navigation renders instantly, no network request</li>
+      </ol>
+
+      <hr />
+
+      <h2>How It Works</h2>
+      <ol>
+        <li>
+          <strong>Registration</strong> — <code>navigation.js</code> calls
+          <code>init()</code> which registers the <code>&lt;bitrise-navigation&gt;</code>
+          custom element and sets up a global callback
+          (<code>window.bitriseNavigationLoaded</code>).
+        </li>
+        <li>
+          <strong>Connection</strong> — When the element connects to the DOM,
+          <code>connectedCallback</code> attaches a Shadow DOM, registers the
+          instance, and injects a <code>&lt;script&gt;</code> tag that loads
+          the pre-built navigation payload.
+        </li>
+        <li>
+          <strong>Rendering</strong> — The loader script calls the global
+          callback with <code>{ html, css }</code>. The render pipeline:
+          <ul>
+            <li>Rewrites <code>:root</code> / <code>body</code> / <code>html</code> selectors → <code>:host</code></li>
+            <li>Extracts <code>@font-face</code> rules to the document head (required outside shadow DOM)</li>
+            <li>Applies CSS via <code>adoptedStyleSheets</code> (fast, shared) with <code>&lt;style&gt;</code> fallback</li>
+            <li>Strips <code>&lt;script&gt;</code> tags from the HTML for safety</li>
+            <li>Injects the HTML into the shadow root</li>
+            <li>Binds dropdown hover, mobile menu, and hamburger interactions</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Cleanup</strong> — <code>disconnectedCallback</code> removes
+          the instance, clears its shadow root, and removes shared <code>@font-face</code>
+          styles when the last instance disconnects.
+        </li>
+      </ol>
+
+      <h2>File Structure</h2>
+<pre><code>src/js/
+  navigation.js                  <span class="comment"># Entry point — init() + HMR</span>
+  navigation/
+    env.js                       <span class="comment"># Environment detection + loader URLs</span>
+    css.js                       <span class="comment"># CSS processing (rewrite, fonts, shadow CSS)</span>
+    html.js                      <span class="comment"># HTML sanitisation</span>
+    behaviour.js                 <span class="comment"># Dropdown &amp; mobile menu interactions</span>
+    render.js                    <span class="comment"># Orchestrates CSS → HTML → behaviour</span>
+    BitriseNavigation.js         <span class="comment"># Custom element class + init()</span>
+    build.js                     <span class="comment"># Build script (fetches from Webflow)</span></code></pre>
+
+    </div>
+  </body>
+</html>

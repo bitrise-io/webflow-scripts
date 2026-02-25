@@ -10,9 +10,7 @@
     "markdown-it": "^13.0.1",
     "express": "^5.0.0",
     "jsdom": "^26.0.0",
-    "wrangler": "^4.24.0"
-  },
-  "devDependencies": {
+    "wrangler": "^4.24.0",
     "@bitrise/eslint-plugin": "^2.12.0",
     "css-loader": "^6.8.1",
     "eslint": "^8.42.0",
