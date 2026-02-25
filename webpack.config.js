@@ -3,7 +3,11 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = (mode) => {
-  const plugins = [];
+  const plugins = [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(mode === 'development' ? 'development' : 'production'),
+    }),
+  ];
   if (mode === 'development') {
     plugins.push(new webpack.HotModuleReplacementPlugin());
   }
