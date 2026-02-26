@@ -1,28 +1,11 @@
-import { detectEnv, LOADER_URLS } from './env';
-import { renderNavigation } from './render';
+import { cachedData, ensureLoader, addDataListener, cleanupFontsIfUnused } from './loader';
+import { renderNavigation } from './renderNavigation';
 
 /** All currently-connected <bitrise-navigation> elements. */
 export const connectedInstances = new Set();
 
-/** Cached payload from the loader script — shared across all instances. */
-let cachedDataInternal = null;
-
-/** @returns {object|null} */
-export function cachedData() {
-  return cachedDataInternal;
-}
-
-/**
- * Replace the cached data (used by HMR recovery).
- * @param {object|null} data
- */
-export function setCachedData(data) {
-  cachedDataInternal = data;
-}
-
 // ---- Custom element ----------------------------------------------------------
 
-/** @type {typeof BitriseNavigation} */
 export class BitriseNavigation extends HTMLElement {
   static get observedAttributes() {
     return ['position'];
@@ -35,8 +18,8 @@ export class BitriseNavigation extends HTMLElement {
    * @param {string|null} newValue - New value.
    */
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'position' && oldValue !== newValue && this.shadowRoot && cachedDataInternal) {
-      renderNavigation(this, cachedDataInternal);
+    if (name === 'position' && oldValue !== newValue && this.shadowRoot && cachedData()) {
+      renderNavigation(this, cachedData());
     }
   }
 
@@ -47,11 +30,11 @@ export class BitriseNavigation extends HTMLElement {
     }
     connectedInstances.add(this);
 
-    if (cachedDataInternal) {
-      renderNavigation(this, cachedDataInternal);
+    if (cachedData()) {
+      renderNavigation(this, cachedData());
     }
 
-    this.ensureLoader();
+    ensureLoader();
   }
 
   /** Clean up shadow content and shared resources. */
@@ -70,36 +53,19 @@ export class BitriseNavigation extends HTMLElement {
       }
     }
 
-    // Remove font-face styles only when no instances remain.
-    if (connectedInstances.size === 0) {
-      document.querySelector('style[data-bitrise-navigation-fonts]')?.remove();
-    }
-  }
-
-  /** Append the loader script to head (once globally). */
-  ensureLoader() {
-    if (document.querySelector('script[data-bitrise-navigation-loader]')) return;
-    const env = detectEnv();
-    const script = document.createElement('script');
-    script.setAttribute('data-bitrise-navigation-loader', '');
-    script.src = LOADER_URLS[env] || LOADER_URLS.production;
-    document.head.appendChild(script);
+    cleanupFontsIfUnused();
   }
 }
 
 /**
- * Register the <bitrise-navigation> custom element and set up the global
- * loader callback. Must be called once by the entry point.
+ * Register the <bitrise-navigation> custom element and subscribe to
+ * loader data. Must be called once by the entry point.
  */
 export function init() {
-  // Set up the global callback the loader script invokes with the payload.
-  window.bitriseNavigationLoaded = (data) => {
-    if (data.error) return;
-    cachedDataInternal = data;
+  addDataListener((data) => {
     connectedInstances.forEach((el) => renderNavigation(el, data));
-  };
+  });
 
-  // Register the custom element (idempotent).
   if (!customElements.get('bitrise-navigation')) {
     customElements.define('bitrise-navigation', BitriseNavigation);
   }

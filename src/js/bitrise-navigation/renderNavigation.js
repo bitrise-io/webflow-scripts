@@ -35,7 +35,7 @@ export function renderNavigation(host, data) {
   }
 
   const wrapper = document.createElement('div');
-  wrapper.innerHTML = sanitizeHTML(data.html);
+  wrapper.innerHTML = sanitizeHTML(data.html.nav);
   shadowRoot.appendChild(wrapper);
 
   bindNavBehaviour(shadowRoot);
