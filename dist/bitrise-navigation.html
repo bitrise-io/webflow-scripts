@@ -135,19 +135,24 @@
 
       <h3>3. Optional: TypeScript support</h3>
       <p>
-        Add a type declaration so TypeScript recognises the element in JSX:
+        Add a type declaration so TypeScript recognises the elements in JSX.
+        This form works with both React 18 and React 19:
       </p>
 <pre><code><span class="comment">// bitrise-navigation.d.ts</span>
-<span class="kw">declare namespace</span> JSX {
-  <span class="kw">interface</span> <span class="component">IntrinsicElements</span> {
-    <span class="str">'bitrise-navigation'</span>: React.DetailedHTMLProps&lt;
-      React.HTMLAttributes&lt;HTMLElement&gt; &amp; { <span class="attr">position</span>?: <span class="str">'sticky'</span> | <span class="str">'static'</span> | <span class="str">'smart'</span> },
-      HTMLElement
-    &gt;;
-    <span class="str">'bitrise-footer'</span>: React.DetailedHTMLProps&lt;
-      React.HTMLAttributes&lt;HTMLElement&gt;,
-      HTMLElement
-    &gt;;
+<span class="kw">import</span> <span class="str">'react'</span>;
+
+<span class="kw">declare module</span> <span class="str">'react'</span> {
+  <span class="kw">namespace</span> JSX {
+    <span class="kw">interface</span> <span class="component">IntrinsicElements</span> {
+      <span class="str">'bitrise-navigation'</span>: React.DetailedHTMLProps&lt;
+        React.HTMLAttributes&lt;HTMLElement&gt; &amp; { <span class="attr">position</span>?: <span class="str">'sticky'</span> | <span class="str">'static'</span> | <span class="str">'smart'</span> },
+        HTMLElement
+      &gt;;
+      <span class="str">'bitrise-footer'</span>: React.DetailedHTMLProps&lt;
+        React.HTMLAttributes&lt;HTMLElement&gt;,
+        HTMLElement
+      &gt;;
+    }
   }
 }</code></pre>
 
