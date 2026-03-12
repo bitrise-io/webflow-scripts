@@ -69,7 +69,12 @@
     <bitrise-navigation></bitrise-navigation>
 
     <!-- Load the component script (production: from CDN, dev: local) -->
-    <script src="/bitrise-navigation.js"></script>
+    <script>
+      const script = document.createElement('script');
+      script.src = `/bitrise-navigation.js?v=${Date.now()}`; // Cache-busting for development; use CDN URL in production
+      script.async = true;
+      document.head.appendChild(script);
+    </script>
 
     <!-- ====================================================================
          DOCUMENTATION
