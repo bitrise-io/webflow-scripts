@@ -71,7 +71,7 @@
     <!-- Load the component script (production: from CDN, dev: local) -->
     <script>
       const script = document.createElement('script');
-      script.src = `/bitrise-navigation.js?v=${Date.now()}`; // Cache-busting for development; use CDN URL in production
+      script.src = `/bitrise-navigation.js?v=${Math.floor(Date.now() / 3600000)}`; // Hourly cache-busting
       script.async = true;
       document.head.appendChild(script);
     </script>
@@ -97,8 +97,12 @@
 
 <span class="tag">&lt;bitrise-footer&gt;&lt;/bitrise-footer&gt;</span>
 
-<span class="comment">&lt;!-- 2. Load the component script (once — registers both elements) --&gt;</span>
-<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="str">"https://web-cdn.bitrise.io/bitrise-navigation.js"</span><span class="tag">&gt;&lt;/script&gt;</span></code></pre>
+<span class="comment">&lt;!-- 2. Load the component script (hourly cache-busting) --&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  <span class="kw">const</span> s = document.createElement(<span class="str">'script'</span>);
+  s.src = <span class="str">`https://web-cdn.bitrise.io/bitrise-navigation.js?v=${Math.floor(Date.now() / 3600000)}`</span>;
+  document.head.appendChild(s);
+<span class="tag">&lt;/script&gt;</span></code></pre>
 
       <p>That's it. Each element:</p>
       <ol>
@@ -124,7 +128,11 @@
 <pre><code><span class="comment">&lt;!-- public/index.html --&gt;</span>
 <span class="tag">&lt;head&gt;</span>
   ...
-  <span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="str">"https://web-cdn.bitrise.io/bitrise-navigation.js"</span><span class="tag">&gt;&lt;/script&gt;</span>
+  <span class="tag">&lt;script&gt;</span>
+    <span class="kw">const</span> s = document.createElement(<span class="str">'script'</span>);
+    s.src = <span class="str">`https://web-cdn.bitrise.io/bitrise-navigation.js?v=${Math.floor(Date.now() / 3600000)}`</span>;
+    document.head.appendChild(s);
+  <span class="tag">&lt;/script&gt;</span>
 <span class="tag">&lt;/head&gt;</span></code></pre>
 
       <h3>2. Use in JSX</h3>
