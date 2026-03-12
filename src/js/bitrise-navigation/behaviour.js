@@ -13,27 +13,16 @@ const MOBILE_MQ = '(max-width: 1115px)';
 // ---------------------------------------------------------------------------
 
 /**
- * Open a dropdown by toggling its state attributes.
+ * Set a dropdown's open/closed state.
  * @param {Element} dropdown - A .nav_dropdown_component element
+ * @param {boolean} open
  */
-function openDropdown(dropdown) {
+function setDropdownOpen(dropdown, open) {
   const toggle = dropdown.querySelector('.w-dropdown-toggle');
   if (!toggle) return;
-  toggle.setAttribute('aria-expanded', 'true');
-  toggle.classList.add('w--open');
-  dropdown.querySelector('.w-dropdown-list')?.classList.add('w--open');
-}
-
-/**
- * Close a dropdown by toggling its state attributes.
- * @param {Element} dropdown - A .nav_dropdown_component element
- */
-function closeDropdown(dropdown) {
-  const toggle = dropdown.querySelector('.w-dropdown-toggle');
-  if (!toggle) return;
-  toggle.setAttribute('aria-expanded', 'false');
-  toggle.classList.remove('w--open');
-  dropdown.querySelector('.w-dropdown-list')?.classList.remove('w--open');
+  toggle.setAttribute('aria-expanded', String(open));
+  toggle.classList.toggle('w--open', open);
+  dropdown.querySelector('.w-dropdown-list')?.classList.toggle('w--open', open);
 }
 
 /**
@@ -41,7 +30,7 @@ function closeDropdown(dropdown) {
  * @param {ShadowRoot} root
  */
 function closeAllDropdowns(root) {
-  root.querySelectorAll('.nav_dropdown_component.w-dropdown').forEach(closeDropdown);
+  root.querySelectorAll('.nav_dropdown_component.w-dropdown').forEach((d) => setDropdownOpen(d, false));
 }
 
 /**
@@ -61,28 +50,36 @@ function bindDropdowns(root) {
     if (!toggle) return;
 
     // Desktop: hover
-    dropdown.addEventListener('mouseenter', () => {
-      if (mql.matches) return;
-      closeAllDropdowns(root);
-      openDropdown(dropdown);
-    }, { signal: ac.signal });
+    dropdown.addEventListener(
+      'mouseenter',
+      () => {
+        if (mql.matches) return;
+        closeAllDropdowns(root);
+        setDropdownOpen(dropdown, true);
+      },
+      { signal: ac.signal },
+    );
 
-    dropdown.addEventListener('mouseleave', () => {
-      if (mql.matches) return;
-      closeDropdown(dropdown);
-    }, { signal: ac.signal });
+    dropdown.addEventListener(
+      'mouseleave',
+      () => {
+        if (mql.matches) return;
+        setDropdownOpen(dropdown, false);
+      },
+      { signal: ac.signal },
+    );
 
     // Mobile: click (only when mobile menu is open)
-    toggle.addEventListener('click', (e) => {
-      if (!mql.matches) return;
-      e.preventDefault();
-      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
-      if (isOpen) {
-        closeDropdown(dropdown);
-      } else {
-        openDropdown(dropdown);
-      }
-    }, { signal: ac.signal });
+    toggle.addEventListener(
+      'click',
+      (e) => {
+        if (!mql.matches) return;
+        e.preventDefault();
+        const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+        setDropdownOpen(dropdown, !isOpen);
+      },
+      { signal: ac.signal },
+    );
   });
 
   return () => controllers.forEach((ac) => ac.abort());
@@ -125,71 +122,74 @@ function bindMobileMenu(root) {
   const midLine = lines[1];
   const botLine = lines[2];
 
-  function setHamburgerOpen() {
+  /**
+   * Apply transforms to hamburger lines to match the open/closed state.
+   * @param {boolean} open - Whether the menu is open, which determines the transform applied.
+   */
+  function setHamburgerState(open) {
     if (topLine) {
-      topLine.style.transform = 'translate3d(0px, 0.425rem, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(45deg) skew(0deg, 0deg)';
-      topLine.style.transformStyle = 'preserve-3d';
+      topLine.style.transform = open
+        ? 'translate3d(0px, 0.425rem, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(45deg) skew(0deg, 0deg)'
+        : '';
+      topLine.style.transformStyle = open ? 'preserve-3d' : '';
     }
     if (midLine) {
-      midLine.style.opacity = '0';
+      midLine.style.opacity = open ? '0' : '';
     }
     if (botLine) {
-      botLine.style.transform = 'translate3d(0px, -0.425rem, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(-45deg) skew(0deg, 0deg)';
-      botLine.style.transformStyle = 'preserve-3d';
+      botLine.style.transform = open
+        ? 'translate3d(0px, -0.425rem, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(-45deg) skew(0deg, 0deg)'
+        : '';
+      botLine.style.transformStyle = open ? 'preserve-3d' : '';
     }
   }
 
-  function setHamburgerClosed() {
-    if (topLine) { topLine.style.transform = ''; topLine.style.transformStyle = ''; }
-    if (midLine) { midLine.style.opacity = ''; }
-    if (botLine) { botLine.style.transform = ''; botLine.style.transformStyle = ''; }
-  }
+  /**
+   * Set the menu open or closed.
+   * @param {boolean} open - Whether the menu should be open.
+   */
+  function setMenuOpen(open) {
+    toggle.classList.toggle('w--open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    setHamburgerState(open);
 
-  function openMenu() {
-    // Move menu into overlay (like original Webflow JS).
-    if (overlay) {
-      overlay.style.display = 'block';
-      overlay.style.height = `${document.documentElement.scrollHeight}px`;
-      overlay.appendChild(menu);
-      menu.setAttribute('data-nav-menu-open', '');
-    }
-    toggle.classList.add('w--open');
-    toggle.setAttribute('aria-expanded', 'true');
-    setHamburgerOpen();
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeMenu() {
-    toggle.classList.remove('w--open');
-    toggle.setAttribute('aria-expanded', 'false');
-    setHamburgerClosed();
-    closeAllDropdowns(root);
-    // Move menu back to original position.
-    if (overlay) {
-      menu.removeAttribute('data-nav-menu-open');
-      if (menuNextSibling) {
-        menuParent.insertBefore(menu, menuNextSibling);
-      } else {
-        menuParent.appendChild(menu);
+    if (open) {
+      // Move menu into overlay (like original Webflow JS).
+      if (overlay) {
+        overlay.style.display = 'block';
+        overlay.style.height = `${document.documentElement.scrollHeight}px`;
+        overlay.appendChild(menu);
+        menu.setAttribute('data-nav-menu-open', '');
       }
-      overlay.style.display = '';
-      overlay.style.height = '';
+      document.body.style.overflow = 'hidden';
+    } else {
+      closeAllDropdowns(root);
+      // Move menu back to original position.
+      if (overlay) {
+        menu.removeAttribute('data-nav-menu-open');
+        if (menuNextSibling) {
+          menuParent.insertBefore(menu, menuNextSibling);
+        } else {
+          menuParent.appendChild(menu);
+        }
+        overlay.style.display = '';
+        overlay.style.height = '';
+      }
+      document.body.style.overflow = '';
     }
-    document.body.style.overflow = '';
   }
 
-  toggle.addEventListener('click', () => {
-    const opening = !toggle.classList.contains('w--open');
-    if (opening) {
-      openMenu();
-    } else {
-      closeMenu();
-    }
-  }, { signal: ac.signal });
+  toggle.addEventListener(
+    'click',
+    () => {
+      setMenuOpen(!toggle.classList.contains('w--open'));
+    },
+    { signal: ac.signal },
+  );
 
   return () => {
     ac.abort();
-    closeMenu();
+    setMenuOpen(false);
   };
 }
 

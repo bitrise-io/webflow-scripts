@@ -1,8 +1,35 @@
 import { cachedData, ensureLoader, addDataListener, cleanupFontsIfUnused } from './loader';
-import { renderFooter } from './renderFooter';
+import { processCSS, injectFontFaces, buildShadowCSS, applyStyles, sanitizeHTML, clearShadowRoot } from './css';
 
 /** All currently-connected <bitrise-footer> elements. */
 export const connectedInstances = new Set();
+
+// ---- Rendering --------------------------------------------------------------
+
+/**
+ * Render the footer HTML + CSS into a host element's shadow root.
+ * @param {HTMLElement} host - A <bitrise-footer> element with an attached shadow root.
+ * @param {{ html: { nav: string, footer: string }, css: string }} data - Payload from the loader script.
+ */
+export function renderFooter(host, data) {
+  const { shadowRoot } = host;
+  if (!shadowRoot) return;
+
+  // Clear previous content.
+  clearShadowRoot(shadowRoot);
+
+  if (data.css) {
+    const { css, fontFaces } = processCSS(data.css);
+    injectFontFaces(fontFaces);
+    applyStyles(shadowRoot, buildShadowCSS(css, 'footer'));
+  }
+
+  if (data.html.footer) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = sanitizeHTML(data.html.footer);
+    shadowRoot.appendChild(wrapper);
+  }
+}
 
 // ---- Custom element ----------------------------------------------------------
 
@@ -26,10 +53,7 @@ export class BitriseFooter extends HTMLElement {
     connectedInstances.delete(this);
 
     if (this.shadowRoot) {
-      this.shadowRoot.innerHTML = '';
-      if ('adoptedStyleSheets' in Document.prototype) {
-        this.shadowRoot.adoptedStyleSheets = [];
-      }
+      clearShadowRoot(this.shadowRoot);
     }
 
     cleanupFontsIfUnused();

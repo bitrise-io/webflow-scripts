@@ -50,9 +50,9 @@ export function injectFontFaces(fontFaces) {
 }
 
 /**
- * Wrap processed CSS with :host reset and override rules.
+ * Wrap processed CSS with :host reset and optional nav override rules.
  * @param {string} processedCSS
- * @param {'static'|'sticky'|'smart'} positionMode
+ * @param {'static'|'sticky'|'smart'|'footer'} positionMode
  * @returns {string}
  */
 export function buildShadowCSS(processedCSS, positionMode = 'sticky') {
@@ -62,22 +62,15 @@ export function buildShadowCSS(processedCSS, positionMode = 'sticky') {
       z-index: 9999;`;
 
   const positionRules = {
+    footer: '',
     static: '',
     sticky: stickyRules,
     smart: `${stickyRules}\n      transition: transform 0.3s ease;`,
   };
 
-  return `
-    :host {
-      all: initial;
-      display: block;${positionRules[positionMode] || positionRules.sticky}
-    }
-    *, *::before, *::after {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      box-sizing: border-box;
-    }
-    ${processedCSS}
+  const navOverrides =
+    positionMode !== 'footer'
+      ? `
     .nav_main-flex-mobile,
     .nav_main-flex-img {
       z-index: 1;
@@ -106,8 +99,41 @@ export function buildShadowCSS(processedCSS, positionMode = 'sticky') {
        document.body, so override this to keep the overlay visible. */
     :host:has(.nav_component .w-nav-button.w--open) {
       overflow: visible !important;
+    }`
+      : '';
+
+  return `
+    :host {
+      all: initial;
+      display: block;${positionRules[positionMode] || positionRules.sticky}
     }
+    *, *::before, *::after {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      box-sizing: border-box;
+    }
+    ${processedCSS}${navOverrides}
   `;
+}
+
+/**
+ * Strip script tags and rewrite global selectors in HTML.
+ * @param {string} rawHTML
+ * @returns {string}
+ */
+export function sanitizeHTML(rawHTML) {
+  return rewriteGlobalSelectors(rawHTML.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ''));
+}
+
+/**
+ * Clear all content and stylesheets from a shadow root.
+ * @param {ShadowRoot} root
+ */
+export function clearShadowRoot(root) {
+  root.innerHTML = '';
+  if ('adoptedStyleSheets' in Document.prototype) {
+    root.adoptedStyleSheets = [];
+  }
 }
 
 /**

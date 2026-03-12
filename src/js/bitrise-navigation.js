@@ -10,10 +10,17 @@
 // ---------------------------------------------------------------------------
 
 import { cachedData, setCachedData, initLoader } from './bitrise-navigation/loader';
-import { connectedInstances as navInstances, init as initNav } from './bitrise-navigation/BitriseNavigation';
-import { connectedInstances as footerInstances, init as initFooter } from './bitrise-navigation/BitriseFooter';
-import { renderNavigation } from './bitrise-navigation/renderNavigation';
-import { renderFooter } from './bitrise-navigation/renderFooter';
+import { clearShadowRoot } from './bitrise-navigation/css';
+import {
+  connectedInstances as navInstances,
+  renderNavigation,
+  init as initNav,
+} from './bitrise-navigation/BitriseNavigation';
+import {
+  connectedInstances as footerInstances,
+  renderFooter,
+  init as initFooter,
+} from './bitrise-navigation/BitriseFooter';
 
 // Initialise the shared loader (global callback + script injection).
 initLoader();
@@ -52,10 +59,7 @@ if (import.meta.webpackHot) {
     // Clean up shadow roots.
     document.querySelectorAll('bitrise-navigation, bitrise-footer').forEach((el) => {
       if (el.shadowRoot) {
-        el.shadowRoot.innerHTML = '';
-        if ('adoptedStyleSheets' in Document.prototype) {
-          el.shadowRoot.adoptedStyleSheets = [];
-        }
+        clearShadowRoot(el.shadowRoot);
       }
     });
 
