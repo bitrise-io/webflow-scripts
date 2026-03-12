@@ -16,7 +16,16 @@ export function rewriteGlobalSelectors(text) {
  * @returns {{ css: string, fontFaces: string[] }}
  */
 export function processCSS(rawCSS) {
-  let css = rewriteGlobalSelectors(rawCSS);
+  // Strip Webflow design-mode guard before generic rewrites — we're never
+  // in design mode, so the :not() is always true and can be simplified.
+  let css = rawCSS.replace(/html:not\(\.wf-design-mode\)/g, ':host');
+
+  // Remove body/html overflow:hidden rules triggered by the mobile menu.
+  // In shadow DOM this clips the overlay; we handle scroll-lock via JS
+  // on document.body instead.
+  css = css.replace(/body:has\([^)]*\.w-nav-button\.w--open[^)]*\)\s*\{[^}]*overflow:\s*hidden[^}]*\}/g, '');
+
+  css = rewriteGlobalSelectors(css);
 
   const fontFaces = [];
   css = css.replace(/@font-face\s*{([^}]|\n)*}/g, (match) => {
@@ -79,6 +88,24 @@ export function buildShadowCSS(processedCSS, positionMode = 'sticky') {
     }
     .w-dropdown-toggle[aria-expanded="true"] .nav_links_svg {
       transform: rotate(-180deg);
+    }
+    /* Override Webflow shared CSS that hides the mobile menu via data-collapse.
+       Only show when JS has opened the menu (data-nav-menu-open attribute).
+       This keeps the menu hidden when closed so it doesn't take flex space. */
+    .w-nav-menu[data-nav-menu-open] {
+      display: block !important;
+    }
+    /* Neutralise the default Webflow .w--open button style that
+       overrides the custom hamburger design. */
+    .w-nav-button.w--open {
+      color: inherit;
+      background-color: transparent;
+    }
+    /* The extracted CSS sets overflow:hidden on :host when the mobile menu
+       is open, which clips the overlay. We handle scroll-lock via JS on
+       document.body, so override this to keep the overlay visible. */
+    :host:has(.nav_component .w-nav-button.w--open) {
+      overflow: visible !important;
     }
   `;
 }

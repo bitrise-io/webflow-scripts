@@ -28,8 +28,10 @@ export function renderNavigation(host, data) {
   const attr = host.getAttribute('position');
   const positionMode = VALID_POSITIONS.includes(attr) ? attr : 'sticky';
 
-  if (data.css) {
-    const { css, fontFaces } = processCSS(data.css);
+  // Combine shared CSS with inline nav CSS extracted from <style> tags.
+  const rawCSS = [data.css, data.inlineCss].filter(Boolean).join('\n');
+  if (rawCSS) {
+    const { css, fontFaces } = processCSS(rawCSS);
     injectFontFaces(fontFaces);
     applyStyles(shadowRoot, buildShadowCSS(css, positionMode));
   }
@@ -38,7 +40,12 @@ export function renderNavigation(host, data) {
   wrapper.innerHTML = sanitizeHTML(data.html.nav);
   shadowRoot.appendChild(wrapper);
 
-  bindNavBehaviour(shadowRoot);
+  // Clean up previous behaviour listeners.
+  if (host.cleanupBehaviour) {
+    host.cleanupBehaviour();
+    host.cleanupBehaviour = null;
+  }
+  host.cleanupBehaviour = bindNavBehaviour(shadowRoot);
 
   if (positionMode === 'smart') {
     host.cleanupSmartScroll = bindSmartScroll(host);

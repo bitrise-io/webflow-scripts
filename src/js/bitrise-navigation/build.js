@@ -96,6 +96,7 @@ async function buildNavigation() {
   const errors = [];
   const html = {};
   let css = null;
+  let inlineCss = null;
 
   // --- Fetch & parse the source page ---
   const pageResponse = await safeFetch(SOURCE_URL, SOURCE_URL);
@@ -112,7 +113,26 @@ async function buildNavigation() {
   } else {
     process.stdout.write(`\x1b[32mdone\x1b[0m\n`);
     rewriteURLs(navElement);
-    html.nav = navElement.outerHTML;
+
+    // Extract inline <style> blocks from w-embed divs inside the nav.
+    // These contain nav-specific CSS (animations, variables, responsive rules)
+    // that isn't in the shared CSS file. We strip them from the HTML and
+    // include them as separate CSS so processCSS can rewrite selectors.
+    const inlineStyles = [];
+    navElement.querySelectorAll('style').forEach((styleEl) => {
+      inlineStyles.push(styleEl.textContent);
+      styleEl.parentNode.removeChild(styleEl);
+    });
+    inlineCss = inlineStyles.join('\n') || null;
+
+    // Include backdrop siblings that live outside <nav> but are needed in shadow DOM.
+    const backdrops = [];
+    for (let el = navElement.nextElementSibling; el; el = el.nextElementSibling) {
+      if (el.classList.contains('nav_dropdown_backdrop') || el.classList.contains('nav_menu_backdrop')) {
+        backdrops.push(el.outerHTML);
+      }
+    }
+    html.nav = navElement.outerHTML + backdrops.join('');
   }
 
   process.stdout.write(`Extracting footer HTML: `);
@@ -144,6 +164,7 @@ async function buildNavigation() {
   const navigationData = {
     html,
     css,
+    inlineCss,
     error: errors.length > 0 ? errors : null,
     version: `${VERSION}-${Date.now()}`,
   };

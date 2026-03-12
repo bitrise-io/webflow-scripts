@@ -39,6 +39,10 @@ export class BitriseNavigation extends HTMLElement {
 
   /** Clean up shadow content and shared resources. */
   disconnectedCallback() {
+    if (this.cleanupBehaviour) {
+      this.cleanupBehaviour();
+      this.cleanupBehaviour = null;
+    }
     if (this.cleanupSmartScroll) {
       this.cleanupSmartScroll();
       this.cleanupSmartScroll = null;
