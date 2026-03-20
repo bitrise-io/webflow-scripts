@@ -403,6 +403,7 @@ const getStackRemovalDate = async (pagePath) => {
     if (metaDescription) setMetaContent({ property: 'twitter:description' }, metaDescription);
 
     document.getElementById('stacks-title').innerHTML = data.title;
+    document.getElementById('stacks-title').style.textWrap = 'balance';
     document.getElementById('stacks-meta').innerHTML = `${formatDate(new Date(data.updated_at))}`;
     document.getElementById('stacks-content').innerHTML = `${deprecationNotice}${formatHtml(data.content_html)}`;
     postprocessContent();
@@ -441,6 +442,7 @@ const getStackRemovalDate = async (pagePath) => {
     if (metaDescription) setMetaContent({ property: 'twitter:description' }, metaDescription);
 
     document.getElementById('stacks-title').innerHTML = data.stack_name;
+    document.getElementById('stacks-title').style.textWrap = 'balance';
     document.getElementById('stacks-meta').innerHTML = `Stack ID: <code>${data.stack_id}</code><br />${
       data.stack_revision && `Current stack revision: <code>${data.stack_revision}</code><br />`
     }<br />
