@@ -100,10 +100,10 @@ function formatDate(date) {
  */
 function detectTopicFromUrl(url, prefix) {
   const path = url.pathname;
-  if (path.match(new RegExp(`${prefix}/?$`))) {
+  if (path.match(new RegExp(`/${prefix}/?$`))) {
     return '';
   }
-  const match = path.match(new RegExp(`${prefix}/(.+)$`));
+  const match = path.match(new RegExp(`/${prefix}/(.+)$`));
   if (match) {
     return match[1];
   }
