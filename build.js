@@ -12,6 +12,8 @@ const webpackBuild = (config) =>
     });
   });
 
+const { build: buildMaintenance } = require('./src/js/maintenance/build.js');
+
 const build = async () => {
   // Build project with Webpack
   let webpackStats;
@@ -26,6 +28,10 @@ const build = async () => {
   } else {
     process.stdout.write(`Webpack build completed successfully:\n${webpackStats.toString({ colors: true })}\n\n`);
   }
+
+  // Build maintenance.html (depends on dist/404.js from webpack)
+  await buildMaintenance();
+  process.stdout.write('Maintenance page build completed successfully.\n\n');
 };
 
 build().catch((error) => {

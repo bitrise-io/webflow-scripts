@@ -141,8 +141,22 @@ const devMiddlewareOptions = {
 };
 const app = express();
 
-app.use(devMiddleware(compiler, devMiddlewareOptions));
+const devMiddlewareInstance = devMiddleware(compiler, devMiddlewareOptions);
+app.use(devMiddlewareInstance);
 app.use(hotMiddleware(compiler));
+
+const { generateMaintenanceHtml } = require('./src/js/maintenance/build.js');
+
+app.get('/maintenance.html', async (req, res) => {
+  try {
+    // In dev, skip JS inlining — style-loader's HMR runtime needs publicPath from script.src
+    const html = await generateMaintenanceHtml({ skipJs: true });
+    res.setHeader('Content-Type', 'text/html');
+    res.end(html);
+  } catch (error) {
+    res.status(500).end(`Failed to generate maintenance page: ${error.message}`);
+  }
+});
 
 app.get(/\/.*/, async (req, res) => {
   const urlObject = new URL(`http://${req.hostname}${req.url}`);
