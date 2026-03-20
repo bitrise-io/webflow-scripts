@@ -1,0 +1,6 @@
+name = "maintenance"
+main = "./worker.js"
+compatibility_date = "2026-03-20"
+route = "app.bitrise.io/maintenance.*"
+no_bundle = true
+workers_dev = true
