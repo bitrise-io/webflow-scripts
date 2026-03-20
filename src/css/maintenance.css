@@ -221,3 +221,9 @@ footer div.links a {
     order: 3;
   }
 }
+
+@media screen and (min-width: 992px) {
+  .intercom-lightweight-app-launcher {
+    bottom: 48px !important;
+  }
+}
