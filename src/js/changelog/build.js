@@ -2,6 +2,12 @@
 const fs = require('fs');
 const { generateChangelogRSS } = require('./generate-rss');
 
+// Polyfill fetch for Node < 18
+if (!globalThis.fetch) {
+  // eslint-disable-next-line global-require
+  globalThis.fetch = require('node-fetch');
+}
+
 /**
  *
  * @param {number} time
