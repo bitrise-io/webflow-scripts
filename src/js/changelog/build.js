@@ -92,7 +92,6 @@ async function fetchCategory(category) {
  *  gcsKey: string,
  *  title: string,
  *  slugPrefix: string,
- *  tag: string,
  * }} RMApiConfig
  */
 
@@ -102,31 +101,26 @@ const RM_API_CONFIGS = [
     gcsKey: 'changelog_v1.json',
     title: 'Release Management API V1 Update',
     slugPrefix: 'rm-v1',
-    tag: 'api-update',
   },
   {
     gcsKey: 'changelog_v2_apps.json',
     title: 'Release Management API V2 - Apps Update',
     slugPrefix: 'rm-v2-apps',
-    tag: 'api-update',
   },
   {
     gcsKey: 'changelog_v2_store_releases.json',
     title: 'Release Management API V2 - Store Releases Update',
     slugPrefix: 'rm-v2-store',
-    tag: 'api-update',
   },
   {
     gcsKey: 'changelog_v2_code_push.json',
     title: 'Release Management API V2 - CodePush Update',
     slugPrefix: 'rm-v2-cp',
-    tag: 'api-update',
   },
   {
     gcsKey: 'changelog_v2_build_distributions.json',
     title: 'Release Management API V2 - Build Distributions Update',
     slugPrefix: 'rm-v2-bd',
-    tag: 'api-update',
   },
 ];
 
@@ -164,7 +158,7 @@ async function fetchRMApiChangelog(config) {
       fancy_title: config.title,
       slug: `${config.slugPrefix}-${dateTime.replaceAll(/[- :]/g, '')}`,
       created_at: dateTime.replace(/(\d{2})-(\d{2})-(\d{4})(.*)/, '$3-$2-$1$4'),
-      tags: [config.tag],
+      tags: ['api-update'],
       changelog: changelogEntry[dateTime],
     };
   });
