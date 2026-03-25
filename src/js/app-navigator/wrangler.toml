@@ -1,6 +1,6 @@
 name = "app-navigator"
 main = "./worker.js"
 compatibility_date = "2026-03-10"
-route = "bitrise.io/resources/tools/app-navigator*"
+routes = ["bitrise.io/resources/tools/app-navigator*", "app.bitrise.io/resources/tools/app-navigator*"]
 no_bundle = true
 workers_dev = true

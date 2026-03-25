@@ -34,6 +34,15 @@ import { renderStatus } from './shared/status';
       window.location.href = `/integrations/step?step=${stepPath}`;
     }
   }
+
+  if (url.pathname.match(/^\/resources\/tools\/app-navigator/)) {
+    const appNavigatorProxyAvailable = await fetch('/resources/tools/app-navigator-proxy')
+      .then((appNavigatorProxyResponse) => appNavigatorProxyResponse.ok)
+      .catch(() => false);
+    if (!appNavigatorProxyAvailable) {
+      window.location.href = `https://app.bitrise.io${url.pathname}`;
+    }
+  }
 })();
 
 window.addEventListener('load', async () => {
