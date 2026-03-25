@@ -94,7 +94,7 @@ class ChangelogTopic {
 
   /** @returns {string} */
   get content() {
-    if (this.data.slug.match(/rm-\d+/) && this.data.changelog) {
+    if (this.data.slug.match(/^rm-/) && this.data.changelog) {
       return this.data.changelog
         .map(
           (changelog) => `
