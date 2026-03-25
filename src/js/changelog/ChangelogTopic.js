@@ -71,12 +71,20 @@ class ChangelogTopic {
     return this.data.slug;
   }
 
-  /** @returns {string} */
-  get webflowUrl() {
-    if (this.id === 0) {
-      return `/changelog/${this.slug}`;
+  /**
+   * @param {boolean} useFallback
+   * @returns {string}
+   */
+  webflowUrl(useFallback = false) {
+    let basePath = '/changelog/';
+    if (useFallback) {
+      basePath = '/changelog/topic?topic=';
     }
-    return `/changelog/${this.slug}/${this.id}`;
+
+    if (this.id === 0) {
+      return `${basePath}${this.slug}`;
+    }
+    return `${basePath}${this.slug}/${this.id}`;
   }
 
   /** @returns {boolean} */

@@ -7,7 +7,7 @@ const distDir = path.resolve(rootDir, 'dist');
 
 /**
  * @param {object} [options]
- * @param {boolean} [options.skipJs] - If true, keep 404.js as a script src (for dev server)
+ * @param {boolean} [options.skipJs] - If true, keep status.js as a script src (for dev server)
  * @returns {Promise<string>} The generated HTML with all assets inlined
  */
 const generateMaintenanceHtml = async (options = {}) => {
@@ -17,25 +17,22 @@ const generateMaintenanceHtml = async (options = {}) => {
   const maintenanceCss = await fs.promises.readFile(path.join(srcDir, 'css', 'maintenance.css'), 'utf8');
   html = html.replace('<link rel="stylesheet" href="maintenance.css">', `<style>\n${maintenanceCss}</style>`);
 
-  // Remove 404.css link — it's already bundled into 404.js by webpack
-  html = html.replace('  <link rel="stylesheet" href="404.css">\n', '');
-
   // Inline JS (skip in dev — style-loader's HMR runtime needs publicPath from script.src)
   if (!options.skipJs) {
-    const jsContent = await fs.promises.readFile(path.join(distDir, '404.js'), 'utf8');
-    html = html.replace('<script src="404.js"></script>', `<script>\n${jsContent}</script>`);
+    const jsContent = await fs.promises.readFile(path.join(distDir, 'status.js'), 'utf8');
+    html = html.replace('<script src="status.js"></script>', `<script>\n${jsContent}</script>`);
   }
 
   // Inline SVGs
   const logoSvg = await fs.promises.readFile(path.join(srcDir, 'images', 'maintenance', 'bitrise_logo.svg'), 'utf8');
-  html = html.replace(/<img src="maintenance\/bitrise_logo\.svg"[^>]*>/, logoSvg.trim());
+  html = html.replace(/<img src="bitrise_logo\.svg"[^>]*>/, logoSvg.trim());
 
   const maintenanceSvg = await fs.promises.readFile(
     path.join(srcDir, 'images', 'maintenance', 'bitrise_maintenance.svg'),
     'utf8',
   );
   html = html.replace(
-    /<img[^>]*src="errors\/bitrise_maintenance\.svg"[^>]*>/,
+    /<img[^>]*src="bitrise_maintenance\.svg"[^>]*>/,
     maintenanceSvg.trim().replace('<svg ', '<svg class="error" '),
   );
 

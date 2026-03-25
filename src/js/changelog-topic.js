@@ -16,11 +16,11 @@ const topicMetaSeparator = document.querySelector('#changelog-topic-meta-separat
 topicMetaSeparator.style.display = 'none';
 
 const url = new URL(document.location.href);
-const topicSlugId = detectTopicFromUrl(url, 'changelog');
+const topicSlugId = detectTopicFromUrl(url, 'changelog', 'topic');
 
 /** @type {string} */
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? '' : 'https://bitrise.io';
-const changelogService = new ChangelogService(apiBase);
+const changelogService = new ChangelogService(apiBase, 'https://app.bitrise.io');
 
 document.getElementById('changelog-topic-title').innerHTML = "<span class='changelog-loading'>Loading</span>";
 document.getElementById('changelog-topic-meta').innerHTML = "<span class='changelog-loading'>Loading</span>";

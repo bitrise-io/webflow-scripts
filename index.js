@@ -79,10 +79,16 @@ async function discoverWorkers(dir) {
         const config = {};
         const lines = tomlContent.split('\n');
         lines.forEach((line) => {
-          const match = line.match(/^(\w+)\s*=\s*["']?([^"'\n]+)["']?/);
-          if (match) {
-            const [, key, value] = match;
-            config[key] = value;
+          const matchArray = line.match(/^(\w+)\s*=\s*\[(.*)\]$/);
+          if (matchArray) {
+            const [, key, value] = matchArray;
+            config[key] = JSON.parse(`[${value}]`);
+          } else {
+            const match = line.match(/^(\w+)\s*=\s*["']?([^"'\n]+)["']?/);
+            if (match) {
+              const [, key, value] = match;
+              config[key] = value;
+            }
           }
         });
 
@@ -108,7 +114,11 @@ async function getWorker(urlObject) {
   }
 
   const matchedWorker = workers.filter((worker) => {
-    let routePattern = worker.config.route.replace('bitrise.io', '^');
+    let route = worker.config.route ? worker.config.route : null;
+    if (!route && worker.config.routes) [route] = worker.config.routes;
+    if (!route) return false;
+
+    let routePattern = route.replace('bitrise.io', '^');
     if (routePattern.endsWith('*')) {
       routePattern = routePattern.slice(0, -1);
     } else {
