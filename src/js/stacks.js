@@ -5,6 +5,7 @@ import StacksService from './stacks/StacksService';
 import { githubIcon, messageAlertIcon } from './icons';
 
 import '../css/stacks.css';
+import { STACKS_PATH_PREFIX, STACKS_SUBPAGE_PARAM_NAME } from './stacks/config';
 
 const stacksAPIBase = 'https://stacks.bitrise.io/';
 
@@ -91,7 +92,7 @@ const getStacksLink = (path, useFallback = false) => {
 
 (async () => {
   const url = new URL(document.location.href);
-  const pagePath = detectTopicFromUrl(url, 'stacks', 'subpage').replace(/\/$/, '');
+  const pagePath = detectTopicFromUrl(url, STACKS_PATH_PREFIX, STACKS_SUBPAGE_PARAM_NAME).replace(/\/$/, '');
   const pageType = pagePath.split('/')[0];
 
   if (pageType === '') {

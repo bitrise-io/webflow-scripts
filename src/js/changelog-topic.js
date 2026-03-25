@@ -7,6 +7,7 @@ import YouTubeLoader from './changelog/YouTubeLoader';
 import { detectTopicFromUrl, formatDate, setMetaContent } from './shared/common';
 
 import '../css/changelog.css';
+import { CHANGELOG_PATH_PREFIX, CHANGELOG_SUBPAGE_PARAM_NAME } from './changelog/config';
 
 const tagFactory = new ChangelogTagFactory();
 const youTubeLoader = new YouTubeLoader();
@@ -16,7 +17,7 @@ const topicMetaSeparator = document.querySelector('#changelog-topic-meta-separat
 topicMetaSeparator.style.display = 'none';
 
 const url = new URL(document.location.href);
-const topicSlugId = detectTopicFromUrl(url, 'changelog', 'topic');
+const topicSlugId = detectTopicFromUrl(url, CHANGELOG_PATH_PREFIX, CHANGELOG_SUBPAGE_PARAM_NAME);
 
 /** @type {string} */
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? '' : 'https://bitrise.io';

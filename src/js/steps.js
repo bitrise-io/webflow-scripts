@@ -4,9 +4,10 @@ import IntegrationsService from './integrations/IntegrationsService';
 import { detectTopicFromUrl, fancyConsoleLog, setMetaContent } from './shared/common';
 
 import '../css/steps.css';
+import { INTEGRATIONS_PATH_PREFIX, INTEGRATIONS_SUBPAGE_PARAM_NAME } from './integrations/config';
 
 const url = new URL(document.location.href);
-const stepFilter = detectTopicFromUrl(url, 'integrations/steps', 'step');
+const stepFilter = detectTopicFromUrl(url, INTEGRATIONS_PATH_PREFIX, INTEGRATIONS_SUBPAGE_PARAM_NAME);
 
 const header = new HeaderSection();
 const details = new DetailsSection();
