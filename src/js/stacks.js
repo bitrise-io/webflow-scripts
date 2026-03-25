@@ -82,10 +82,21 @@ const getStackRemovalDate = async (pagePath) => {
   return stackReport?.stack_meta?.removal_date ? formatDate(new Date(stackReport.stack_meta.removal_date)) : null;
 };
 
+const getStacksLink = (path, useFallback = false) => {
+  if (useFallback) {
+    return `/stacks/subpage?subpage=${path.replace(/^\//, '')}`;
+  }
+  return `/stacks${path}`;
+};
+
 (async () => {
   const url = new URL(document.location.href);
-  const pagePath = detectTopicFromUrl(url, 'stacks').replace(/\/$/, '');
+  const pagePath = detectTopicFromUrl(url, 'stacks', 'subpage').replace(/\/$/, '');
   const pageType = pagePath.split('/')[0];
+
+  const proxyAvailable = await fetch('/stacks-proxy')
+    .then((response) => response.ok)
+    .catch(() => false);
 
   if (pageType === '') {
     const stackService = new StacksService();
@@ -467,6 +478,12 @@ const getStackRemovalDate = async (pagePath) => {
   } else {
     window.location.href = '/stacks';
   }
+
+  document.querySelectorAll('a[href^="/stacks"]').forEach((link) => {
+    if (!proxyAvailable && !link.href.match(/\.xml$/) && !link.href.match(/\/stacks\/subpage/)) {
+      link.href = getStacksLink(link.getAttribute('href').replace(/^.*\/stacks\//, ''), true);
+    }
+  });
 
   fancyConsoleLog('Bitrise.io Stacks');
 })();
