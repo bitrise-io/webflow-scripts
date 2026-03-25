@@ -1,8 +1,18 @@
 const ORIGIN_HOST = 'bitrise.io';
 
+const setCorsHeaders = (response) => {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.append('Vary', 'Origin');
+  return response;
+};
+
 export default {
   async fetch(request) {
     const urlObject = new URL(request.url);
+
+    if (urlObject.pathname.match(/^\/stacks-proxy$/)) {
+      return setCorsHeaders(new Response('OK'));
+    }
 
     urlObject.hostname = ORIGIN_HOST;
 
@@ -20,7 +30,7 @@ export default {
       });
     }
 
-    if (urlObject.pathname.match(/^\/stacks\/.+\/.+/)) {
+    if (urlObject.pathname.match(/^\/stacks\/.+/)) {
       const originalPath = urlObject.pathname;
       urlObject.pathname = '/stacks/subpage';
       const response = await fetch(urlObject);

@@ -1,6 +1,5 @@
 import '../css/404.css';
 import '../css/status.css';
-import ChangelogService from './changelog/ChangelogService';
 import { detectTopicFromUrl } from './shared/common';
 import { renderStatus } from './shared/status';
 
@@ -8,11 +7,21 @@ import { renderStatus } from './shared/status';
   const url = new URL(document.location.href);
   const topicSlugId = detectTopicFromUrl(url, 'changelog', 'topic');
   if (topicSlugId) {
-    const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? '' : 'https://bitrise.io';
-    const changelogService = new ChangelogService(apiBase, 'https://app.bitrise.io');
-    const currentApiBase = await changelogService.getApiBase();
-    if (currentApiBase === changelogService.fallbackApiBase) {
+    const changelogProxyAvailable = await fetch('/changelog-proxy')
+      .then((changelogProxyResponse) => changelogProxyResponse.ok)
+      .catch(() => false);
+    if (!changelogProxyAvailable) {
       window.location.href = `/changelog/topic?topic=${topicSlugId}`;
+    }
+  }
+
+  const subpagePath = detectTopicFromUrl(url, 'stacks', 'subpage');
+  if (subpagePath) {
+    const stacksProxyAvailable = await fetch('/stacks-proxy')
+      .then((stacksProxyResponse) => stacksProxyResponse.ok)
+      .catch(() => false);
+    if (!stacksProxyAvailable) {
+      window.location.href = `/stacks/subpage?subpage=${subpagePath}`;
     }
   }
 })();
