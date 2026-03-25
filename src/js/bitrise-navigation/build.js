@@ -2,7 +2,7 @@ const fs = require('fs');
 const { JSDOM } = require('jsdom');
 
 const FETCH_TIMEOUT_MS = 30000;
-const SOURCE_URL = 'https://webflow.bitrise.io/';
+const SOURCE_URL = 'https://bitrise.io/';
 
 // Selectors & patterns — centralised so they're easy to update when Webflow changes.
 const VERSION = 'v2';

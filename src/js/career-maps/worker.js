@@ -18,11 +18,13 @@ async function addCorsHeaders(originalResponse) {
   return response;
 }
 
+const ORIGIN_HOST = 'bitrise.io';
+
 addEventListener('fetch', (event) => {
   const urlObject = new URL(event.request.url);
   let useCors = true;
 
-  urlObject.hostname = 'webflow.bitrise.io';
+  urlObject.hostname = ORIGIN_HOST;
 
   if (urlObject.pathname.match(/^\/careers\/maps\/data\.json$/)) {
     urlObject.hostname = 'web-cdn.bitrise.io';

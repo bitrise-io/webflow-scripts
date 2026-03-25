@@ -23,7 +23,7 @@ const importedWorkers = {};
 async function importWorker(workerName, workerPath) {
   const workerContent = (await fs.promises.readFile(workerPath, 'utf8'))
     .toString()
-    .replaceAll('webflow.bitrise.io', webflowDomain)
+    .replaceAll("ORIGIN_HOST = 'bitrise.io'", `ORIGIN_HOST = '${webflowDomain}'`)
     .replaceAll(
       `urlObject.hostname = 'web-cdn.bitrise.io';`,
       `urlObject.hostname = '${hostname}'; urlObject.port = ${port}; urlObject.search = 'cdn=1';`, // TODO: make this switchable
