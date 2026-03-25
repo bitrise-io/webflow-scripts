@@ -1,8 +1,10 @@
+const ORIGIN_HOST = 'bitrise.io';
+
 export default {
   async fetch(request) {
     const urlObject = new URL(request.url);
 
-    urlObject.hostname = 'webflow.bitrise.io';
+    urlObject.hostname = ORIGIN_HOST;
 
     const actualPath = 'plans-pricing';
     const variantPath = 'plans-pricing-pro-plan-variant';

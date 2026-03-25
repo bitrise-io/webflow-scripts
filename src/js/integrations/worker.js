@@ -1,9 +1,11 @@
+const ORIGIN_HOST = 'bitrise.io';
+
 export default {
   async fetch(request) {
     const urlObject = new URL(request.url);
     const canonical = new URL(request.url);
 
-    urlObject.hostname = 'webflow.bitrise.io';
+    urlObject.hostname = ORIGIN_HOST;
     canonical.hostname = 'bitrise.io';
 
     if (urlObject.pathname.match(/^\/integrations\/steps\/.+/)) {

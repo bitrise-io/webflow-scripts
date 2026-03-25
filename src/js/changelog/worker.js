@@ -1,10 +1,12 @@
+const ORIGIN_HOST = 'bitrise.io';
+
 export default {
   async fetch(request) {
     const urlObject = new URL(request.url);
 
     let useCors = false;
     let transformBody = null;
-    urlObject.hostname = 'webflow.bitrise.io';
+    urlObject.hostname = ORIGIN_HOST;
 
     if (urlObject.pathname.match(/^\/changelog\/api\/(.+\.json)$/)) {
       urlObject.hostname = 'discuss.bitrise.io';
