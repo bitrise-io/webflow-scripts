@@ -17,7 +17,8 @@ const searchField = document.getElementById('search');
 searchField.parentNode.action = document.location.pathname; // TODO: move to webflow
 searchField.value = queryFilter;
 
-IntegrationsService.loadIntegrations().then((integrations) => {
+(async () => {
+  const integrations = await IntegrationsService.loadIntegrations();
   sidebar.render(integrations, platformFilter, categoryFilter, queryFilter);
   content.render(integrations, platformFilter, categoryFilter, queryFilter);
 
@@ -40,7 +41,17 @@ IntegrationsService.loadIntegrations().then((integrations) => {
     }, 500);
   }
 
+  const proxyAvailable = await fetch('/integrations-proxy')
+    .then((proxyResponse) => proxyResponse.ok)
+    .catch(() => false);
+
+  if (!proxyAvailable) {
+    document.querySelectorAll('a[href^="/integrations"]').forEach((link) => {
+      link.href = `/integrations/step?step=${link.getAttribute('href').replace(/^.*\/integrations\/steps\//, '')}`;
+    });
+  }
+
   fancyConsoleLog('Bitrise.io Integrations');
-});
+})();
 
 if (import.meta.webpackHot) import.meta.webpackHot.accept();

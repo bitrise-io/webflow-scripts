@@ -1,9 +1,19 @@
 const ORIGIN_HOST = 'bitrise.io';
 
+const setCorsHeaders = (response) => {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.append('Vary', 'Origin');
+  return response;
+};
+
 export default {
   async fetch(request) {
     const urlObject = new URL(request.url);
     const canonical = new URL(request.url);
+
+    if (urlObject.pathname.match(/^\/integrations-proxy$/)) {
+      return setCorsHeaders(new Response('OK'));
+    }
 
     urlObject.hostname = ORIGIN_HOST;
     canonical.hostname = 'bitrise.io';

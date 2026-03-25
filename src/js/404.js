@@ -24,6 +24,16 @@ import { renderStatus } from './shared/status';
       window.location.href = `/stacks/subpage?subpage=${subpagePath}`;
     }
   }
+
+  const stepPath = detectTopicFromUrl(url, 'integrations/steps', 'step');
+  if (stepPath) {
+    const integrationsProxyAvailable = await fetch('/integrations-proxy')
+      .then((integrationsProxyResponse) => integrationsProxyResponse.ok)
+      .catch(() => false);
+    if (!integrationsProxyAvailable) {
+      window.location.href = `/integrations/step?step=${stepPath}`;
+    }
+  }
 })();
 
 window.addEventListener('load', async () => {

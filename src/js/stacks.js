@@ -94,10 +94,6 @@ const getStacksLink = (path, useFallback = false) => {
   const pagePath = detectTopicFromUrl(url, 'stacks', 'subpage').replace(/\/$/, '');
   const pageType = pagePath.split('/')[0];
 
-  const proxyAvailable = await fetch('/stacks-proxy')
-    .then((response) => response.ok)
-    .catch(() => false);
-
   if (pageType === '') {
     const stackService = new StacksService();
     const stacksLinks = await stackService.fetchStacksIndexJson();
@@ -479,11 +475,17 @@ const getStacksLink = (path, useFallback = false) => {
     window.location.href = '/stacks';
   }
 
-  document.querySelectorAll('a[href^="/stacks"]').forEach((link) => {
-    if (!proxyAvailable && !link.href.match(/\.xml$/) && !link.href.match(/\/stacks\/subpage/)) {
-      link.href = getStacksLink(link.getAttribute('href').replace(/^.*\/stacks\//, ''), true);
-    }
-  });
+  const proxyAvailable = await fetch('/stacks-proxy')
+    .then((response) => response.ok)
+    .catch(() => false);
+
+  if (!proxyAvailable) {
+    document.querySelectorAll('a[href^="/stacks"]').forEach((link) => {
+      if (!link.href.match(/\.xml$/) && !link.href.match(/\/stacks\/subpage/)) {
+        link.href = getStacksLink(link.getAttribute('href').replace(/^.*\/stacks\//, ''), true);
+      }
+    });
+  }
 
   fancyConsoleLog('Bitrise.io Stacks');
 })();

@@ -1,34 +1,18 @@
 import DetailsSection from './integrations/DetailsSection';
 import HeaderSection from './integrations/HeaderSection';
 import IntegrationsService from './integrations/IntegrationsService';
-import { fancyConsoleLog, setMetaContent } from './shared/common';
+import { detectTopicFromUrl, fancyConsoleLog, setMetaContent } from './shared/common';
 
 import '../css/steps.css';
 
-/**
- * @param {URL} url
- * @returns {?string}
- */
-function detectStepFromUrl(url) {
-  let path = url.pathname;
-  if (path.match(/steps\/?$/)) {
-    path = `${path.replace(/\/$/, '')}/${url.searchParams.get('step')}`;
-  }
-
-  const match = path.match(/steps\/(.+)$/);
-  if (match) {
-    return match[1];
-  }
-  return null;
-}
-
 const url = new URL(document.location.href);
-const stepFilter = detectStepFromUrl(url);
+const stepFilter = detectTopicFromUrl(url, 'integrations/steps', 'step');
 
 const header = new HeaderSection();
 const details = new DetailsSection();
 
-IntegrationsService.loadIntegrations().then((integrations) => {
+(async () => {
+  const integrations = await IntegrationsService.loadIntegrations();
   if (!stepFilter || !(stepFilter in integrations.steps)) {
     window.location.href = '/integrations';
   } else {
@@ -53,8 +37,18 @@ IntegrationsService.loadIntegrations().then((integrations) => {
     header.render(integrations, step);
     details.render(integrations, step);
 
+    const proxyAvailable = await fetch('/integrations-proxy')
+      .then((proxyResponse) => proxyResponse.ok)
+      .catch(() => false);
+
+    if (!proxyAvailable) {
+      document.querySelectorAll('a[href^="/integrations"]').forEach((link) => {
+        link.href = `/integrations/step?step=${link.getAttribute('href').replace(/^.*\/integrations\/steps\//, '')}`;
+      });
+    }
+
     fancyConsoleLog(`Bitrise.io Integrations: ${step.title}`);
   }
-});
+})();
 
 if (import.meta.webpackHot) import.meta.webpackHot.accept();
