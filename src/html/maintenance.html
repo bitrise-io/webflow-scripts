@@ -8,8 +8,6 @@
 
   <base href="/">
   <link rel="stylesheet" href="maintenance.css">
-  <link rel="stylesheet" href="404.css">
-  <script src="404.js"></script>
 
   <!-- Google Tag Manager -->
   <script>window.dataLayer = window.dataLayer || [];</script>
@@ -24,7 +22,7 @@
         <h1>
           <a href="/" title="Go to dashboard">
             <figure>
-              <img src="maintenance/bitrise_logo.svg" alt="bitrise" />
+              <img src="bitrise_logo.svg" alt="bitrise" />
             </figure>
           </a>
         </h1>
@@ -35,12 +33,12 @@
       </main>
     </section>
     <figure>
-      <img class="error" src="errors/bitrise_maintenance.svg" alt="Bitrise - Under Maintenance">
+      <img class="error" src="bitrise_maintenance.svg" alt="Bitrise - Under Maintenance">
     </figure>
   </div>
   <footer>
-    <div class="status" id="bitrise-status">
-      <a href="https://status.bitrise.io/" rel="noreferrer" target="_blank">Status</a>
+    <div class="status">
+      <a id="statuspage" href="https://status.bitrise.io/" rel="noreferrer" target="_blank">Status</a>
     </div>
     <div class="copyright">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -66,5 +64,7 @@
   <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TZK32GR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
+
+  <script src="status.js"></script>
 </body>
 </html>
