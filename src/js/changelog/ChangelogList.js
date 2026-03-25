@@ -51,9 +51,10 @@ class ChangelogList {
   /**
    * @param {ChangelogTopic} topic
    * @param {boolean} isUnread
+   * @param {boolean} useFallback
    * @returns {HTMLLIElement}
    */
-  renderListItem(topic, isUnread = false) {
+  renderListItem(topic, isUnread = false, useFallback = false) {
     /** @type {HTMLLIElement} */
     const listItem = (isUnread ? this.unreadListItemTemplate : this.readListItemTemplate).cloneNode(true);
     listItem.querySelector('.changelog-timestamp').innerHTML = formatDate(topic.createdAt);
@@ -62,7 +63,7 @@ class ChangelogList {
     const listItemTag = this.tagFactory.getTopicTag(topic.tags);
     if (listItemTag) listItem.querySelector('.changelog-tag-placeholder').replaceWith(listItemTag);
 
-    listItem.querySelector('a').href = topic.webflowUrl;
+    listItem.querySelector('a').href = topic.webflowUrl(useFallback);
     return listItem;
   }
 
@@ -70,8 +71,9 @@ class ChangelogList {
    * @param {ChangelogTopic[]} topics
    * @param {Date} lastVisitedDate
    * @param {{search?: string}} filters
+   * @param {boolean} useFallback
    */
-  render(topics, lastVisitedDate, filters = {}) {
+  render(topics, lastVisitedDate, filters = {}, useFallback = false) {
     this.list.innerHTML = '';
     let timestamp = null;
     topics.forEach((topic) => {
@@ -90,7 +92,7 @@ class ChangelogList {
       }
 
       const isUnread = topic.createdAt.getTime() > lastVisitedDate.getTime();
-      const listItem = this.renderListItem(topic, isUnread);
+      const listItem = this.renderListItem(topic, isUnread, useFallback);
       this.list.append(listItem);
     });
     if (this.list.innerHTML === '') {

@@ -1,8 +1,18 @@
 const ORIGIN_HOST = 'bitrise.io';
 
+const setCorsHeaders = (response) => {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.append('Vary', 'Origin');
+  return response;
+};
+
 export default {
   async fetch(request) {
     const urlObject = new URL(request.url);
+
+    if (urlObject.pathname.match(/^\/changelog-proxy$/)) {
+      return setCorsHeaders(new Response('OK'));
+    }
 
     let useCors = false;
     let transformBody = null;
@@ -41,10 +51,7 @@ export default {
     }
 
     if (useCors) {
-      // Set CORS headers
-      response.headers.set('Access-Control-Allow-Origin', '*');
-      // Append to/Add Vary header so browser will cache response correctly
-      response.headers.append('Vary', 'Origin');
+      response = setCorsHeaders(response);
     }
 
     return response;

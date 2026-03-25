@@ -96,16 +96,23 @@ function formatDate(date) {
 /**
  * @param {URL} url
  * @param {string} prefix
+ * @param {string} fallbackQueryParam
  * @returns {?string}
  */
-function detectTopicFromUrl(url, prefix) {
+function detectTopicFromUrl(url, prefix, fallbackQueryParam) {
   const path = url.pathname;
   if (path.match(new RegExp(`/${prefix}/?$`))) {
     return '';
   }
   const match = path.match(new RegExp(`/${prefix}/(.+)$`));
-  if (match) {
+  if (match && match[1] !== fallbackQueryParam) {
     return match[1];
+  }
+  if (fallbackQueryParam) {
+    const fallback = url.searchParams.get(fallbackQueryParam);
+    if (fallback) {
+      return fallback;
+    }
   }
   return null;
 }

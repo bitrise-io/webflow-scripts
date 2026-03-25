@@ -34,7 +34,7 @@ document.cookie = `${cookieName}=${cookieValue};expires=${expires};${domain ? `d
 
 /** @type {string} */
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? '' : 'https://bitrise.io';
-const changelogService = new ChangelogService(apiBase);
+const changelogService = new ChangelogService(apiBase, 'https://app.bitrise.io');
 
 /** @type {HTMLElement} */
 const changelogList = new ChangelogList(document.getElementById('changelog-list'));
@@ -82,7 +82,8 @@ const getChangelogSettings = () => {
  */
 const renderFullChangelog = async (fullUrl) => {
   const topics = await changelogService.loadTopics(fullUrl);
-  changelogList.render(topics, lastVisitDate, getChangelogSettings());
+  const useFallback = changelogService.currentApiBase === changelogService.fallbackApiBase;
+  changelogList.render(topics, lastVisitDate, getChangelogSettings(), useFallback);
 };
 
 const loadMoreClickHandler = async (event) => {
@@ -113,7 +114,8 @@ const loadMoreClickHandler = async (event) => {
  */
 const renderLatestChangelog = async (latestUrl) => {
   const topics = await changelogService.loadTopics(latestUrl);
-  changelogList.render(topics, lastVisitDate, getChangelogSettings());
+  const useFallback = changelogService.currentApiBase === changelogService.fallbackApiBase;
+  changelogList.render(topics, lastVisitDate, getChangelogSettings(), useFallback);
 };
 
 const changelogSettingsTriggerClickHandler = () => {
