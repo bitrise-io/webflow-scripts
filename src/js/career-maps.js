@@ -3,6 +3,7 @@ import { fancyConsoleLog } from './shared/common';
 
 import '../css/career-maps.css';
 import { createSlug } from './career-maps/tools';
+import { jobNameOverride } from './career-maps/overrides';
 
 fancyConsoleLog('Bitrise.io Career Maps');
 
@@ -323,7 +324,10 @@ const renderTeamSidebarJobSection = (newTeamSidebarJobSection, jobName, team, jo
   let isActiveJobSection = false;
 
   const teamSidebarJobSectionHeading = newTeamSidebarJobSection.querySelector('#cm-team-sidebar-job-heading');
-  teamSidebarJobSectionHeading.textContent = teamSidebarJobSectionHeading.textContent.replace('{job_name}', jobName);
+  teamSidebarJobSectionHeading.textContent = teamSidebarJobSectionHeading.textContent.replace(
+    '{job_name}',
+    jobNameOverride(jobName),
+  );
   teamSidebarJobSectionHeading.removeAttribute('id');
 
   const teamSidebarLevelsList = newTeamSidebarJobSection.querySelector('#cm-team-sidebar-level-list');
@@ -355,7 +359,7 @@ const renderTeamSidebarJobSection = (newTeamSidebarJobSection, jobName, team, jo
     newTeamSidebarJobSection.style.display = 'block';
     document.querySelector('#cm-team-page-title').textContent = document
       .querySelector('#cm-team-page-title')
-      .textContent.replace('{job_name}', jobName);
+      .textContent.replace('{job_name}', jobNameOverride(jobName));
   } else {
     newTeamSidebarJobSection.style.display = 'none';
   }

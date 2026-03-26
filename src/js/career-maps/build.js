@@ -2,6 +2,15 @@
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
 
+if (!process.env.ATLASSIAN_EMAIL || !process.env.ATLASSIAN_API_TOKEN) {
+  process.loadEnvFile();
+}
+
+if (!process.env.ATLASSIAN_EMAIL || !process.env.ATLASSIAN_API_TOKEN) {
+  process.stderr.write('Error: ATLASSIAN_EMAIL and ATLASSIAN_API_TOKEN environment variables must be set.\n');
+  process.exit(1);
+}
+
 const API_EMAIL = process.env.ATLASSIAN_EMAIL;
 const API_TOKEN = process.env.ATLASSIAN_API_TOKEN;
 const MAX_LEVEL = 6;
