@@ -5,7 +5,12 @@ import StacksService from './stacks/StacksService';
 import { githubIcon, messageAlertIcon } from './icons';
 
 import '../css/stacks.css';
-import { STACKS_PATH_PREFIX, STACKS_SUBPAGE_PARAM_NAME } from './stacks/config';
+import {
+  STACKS_PATH_PREFIX,
+  STACKS_PROXY_PATH,
+  STACKS_SUBPAGE_PARAM_NAME,
+  STACKS_SUBPAGE_PATH_PREFIX,
+} from './stacks/config';
 
 const stacksAPIBase = 'https://stacks.bitrise.io/';
 
@@ -81,13 +86,6 @@ const getStackRemovalDate = async (pagePath) => {
     (report) => report.path === `/${pagePath.replace('changelogs/', 'stack_reports/')}`,
   );
   return stackReport?.stack_meta?.removal_date ? formatDate(new Date(stackReport.stack_meta.removal_date)) : null;
-};
-
-const getStacksLink = (path, useFallback = false) => {
-  if (useFallback) {
-    return `/stacks/subpage?subpage=${path.replace(/^\//, '')}`;
-  }
-  return `/stacks${path}`;
 };
 
 (async () => {
@@ -199,7 +197,7 @@ const getStacksLink = (path, useFallback = false) => {
 
     resetScripts.push(() => {
       ubuntuStackList.innerHTML = ubuntuStackListOriginalContent;
-      ubuntuStackListContainer.remove();
+      ubuntuStackUpdatePolicyNotice.remove();
     });
     const ubuntuStack = ubuntuStackList.querySelectorAll('.stack-row')[1].cloneNode(true);
     [...ubuntuStackList.querySelectorAll('.stack-row')].forEach((row, index) => {
@@ -476,14 +474,15 @@ const getStacksLink = (path, useFallback = false) => {
     window.location.href = '/stacks';
   }
 
-  const proxyAvailable = await fetch('/stacks-proxy')
-    .then((response) => response.ok)
+  const proxyAvailable = await fetch(STACKS_PROXY_PATH)
+    .then((proxyResponse) => proxyResponse.ok)
     .catch(() => false);
 
   if (!proxyAvailable) {
-    document.querySelectorAll('a[href^="/stacks"]').forEach((link) => {
-      if (!link.href.match(/\.xml$/) && !link.href.match(/\/stacks\/subpage/)) {
-        link.href = getStacksLink(link.getAttribute('href').replace(/^.*\/stacks\//, ''), true);
+    document.querySelectorAll(`a[href^="${STACKS_PATH_PREFIX}"]`).forEach((link) => {
+      if (!link.href.match(/\.xml$/)) {
+        const subPath = link.getAttribute('href').replace(new RegExp(`^.*${STACKS_PATH_PREFIX}/`), '');
+        link.href = `${STACKS_SUBPAGE_PATH_PREFIX}?${STACKS_SUBPAGE_PARAM_NAME}=${subPath}`;
       }
     });
   }

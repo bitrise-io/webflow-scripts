@@ -4,6 +4,12 @@ import SidebarSection from './integrations/SidebarSection';
 import { fancyConsoleLog } from './shared/common';
 
 import '../css/integrations.css';
+import {
+  INTEGRATIONS_PATH_PREFIX,
+  INTEGRATIONS_PROXY_PATH,
+  INTEGRATIONS_SUBPAGE_PARAM_NAME,
+  INTEGRATIONS_SUBPAGE_PATH_PREFIX,
+} from './integrations/config';
 
 const url = new URL(document.location.href);
 const platformFilter = url.searchParams.get('platform');
@@ -41,13 +47,14 @@ searchField.value = queryFilter;
     }, 500);
   }
 
-  const proxyAvailable = await fetch('/integrations-proxy')
+  const proxyAvailable = await fetch(INTEGRATIONS_PROXY_PATH)
     .then((proxyResponse) => proxyResponse.ok)
     .catch(() => false);
 
   if (!proxyAvailable) {
-    document.querySelectorAll('a[href^="/integrations"]').forEach((link) => {
-      link.href = `/integrations/step?step=${link.getAttribute('href').replace(/^.*\/integrations\/steps\//, '')}`;
+    document.querySelectorAll(`a[href^="${INTEGRATIONS_PATH_PREFIX}"]`).forEach((link) => {
+      const stepKey = link.getAttribute('href').replace(new RegExp(`^.*${INTEGRATIONS_PATH_PREFIX}/`), '');
+      link.href = `${INTEGRATIONS_SUBPAGE_PATH_PREFIX}?${INTEGRATIONS_SUBPAGE_PARAM_NAME}=${stepKey}`;
     });
   }
 
