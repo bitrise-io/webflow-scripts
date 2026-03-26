@@ -23,6 +23,10 @@
   width: 25%;
 } */
 
+#cm-team-page-title {
+  text-wrap: balance;
+}
+
 /* skeleton loading -- start */ /*
 
 .cm-loading #cm-level-heading,

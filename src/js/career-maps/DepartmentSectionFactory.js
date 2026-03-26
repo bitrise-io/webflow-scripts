@@ -1,5 +1,6 @@
 import { createSlug } from './tools';
 import careerImages from './images';
+import { jobNameOverride } from './overrides';
 
 class DepartmentSectionFactory {
   /**
@@ -45,8 +46,51 @@ class DepartmentSectionFactory {
     /** @type {HTMLElement} */
     const teamCardTemplate = teamGrid.querySelector('[data-template-id="cm-team"]').cloneNode(true);
 
+    if (department.name === 'Go To Market') {
+      department.teams.push({
+        name: 'RevOps',
+        slug: 'revops',
+        message: 'Yet to come...',
+      });
+    }
+
     teamGrid.innerHTML = '';
     department.teams.forEach((team) => {
+      if (team.message) {
+        /** @type {HTMLAnchorElement} */
+        const teamCardElement = teamCardTemplate.cloneNode(true);
+        teamCardElement.href = `#`;
+
+        /** @type {HTMLElement} */
+        const teamNameElement = teamCardElement.querySelector('[data-template-id="cm-team-name"]');
+        teamNameElement.textContent = teamNameElement.textContent.replace('{team_name}', team.name);
+
+        const teamIllustration = teamNameElement.nextSibling;
+        teamIllustration.src = careerImages.getImageBySlug(team.slug.replace(/-/g, '_'));
+        teamIllustration.alt = '';
+        teamIllustration.removeAttribute('srcset');
+
+        /** @type {HTMLElement} */
+        const teamLinkElement = teamCardElement.querySelector('[data-template-id="cm-team-link"]');
+        teamLinkElement.textContent = teamLinkElement.textContent.replace('{team_name}', team.name);
+        teamLinkElement.href = `#`;
+
+        /** @type {HTMLUListElement} */
+        const teamJobListElement = teamCardElement.querySelector('[data-template-id="cm-team-job-list"]');
+        /** @type {HTMLLIElement} */
+        const teamJobListItemTemplate = teamJobListElement
+          .querySelector('[data-template-id="cm-team-job-list-item"]')
+          .cloneNode(true);
+        teamJobListElement.innerHTML = '';
+
+        /** @type {HTMLLIElement} */
+        const teamMessage = teamJobListItemTemplate.cloneNode(true);
+        teamMessage.textContent = team.message;
+        teamJobListElement.appendChild(teamMessage);
+
+        teamGrid.appendChild(teamCardElement);
+      }
+
       if (team.jobs && Object.keys(team.jobs).length > 0) {
         /** @type {HTMLAnchorElement} */
         const teamCardElement = teamCardTemplate.cloneNode(true);
@@ -80,7 +124,7 @@ class DepartmentSectionFactory {
           const teamJobListItemLinkElement = teamJobListItemElement.querySelector('a');
           teamJobListItemLinkElement.textContent = teamJobListItemLinkElement.textContent.replace(
             '{job_name}',
-            jobName,
+            jobNameOverride(jobName),
           );
           teamJobListItemLinkElement.href = `/careers/maps/${team.slug}/${createSlug(jobName)}`;
           teamJobListElement.appendChild(teamJobListItemElement);
