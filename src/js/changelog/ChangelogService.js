@@ -60,7 +60,7 @@ class ChangelogService {
    */
   async loadTopic(topicSlugId) {
     const apiBase = await this.getApiBase();
-    if (topicSlugId.match(/rm-\d+/)) {
+    if (topicSlugId.match(/^rm-v\d+-.*/)) {
       const url = `${apiBase}/changelog.json`;
       const response = await fetch(url);
       const json = await response.json();

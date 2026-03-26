@@ -101,10 +101,10 @@ function formatDate(date) {
  */
 function detectTopicFromUrl(url, prefix, fallbackQueryParam) {
   const path = url.pathname;
-  if (path.match(new RegExp(`/${prefix}/?$`))) {
+  if (path.match(new RegExp(`${prefix}/?$`))) {
     return '';
   }
-  const match = path.match(new RegExp(`/${prefix}/(.+)$`));
+  const match = path.match(new RegExp(`${prefix}/(.+)$`));
   if (match && match[1] !== fallbackQueryParam) {
     return match[1];
   }
@@ -116,6 +116,34 @@ function detectTopicFromUrl(url, prefix, fallbackQueryParam) {
   }
   return null;
 }
+
+/**
+ * Handles a 404 error by checking if a proxy is available and redirecting if necessary.
+ * @param {URL} url - The URL that resulted in a 404 error.
+ * @param {{
+ *  pathPrefix: string,
+ *  subpageParamName: string,
+ *  proxyPath: string,
+ *  subpagePathPrefix: string
+ * }} config - An object containing configuration for the proxy handling.
+ * @param {(string) => void} handler - An optional handler function to call with the redirect URL if a proxy is not available.
+ * @return {Promise<void>}
+ */
+export const handleProxy404 = async (url, { pathPrefix, subpageParamName, proxyPath, subpagePathPrefix }, handler) => {
+  const topicSlugId = detectTopicFromUrl(url, pathPrefix, subpageParamName);
+  if (topicSlugId) {
+    const changelogProxyAvailable = await fetch(proxyPath)
+      .then((changelogProxyResponse) => changelogProxyResponse.ok)
+      .catch(() => false);
+    if (!changelogProxyAvailable) {
+      if (handler) {
+        handler(`${subpagePathPrefix}?${subpageParamName}=${topicSlugId}`);
+      } else {
+        window.location.href = `${subpagePathPrefix}?${subpageParamName}=${topicSlugId}`;
+      }
+    }
+  }
+};
 
 export {
   capitalize,

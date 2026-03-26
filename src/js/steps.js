@@ -4,9 +4,15 @@ import IntegrationsService from './integrations/IntegrationsService';
 import { detectTopicFromUrl, fancyConsoleLog, setMetaContent } from './shared/common';
 
 import '../css/steps.css';
+import {
+  INTEGRATIONS_PATH_PREFIX,
+  INTEGRATIONS_PROXY_PATH,
+  INTEGRATIONS_SUBPAGE_PARAM_NAME,
+  INTEGRATIONS_SUBPAGE_PATH_PREFIX,
+} from './integrations/config';
 
 const url = new URL(document.location.href);
-const stepFilter = detectTopicFromUrl(url, 'integrations/steps', 'step');
+const stepFilter = detectTopicFromUrl(url, INTEGRATIONS_PATH_PREFIX, INTEGRATIONS_SUBPAGE_PARAM_NAME);
 
 const header = new HeaderSection();
 const details = new DetailsSection();
@@ -37,13 +43,14 @@ const details = new DetailsSection();
     header.render(integrations, step);
     details.render(integrations, step);
 
-    const proxyAvailable = await fetch('/integrations-proxy')
+    const proxyAvailable = await fetch(INTEGRATIONS_PROXY_PATH)
       .then((proxyResponse) => proxyResponse.ok)
       .catch(() => false);
 
     if (!proxyAvailable) {
-      document.querySelectorAll('a[href^="/integrations"]').forEach((link) => {
-        link.href = `/integrations/step?step=${link.getAttribute('href').replace(/^.*\/integrations\/steps\//, '')}`;
+      document.querySelectorAll(`a[href^="${INTEGRATIONS_PATH_PREFIX}"]`).forEach((link) => {
+        const stepKey = link.getAttribute('href').replace(new RegExp(`^.*${INTEGRATIONS_PATH_PREFIX}/`), '');
+        link.href = `${INTEGRATIONS_SUBPAGE_PATH_PREFIX}?${INTEGRATIONS_SUBPAGE_PARAM_NAME}=${stepKey}`;
       });
     }
 
