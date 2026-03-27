@@ -48,8 +48,8 @@ class DepartmentSectionFactory {
 
     if (department.name === 'Go To Market') {
       department.teams.push({
-        name: 'RevOps',
-        slug: 'revops',
+        name: 'Revenue Operations',
+        slug: 'revenue-operations',
         message: 'Yet to come...',
       });
     }
