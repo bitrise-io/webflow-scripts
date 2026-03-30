@@ -238,6 +238,13 @@ const renderLevelDescription = (level) => {
     salaryTableRowTemplate.querySelectorAll('td')[2].remove();
   }
 
+  const salaryNotesElement = document.getElementById('cm-salary-notes');
+  const originalSalaryNotes = salaryNotesElement.textContent;
+  if (level.salaryNotes) {
+    salaryNotesElement.textContent = level.salaryNotes;
+    salaryNotesElement.style.display = 'block';
+  }
+
   Object.keys(level.salary).forEach((country) => {
     if (!country.match(/(HUF|USD|GBP|US|UK|Hungary)/)) {
       return; // skip non-primary hiring locations
@@ -251,6 +258,7 @@ const renderLevelDescription = (level) => {
 
   const bonusTitleElement = compensationSection.querySelector('#cm-bonus-title');
   const bonusValueElement = compensationSection.querySelector('#cm-bonus-value');
+  bonusValueElement.classList.add('is-white');
 
   if (level.bonus) {
     bonusTitleElement.textContent = 'Bonus percentage';
@@ -264,6 +272,13 @@ const renderLevelDescription = (level) => {
   } else {
     bonusTitleElement.textContent = '';
     bonusValueElement.textContent = '';
+  }
+
+  if (level.bonusNotes) {
+    const bonusNotesElement = document.createElement('p');
+    bonusNotesElement.className = 'cm-bonus-notes';
+    bonusNotesElement.textContent = level.bonusNotes;
+    compensationSection.appendChild(bonusNotesElement);
   }
 
   const tenureSection = document.querySelector('#cm-tenure-section');
@@ -309,6 +324,14 @@ const renderLevelDescription = (level) => {
       }
     });
   });
+
+  return () => {
+    const existingBonusNotesElement = compensationSection.querySelector('.cm-bonus-notes');
+    if (existingBonusNotesElement) {
+      existingBonusNotesElement.remove();
+    }
+    salaryNotesElement.textContent = originalSalaryNotes;
+  };
 };
 
 /**
