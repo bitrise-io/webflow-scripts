@@ -11,6 +11,9 @@ import {
   STACKS_SUBPAGE_PARAM_NAME,
   STACKS_SUBPAGE_PATH_PREFIX,
 } from './stacks/config';
+import { setDocumentContext } from './shared/context';
+
+setDocumentContext(document, document.location.hostname);
 
 const stacksAPIBase = 'https://stacks.bitrise.io/';
 
