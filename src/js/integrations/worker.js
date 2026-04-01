@@ -1,5 +1,5 @@
 const ORIGIN_HOST = 'bitrise.io';
-const PRERENDERED_HOST = 'webflow-scripts.bitrise.io';
+const PRERENDERED_BASE_URL = 'https://storage.googleapis.com/web-cdn.bitrise.io/webflow-ssr';
 
 const routingPatterns = [
   {
@@ -25,24 +25,20 @@ const setCorsHeaders = (response) => {
 };
 
 const fetchPrerenderedHtml = async (url, ctx) => {
-  const urlObject = new URL(url);
-  if (PRERENDERED_HOST.split(':').length === 2) {
-    [urlObject.hostname, urlObject.port] = PRERENDERED_HOST.split(':');
-  } else {
-    urlObject.hostname = PRERENDERED_HOST;
-  }
+  const { pathname } = new URL(url);
 
-  const prerenderedUrl = routingPatterns
+  const prerenderedPath = routingPatterns
     .map((route) => {
-      const match = urlObject.pathname.match(route.pattern);
+      const match = pathname.match(route.pattern);
       if (match && route.prerenderPattern) {
-        urlObject.pathname = route.prerenderPattern.replace('$1', match[1]);
-        return urlObject;
+        return route.prerenderPattern.replace('$1', match[1]);
       }
       return null;
     })
     .filter(Boolean)
     .pop();
+
+  const prerenderedUrl = prerenderedPath ? new URL(prerenderedPath, PRERENDERED_BASE_URL) : null;
 
   if (prerenderedUrl) {
     const cacheKey = prerenderedUrl.href;

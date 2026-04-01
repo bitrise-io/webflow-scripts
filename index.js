@@ -24,7 +24,10 @@ async function importWorker(workerName, workerPath) {
   const workerContent = (await fs.promises.readFile(workerPath, 'utf8'))
     .toString()
     .replaceAll("ORIGIN_HOST = 'bitrise.io'", `ORIGIN_HOST = '${webflowDomain}'`)
-    .replaceAll("PRERENDERED_HOST = 'webflow-scripts.bitrise.io'", `PRERENDERED_HOST = '${hostname}:${port}'`)
+    .replaceAll(
+      "PRERENDERED_BASE_URL = 'https://storage.googleapis.com/web-cdn.bitrise.io/webflow-ssr'",
+      `PRERENDERED_BASE_URL = 'http://${hostname}:${port}'`,
+    )
     .replaceAll(
       `urlObject.hostname = 'web-cdn.bitrise.io';`,
       `urlObject.hostname = '${hostname}'; urlObject.port = ${port}; urlObject.search = 'cdn=1';`, // TODO: make this switchable
@@ -33,9 +36,12 @@ async function importWorker(workerName, workerPath) {
     .replaceAll(/\/\/.*$/g, '');
   const workerNameWithHash = `${workerName}-${crypto.createHash('md5').update(workerContent).digest('hex')}`;
   if (!importedWorkers[workerNameWithHash]) {
+    const cachesMock = `const caches = { default: { match: async () => null, put: async () => {} } };`;
+
     if (workerContent.match(/addEventListener\('fetch',/)) {
       // Service Worker Syntax
       eval(`(() => {
+        ${cachesMock}
         function addEventListener(_, cb) {
           importedWorkers['${workerNameWithHash}'] = { type: "Service" };
           importedWorkers['${workerNameWithHash}'].name = '${workerName}';
@@ -47,6 +53,7 @@ async function importWorker(workerName, workerPath) {
     if (workerContent.match(/export default {/)) {
       // ES6 Module Syntax
       eval(`(() => {
+        ${cachesMock}
         ${workerContent.replace(
           /export default {/,
           `
@@ -255,7 +262,8 @@ app.get(/\/.*/, async (req, res) => {
     }
 
     if (requestHandler.type === 'ES6 Module') {
-      fetchEvent.respondWith(requestHandler.handler.fetch(fetchEvent.request));
+      const ctxMock = { waitUntil: () => {} };
+      fetchEvent.respondWith(requestHandler.handler.fetch(fetchEvent.request, {}, ctxMock));
     }
   }
 });
