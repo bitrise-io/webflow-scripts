@@ -17,7 +17,9 @@ class NavigationDropdown extends NavigationList {
   /** @param {HTMLElement} navItem */
   markNavItemSelected(navItem) {
     super.markNavItemSelected(navItem);
-    this.dropdownToggle.querySelectorAll('div')[1].innerHTML += `: <strong>${navItem.innerHTML}</strong>`;
+    this.dropdownToggle.querySelectorAll('div')[1].innerHTML = `${
+      this.dropdownToggle.querySelectorAll('div')[1].innerHTML.split(':')[0]
+    }: <strong>${navItem.innerHTML}</strong>`;
   }
 }
 

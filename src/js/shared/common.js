@@ -1,3 +1,5 @@
+import { getDocumentContext } from './context';
+
 /**
  * @param {string} str
  * @returns {string}
@@ -52,6 +54,7 @@ function getFirstElementByClassname(parent, className) {
  * @returns {HTMLMetaElement}
  */
 function getMetaTag(options) {
+  const { document } = getDocumentContext();
   const key = 'property' in options ? 'property' : 'name';
 
   /** @type {?HTMLMetaElement} */

@@ -30,9 +30,8 @@ class NavigationList {
 
   /**
    * @param {NavigationItem[]} items
-   * @param {{clickHandler: (event: Event, navItem: HTMLElement) => void}|null} options
    */
-  render(items, options) {
+  render(items) {
     this.navContainer.querySelectorAll('a').forEach((el) => el.remove());
 
     items.forEach((item) => {
@@ -45,13 +44,25 @@ class NavigationList {
         newNavItem.className += ' disabled';
       }
       newNavItem.href = item.url;
-      if (options && options.clickHandler) {
-        newNavItem.addEventListener('click', (event) => {
-          options.clickHandler(event, this);
-        });
-      }
       this.navContainer.appendChild(newNavItem);
     });
+  }
+
+  /**
+   * Attaches a click handler to all nav items (current and future renders).
+   * @param {Function} handler
+   */
+  attachClickHandler(handler) {
+    if (handler)
+      this.navContainer.querySelectorAll('a').forEach((link) => {
+        if (link.getAttribute('data-click-handler-attached') === 'true') {
+          return;
+        }
+        link.addEventListener('click', (event) => {
+          handler(event, this);
+        });
+        link.setAttribute('data-click-handler-attached', 'true');
+      });
   }
 }
 

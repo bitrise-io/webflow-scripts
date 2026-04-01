@@ -24,6 +24,7 @@ async function importWorker(workerName, workerPath) {
   const workerContent = (await fs.promises.readFile(workerPath, 'utf8'))
     .toString()
     .replaceAll("ORIGIN_HOST = 'bitrise.io'", `ORIGIN_HOST = '${webflowDomain}'`)
+    .replaceAll("PRERENDERED_HOST = 'webflow-scripts.bitrise.io'", `PRERENDERED_HOST = '${hostname}:${port}'`)
     .replaceAll(
       `urlObject.hostname = 'web-cdn.bitrise.io';`,
       `urlObject.hostname = '${hostname}'; urlObject.port = ${port}; urlObject.search = 'cdn=1';`, // TODO: make this switchable
@@ -160,7 +161,11 @@ const { generateMaintenanceHtml } = require('./src/js/maintenance/build.js');
 app.get('/maintenance.html', async (req, res) => {
   try {
     // In dev, skip JS inlining — style-loader's HMR runtime needs publicPath from script.src
-    const html = await generateMaintenanceHtml({ skipJs: true });
+    const html = await generateMaintenanceHtml({
+      skipJs: true,
+      distPath: path.resolve(__dirname, 'dist'),
+      srcPath: path.resolve(__dirname, 'src'),
+    });
     res.setHeader('Content-Type', 'text/html');
     res.end(html);
   } catch (error) {
@@ -183,7 +188,14 @@ app.get(/\/.*/, async (req, res) => {
     res.statusCode = 200;
     const extname = path.extname(urlObject.pathname);
     if (extname === '.js') res.setHeader('Content-Type', 'text/javascript');
-    if (extname === '.html') res.setHeader('Content-Type', 'text/html');
+    if (extname === '.html') {
+      res.setHeader('Content-Type', 'text/html');
+      let body = content.toString();
+      body = body.replace("document.location.host === 'test-e93bfd.webflow.io'", 'true');
+      body = body.replace('https://webflow-scripts.bitrise.io/', '/');
+      res.end(body);
+      return;
+    }
     if (extname === '.json') res.setHeader('Content-Type', 'application/json');
 
     process.stdout.write(`[info] Serving local file ${filePath}\n`);

@@ -1,9 +1,11 @@
+import { getDocumentContext } from '../shared/context';
 import Integrations from './Integrations';
 import Step from './Step';
 
 class StepCardComponent {
   /** @param {HTMLElement} element */
   constructor(element) {
+    const { document } = getDocumentContext();
     /** @type {HTMLElement} */
     this.element = element;
     /** @type {HTMLImageElement} */
@@ -34,6 +36,7 @@ class StepCardComponent {
    * @param {Step} step
    */
   render(integrations, step) {
+    const { document, hostname } = getDocumentContext();
     this.element.id = `step-${step.key}`;
 
     this.cardHeaderIcon.loading = 'lazy';
@@ -45,7 +48,7 @@ class StepCardComponent {
     this.cardHeaderTitleLink.title = step.title;
     this.cardLink.title = step.title;
 
-    if (window.location.hostname.match(/bitrise\.io|localhost|127\.0\.0\.1/)) {
+    if (hostname.match(/bitrise\.io|localhost|127\.0\.0\.1/)) {
       this.cardHeaderTitleLink.href = `/integrations/steps/${step.key}`;
       this.cardLink.href = `/integrations/steps/${step.key}`;
     } else {

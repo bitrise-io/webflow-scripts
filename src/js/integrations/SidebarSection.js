@@ -1,3 +1,4 @@
+import { getDocumentContext } from '../shared/context';
 import { icaseEqual } from '../shared/common';
 import Integrations from './Integrations';
 import NavigationDropdown from './NavigationDropdown';
@@ -5,6 +6,7 @@ import NavigationList from './NavigationList';
 
 class SidebarSection {
   constructor() {
+    const { document } = getDocumentContext();
     /** @type {HTMLElement} */
     this.sidebarContainer = document.querySelector('.integrations-sidebar');
 
@@ -26,6 +28,7 @@ class SidebarSection {
    * @param {?string} queryFilter
    */
   render(integrations, platformFilter, categoryFilter, queryFilter) {
+    const { document } = getDocumentContext();
     /** @type {import('./NavigationList').NavigationItem[]} */
     const platformItems = [];
 
@@ -89,21 +92,33 @@ class SidebarSection {
       }
     });
 
-    this.categoryList.render(categoryItems, {
-      clickHandler: () => {
-        document.querySelectorAll('.category-anchor').forEach((element) => {
-          element.style.marginTop = this.getAnchorMarginTop();
-        });
-      },
+    this.categoryList.render(categoryItems);
+    this.categoryDropdown.render(categoryItems);
+  }
+
+  update(integrations, platformFilter, categoryFilter, queryFilter) {
+    this.render(integrations, platformFilter, categoryFilter, queryFilter);
+    this.attachClickHandlers();
+  }
+
+  /**
+   * Attaches client-side click handlers to category navigation.
+   * Call this after render() in browser context only.
+   */
+  attachClickHandlers() {
+    const { document } = getDocumentContext();
+
+    this.categoryList.attachClickHandler(() => {
+      document.querySelectorAll('.category-anchor').forEach((element) => {
+        element.style.marginTop = this.getAnchorMarginTop();
+      });
     });
 
-    this.categoryDropdown.render(categoryItems, {
-      clickHandler: (dropdown) => {
-        document.querySelectorAll('.category-anchor').forEach((element) => {
-          element.style.marginTop = this.getAnchorMarginTop();
-        });
-        dropdown.toggleDropdown();
-      },
+    this.categoryDropdown.attachClickHandler((event, dropdown) => {
+      document.querySelectorAll('.category-anchor').forEach((element) => {
+        element.style.marginTop = this.getAnchorMarginTop();
+      });
+      dropdown.toggleDropdown();
     });
   }
 }
