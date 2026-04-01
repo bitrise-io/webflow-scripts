@@ -19,7 +19,7 @@ class StepListSection {
    */
   render(integrations) {
     const { document } = getDocumentContext();
-    this.gridContainer.querySelectorAll('.step_grid').forEach((grid) => grid.classList.add('hidden'));
+    this.gridContainer.querySelectorAll('.step_grid').forEach((grid) => grid.classList.add('display-none'));
 
     integrations.categories.getItems().forEach((category) => {
       /** @type {string[]} */
@@ -30,7 +30,7 @@ class StepListSection {
       if (matchingSteps.length > 0) {
         /** @type {HTMLElement} */
         const newGrid = this.templateGrid.cloneNode(true);
-        newGrid.classList.remove('hidden');
+        newGrid.classList.remove('display-none');
         newGrid.querySelector('h3').innerHTML = category.getName();
 
         const categoryAnchor = document.createElement('a');
@@ -71,12 +71,14 @@ class StepListSection {
           );
         });
 
-        categoryGrid.querySelectorAll('.step-card').forEach((card) => card.classList.add('hidden'));
+        categoryGrid.querySelectorAll('.step-card').forEach((card) => card.classList.add('display-none'));
         if (matchingSteps.length > 0) {
-          matchingSteps.forEach((slug) => categoryGrid.querySelector(`#step-${slug}`)?.classList.remove('hidden'));
-          categoryGrid.classList.remove('hidden');
+          matchingSteps.forEach((slug) =>
+            categoryGrid.querySelector(`#step-${slug}`)?.classList.remove('display-none'),
+          );
+          categoryGrid.classList.remove('display-none');
         } else {
-          categoryGrid.classList.add('hidden');
+          categoryGrid.classList.add('display-none');
         }
       }
     });
