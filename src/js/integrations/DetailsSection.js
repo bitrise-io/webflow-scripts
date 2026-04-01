@@ -1,9 +1,11 @@
+import { getDocumentContext } from '../shared/context';
 import Integrations from './Integrations';
 import Step from './Step';
 import StepCardComponent from './StepCardComponent';
 
 class DetailsSection {
   constructor() {
+    const { document } = getDocumentContext();
     /** @type {HTMLAnchorElement} */
     this.githubButton = document.getElementById('integrations-step-details-github-buttom');
 

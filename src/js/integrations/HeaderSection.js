@@ -1,8 +1,10 @@
+import { getDocumentContext } from '../shared/context';
 import Integrations from './Integrations';
 import Step from './Step';
 
 class HeaderSection {
   constructor() {
+    const { document } = getDocumentContext();
     /** @type {HTMLImageElement} */
     this.headerIcon = document.getElementById('integrations-step-details-icon');
     /** @type {HTMLHeadingElement} */
@@ -20,6 +22,7 @@ class HeaderSection {
    * @param {Step} step
    */
   render(integrations, step) {
+    const { document } = getDocumentContext();
     if (step.svgIcon) this.headerIcon.src = step.svgIcon;
     this.headerTitle.innerHTML = step.title;
     this.headerSummary.innerHTML = step.formattedSummary;

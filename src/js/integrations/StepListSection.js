@@ -1,8 +1,10 @@
+import { getDocumentContext } from '../shared/context';
 import Integrations from './Integrations';
 import StepCardComponent from './StepCardComponent';
 
 class StepListSection {
   constructor() {
+    const { document } = getDocumentContext();
     /** @type {HTMLElement} */
     this.gridContainer = document.querySelector('.step_grid').parentNode;
     /** @type {HTMLElement} */
@@ -19,6 +21,7 @@ class StepListSection {
    * @param {?string} queryFilter
    */
   render(integrations, platformFilter, categoryFilter, queryFilter) {
+    const { document } = getDocumentContext();
     this.gridContainer.innerHTML = '';
 
     integrations.categories.getItems().forEach((category) => {
