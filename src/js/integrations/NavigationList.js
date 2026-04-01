@@ -21,9 +21,6 @@ class NavigationList {
     this.navItemTemplate = this.navContainer.querySelector('a').cloneNode(true);
     this.navItemTemplate.innerHTML = '';
     this.navItemTemplate.href = '';
-
-    /** @type {Function|null} */
-    this.clickHandler = null;
   }
 
   /** @param {HTMLElement} navItem */
@@ -47,11 +44,6 @@ class NavigationList {
         newNavItem.className += ' disabled';
       }
       newNavItem.href = item.url;
-      if (this.clickHandler) {
-        newNavItem.addEventListener('click', (event) => {
-          this.clickHandler(event, this);
-        });
-      }
       this.navContainer.appendChild(newNavItem);
     });
   }
@@ -61,7 +53,16 @@ class NavigationList {
    * @param {Function} handler
    */
   attachClickHandler(handler) {
-    this.clickHandler = handler;
+    if (handler)
+      this.navContainer.querySelectorAll('a').forEach((link) => {
+        if (link.getAttribute('data-click-handler-attached') === 'true') {
+          return;
+        }
+        link.addEventListener('click', (event) => {
+          handler(event, this);
+        });
+        link.setAttribute('data-click-handler-attached', 'true');
+      });
   }
 }
 

@@ -16,28 +16,21 @@ class StepListSection {
 
   /**
    * @param {Integrations} integrations
-   * @param {?string} platformFilter
-   * @param {?string} categoryFilter
-   * @param {?string} queryFilter
    */
-  render(integrations, platformFilter, categoryFilter, queryFilter) {
+  render(integrations) {
     const { document } = getDocumentContext();
-    this.gridContainer.innerHTML = '';
+    this.gridContainer.querySelectorAll('.step_grid').forEach((grid) => grid.classList.add('hidden'));
 
     integrations.categories.getItems().forEach((category) => {
       /** @type {string[]} */
       const matchingSteps = category.steps.filter((slug) => {
-        return (
-          !integrations.steps[slug].isDeprecated() &&
-          integrations.steps[slug].fitsCategory(categoryFilter) &&
-          integrations.steps[slug].fitsPlatform(platformFilter) &&
-          integrations.steps[slug].fitsQuery(queryFilter)
-        );
+        return !integrations.steps[slug].isDeprecated();
       });
 
       if (matchingSteps.length > 0) {
         /** @type {HTMLElement} */
         const newGrid = this.templateGrid.cloneNode(true);
+        newGrid.classList.remove('hidden');
         newGrid.querySelector('h3').innerHTML = category.getName();
 
         const categoryAnchor = document.createElement('a');
@@ -53,6 +46,38 @@ class StepListSection {
         });
 
         this.gridContainer.appendChild(newGrid);
+      }
+    });
+  }
+
+  /**
+   * Updates the visibility of steps and categories based on the provided filters.
+   * @param {Integrations} integrations
+   * @param {string} platformFilter
+   * @param {string} categoryFilter
+   * @param {string} queryFilter
+   */
+  update(integrations, platformFilter, categoryFilter, queryFilter) {
+    integrations.categories.getItems().forEach((category) => {
+      const categoryGrid = this.gridContainer.querySelector(`#category-${category.getSlug()}`)?.closest('.step_grid');
+      if (categoryGrid) {
+        /** @type {string[]} */
+        const matchingSteps = category.steps.filter((slug) => {
+          return (
+            !integrations.steps[slug].isDeprecated() &&
+            integrations.steps[slug].fitsCategory(categoryFilter) &&
+            integrations.steps[slug].fitsPlatform(platformFilter) &&
+            integrations.steps[slug].fitsQuery(queryFilter)
+          );
+        });
+
+        categoryGrid.querySelectorAll('.step-card').forEach((card) => card.classList.add('hidden'));
+        if (matchingSteps.length > 0) {
+          matchingSteps.forEach((slug) => categoryGrid.querySelector(`#step-${slug}`)?.classList.remove('hidden'));
+          categoryGrid.classList.remove('hidden');
+        } else {
+          categoryGrid.classList.add('hidden');
+        }
       }
     });
   }

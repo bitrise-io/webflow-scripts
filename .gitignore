@@ -4,9 +4,12 @@
 node_modules
 yarn-error.log
 yarn.lock
+/build
 /dist/*.js
 /dist/*.LICENSE.txt
 /dist/maintenance.html
+/dist/integrations.html
+/dist/integrations/*
 /dist/images/*
 /career-maps.json
 /changelog.json

@@ -96,6 +96,11 @@ class SidebarSection {
     this.categoryDropdown.render(categoryItems);
   }
 
+  update(integrations, platformFilter, categoryFilter, queryFilter) {
+    this.render(integrations, platformFilter, categoryFilter, queryFilter);
+    this.attachClickHandlers();
+  }
+
   /**
    * Attaches client-side click handlers to category navigation.
    * Call this after render() in browser context only.

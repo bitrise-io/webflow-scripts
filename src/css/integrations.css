@@ -22,3 +22,11 @@
   padding-top: 2.5rem;
   padding-bottom: 2.5rem;
 }
+
+.step-card.hidden {
+  display: none;
+}
+
+.step_grid.hidden {
+  display: none;
+}

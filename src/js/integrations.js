@@ -24,7 +24,7 @@ const url = new URL(document.location.href);
   const searchField = document.getElementById('search');
   searchField.value = queryFilter;
 
-  initializeStepList(integrations, platformFilter, categoryFilter);
+  initializeStepList(integrations, platformFilter, categoryFilter, queryFilter);
   await applyProxyFallback();
 })();
 

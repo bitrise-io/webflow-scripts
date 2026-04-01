@@ -8,8 +8,9 @@ import StepListSection from './StepListSection';
  * @param {import('./Integrations').default} integrations
  * @param {?string} platformFilter
  * @param {?string} categoryFilter
+ * @param {?string} queryFilter
  */
-export function initializeStepList(integrations, platformFilter, categoryFilter) {
+export function initializeStepList(integrations, platformFilter, categoryFilter, queryFilter) {
   const sidebar = new SidebarSection();
   const content = new StepListSection();
 
@@ -17,12 +18,12 @@ export function initializeStepList(integrations, platformFilter, categoryFilter)
   searchField.parentNode.action = document.location.pathname; // TODO: move to webflow
 
   searchField.addEventListener('keyup', (event) => {
-    sidebar.render(integrations, platformFilter, categoryFilter, event.target.value);
-    sidebar.attachClickHandlers();
-    content.render(integrations, platformFilter, categoryFilter, event.target.value);
+    sidebar.update(integrations, platformFilter, categoryFilter, event.target.value);
+    content.update(integrations, platformFilter, categoryFilter, event.target.value);
   });
 
-  sidebar.attachClickHandlers();
+  sidebar.update(integrations, platformFilter, categoryFilter, queryFilter);
+  content.update(integrations, platformFilter, categoryFilter, queryFilter);
 
   const match = window.location.hash.match(/category-(.*)/);
   if (platformFilter && !match) {

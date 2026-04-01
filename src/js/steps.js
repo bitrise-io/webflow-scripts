@@ -14,8 +14,9 @@ const url = new URL(document.location.href);
 
   let step;
   if (isStepDetailRendered(document)) {
+    const canonicalUrl = new URL(document.querySelector('link[rel="canonical"]')?.href);
     setDocumentContext(document, url.hostname);
-    const stepFilter = detectTopicFromUrl(url, INTEGRATIONS_PATH_PREFIX, INTEGRATIONS_SUBPAGE_PARAM_NAME);
+    const stepFilter = detectTopicFromUrl(canonicalUrl, INTEGRATIONS_PATH_PREFIX, INTEGRATIONS_SUBPAGE_PARAM_NAME);
     step = integrations.steps[stepFilter];
   } else {
     step = renderStepDetail(document, integrations, url);
