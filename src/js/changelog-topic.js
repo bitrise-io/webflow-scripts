@@ -5,9 +5,12 @@ import ChangelogService from './changelog/ChangelogService';
 import ChangelogTagFactory from './changelog/ChangelogTagFactory';
 import YouTubeLoader from './changelog/YouTubeLoader';
 import { detectTopicFromUrl, formatDate, setMetaContent } from './shared/common';
+import { setDocumentContext } from './shared/context';
 
 import '../css/changelog.css';
 import { CHANGELOG_PATH_PREFIX, CHANGELOG_SUBPAGE_PARAM_NAME } from './changelog/config';
+
+setDocumentContext(document, document.location.hostname);
 
 const tagFactory = new ChangelogTagFactory();
 const youTubeLoader = new YouTubeLoader();
