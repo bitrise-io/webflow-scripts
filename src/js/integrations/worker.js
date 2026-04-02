@@ -38,7 +38,7 @@ const fetchPrerenderedHtml = async (url, ctx) => {
     .filter(Boolean)
     .pop();
 
-  const prerenderedUrl = prerenderedPath ? new URL(prerenderedPath, PRERENDERED_BASE_URL) : null;
+  const prerenderedUrl = prerenderedPath ? new URL(`${PRERENDERED_BASE_URL}${prerenderedPath}`) : null;
 
   if (prerenderedUrl) {
     const cacheKey = prerenderedUrl.href;
