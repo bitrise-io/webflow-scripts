@@ -10,7 +10,7 @@ import IntegrationsService from './IntegrationsService';
  */
 export async function render({ destination, templateHostname }) {
   const [listTemplate, detailTemplate, integrations] = await Promise.all([
-    fetch(`https://${templateHostname}/integrations`).then((r) => r.text()),
+    fetch(`https://${templateHostname}/integrations?template=true`).then((r) => r.text()),
     fetch(`https://${templateHostname}/integrations/step`).then((r) => r.text()),
     IntegrationsService.loadIntegrations(),
   ]);

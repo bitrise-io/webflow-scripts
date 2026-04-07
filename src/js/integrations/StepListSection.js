@@ -19,7 +19,15 @@ class StepListSection {
    */
   render(integrations) {
     const { document } = getDocumentContext();
-    this.gridContainer.querySelectorAll('.step_grid').forEach((grid) => grid.classList.add('display-none'));
+    this.gridContainer.querySelectorAll('.step_grid').forEach((grid) => {
+      if (grid.querySelector('.category-anchor')) {
+        grid.remove();
+      } else {
+        grid.classList.add('display-none');
+      }
+    });
+
+    const fragment = document.createDocumentFragment();
 
     integrations.categories.getItems().forEach((category) => {
       /** @type {string[]} */
@@ -45,9 +53,11 @@ class StepListSection {
           newGrid.querySelector('.step-list').appendChild(newStepCard.element);
         });
 
-        this.gridContainer.appendChild(newGrid);
+        fragment.appendChild(newGrid);
       }
     });
+
+    this.gridContainer.appendChild(fragment);
   }
 
   /**
@@ -58,29 +68,34 @@ class StepListSection {
    * @param {string} queryFilter
    */
   update(integrations, platformFilter, categoryFilter, queryFilter) {
-    integrations.categories.getItems().forEach((category) => {
+    // Read phase: compute filter results and collect DOM references — no mutations
+    const updates = integrations.categories.getItems().flatMap((category) => {
       const categoryGrid = this.gridContainer.querySelector(`#category-${category.getSlug()}`)?.closest('.step_grid');
-      if (categoryGrid) {
-        /** @type {string[]} */
-        const matchingSteps = category.steps.filter((slug) => {
-          return (
+      if (!categoryGrid) return [];
+
+      /** @type {Set<string>} */
+      const matchingSlugs = new Set(
+        category.steps.filter(
+          (slug) =>
             !integrations.steps[slug].isDeprecated() &&
             integrations.steps[slug].fitsCategory(categoryFilter) &&
             integrations.steps[slug].fitsPlatform(platformFilter) &&
-            integrations.steps[slug].fitsQuery(queryFilter)
-          );
-        });
+            integrations.steps[slug].fitsQuery(queryFilter),
+        ),
+      );
 
-        categoryGrid.querySelectorAll('.step-card').forEach((card) => card.classList.add('display-none'));
-        if (matchingSteps.length > 0) {
-          matchingSteps.forEach((slug) =>
-            categoryGrid.querySelector(`#step-${slug}`)?.classList.remove('display-none'),
-          );
-          categoryGrid.classList.remove('display-none');
-        } else {
-          categoryGrid.classList.add('display-none');
-        }
-      }
+      const cards = Array.from(categoryGrid.querySelectorAll('.step-card'));
+      return [{ categoryGrid, matchingSlugs, cards }];
+    });
+
+    // Write phase: batch all DOM mutations in a single rAF
+    requestAnimationFrame(() => {
+      updates.forEach(({ categoryGrid, matchingSlugs, cards }) => {
+        cards.forEach((card) => {
+          card.classList.toggle('display-none', !matchingSlugs.has(card.id.slice('step-'.length)));
+        });
+        categoryGrid.classList.toggle('display-none', matchingSlugs.size === 0);
+      });
     });
   }
 }

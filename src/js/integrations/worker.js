@@ -82,12 +82,17 @@ export default {
       return setCorsHeaders(new Response('OK'));
     }
 
-    const prerenderedResponse = await fetchPrerenderedHtml(urlObject, ctx);
-    if (prerenderedResponse && prerenderedResponse.ok) {
-      return prerenderedResponse;
+    const isTemplateRequest = urlObject.searchParams.has('template');
+
+    if (!isTemplateRequest) {
+      const prerenderedResponse = await fetchPrerenderedHtml(urlObject, ctx);
+      if (prerenderedResponse && prerenderedResponse.ok) {
+        return prerenderedResponse;
+      }
     }
 
     urlObject.hostname = ORIGIN_HOST;
+    urlObject.searchParams.delete('template');
     canonical.hostname = 'bitrise.io';
 
     const routingMatch = routingPatterns
