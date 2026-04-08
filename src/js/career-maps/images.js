@@ -10,6 +10,7 @@ import productDesignUrl from '../../images/careers/product_design.svg';
 import productManagementUrl from '../../images/careers/product_management.svg';
 import salesUrl from '../../images/careers/sales.svg';
 import supportUrl from '../../images/careers/support.svg';
+import revopsUrl from '../../images/careers/revops.svg';
 
 const careerImages = {
   getImageBySlug: (slug) => {
@@ -38,6 +39,8 @@ const careerImages = {
         return salesUrl;
       case 'support':
         return supportUrl;
+      case 'revenue_operations':
+        return revopsUrl;
       default:
         return null;
     }
