@@ -31,6 +31,7 @@
   "scripts": {
     "dev": "node ./index.js",
     "build": "node ./build.js",
+    "build:ssr": "node ./build-ssr.js",
     "build_changelog": "node ./src/js/changelog/build.js",
     "build_career_maps": "node ./src/js/career-maps/build.js",
     "build:navigation": "node ./src/js/bitrise-navigation/build.js ./dist/bitrise-navigation-loader.js",
