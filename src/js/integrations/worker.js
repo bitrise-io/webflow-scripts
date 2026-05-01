@@ -13,6 +13,10 @@ const routingPatterns = [
     templatePath: '/integrations',
   },
   {
+    pattern: /^\/integrations\/partners\/?$/,
+    redirectTo: '/integrations',
+  },
+  {
     pattern: /^\/integrations\/steps\/?$/,
     redirectTo: '/integrations',
   },
