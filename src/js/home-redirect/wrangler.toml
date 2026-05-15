@@ -1,0 +1,6 @@
+name = "home-redirect"
+main = "./worker.js"
+compatibility_date = "2026-05-15"
+route = "bitrise.io/"
+no_bundle = true
+workers_dev = true
