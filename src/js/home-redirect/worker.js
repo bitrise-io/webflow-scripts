@@ -2,7 +2,8 @@ const REDIRECT_COOKIE = 'webflow_user_redirect';
 const APP_URL = 'https://app.bitrise.io';
 
 export default {
-  async fetch(request) {
+  async fetch(request, env, ctx) {
+    ctx.passThroughOnException();
     const cookies = request.headers.get('Cookie') || '';
     if (parseCookieValue(cookies, REDIRECT_COOKIE) === '1') {
       return Response.redirect(APP_URL, 302);
