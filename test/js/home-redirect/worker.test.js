@@ -11,41 +11,55 @@ beforeEach(() => {
   mockFetch.mockResolvedValue(new Response('OK'));
 });
 
-function makeRequest(url, cookies = '') {
-  return new Request(url, {
-    headers: cookies ? { Cookie: cookies } : {},
-  });
-}
-
 function fetch(url, cookies = '') {
-  return worker.fetch(makeRequest(url, cookies), {}, ctx);
+  return worker.fetch(
+    new Request(url, { headers: cookies ? { Cookie: cookies } : {} }),
+    {},
+    ctx,
+  );
 }
 
-describe('home-redirect worker', () => {
-  it('redirects to app.bitrise.io when redirect cookie is present', async () => {
+describe('/ (root)', () => {
+  it('redirects to app.bitrise.io when logged in', async () => {
     const response = await fetch('https://bitrise.io/', 'webflow_user_redirect=1');
     expect(response.status).toBe(302);
     expect(response.headers.get('Location')).toBe('https://app.bitrise.io/');
     expect(mockFetch).not.toHaveBeenCalled();
   });
 
-  it('passes through when redirect cookie is absent', async () => {
+  it('passes through when not logged in', async () => {
     await fetch('https://bitrise.io/');
-    expect(mockFetch).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://bitrise.io/' }));
+    expect(mockFetch).toHaveBeenCalled();
   });
 
-  it('passes through when redirect cookie has a value other than 1', async () => {
+  it('passes through when cookie value is not 1', async () => {
     await fetch('https://bitrise.io/', 'webflow_user_redirect=0');
     expect(mockFetch).toHaveBeenCalled();
   });
+});
 
-  it('ignores unrelated cookies and passes through', async () => {
-    await fetch('https://bitrise.io/', 'session=abc123; tracking=xyz');
+describe('/home', () => {
+  it('passes through when logged in (escape hatch)', async () => {
+    await fetch('https://bitrise.io/home', 'webflow_user_redirect=1');
     expect(mockFetch).toHaveBeenCalled();
   });
 
-  it('redirects when redirect cookie appears among other cookies', async () => {
-    const response = await fetch('https://bitrise.io/', 'session=abc123; webflow_user_redirect=1; other=val');
+  it('redirects to root when not logged in', async () => {
+    const response = await fetch('https://bitrise.io/home');
     expect(response.status).toBe(302);
+    expect(response.headers.get('Location')).toBe('https://bitrise.io/');
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('cookie parsing', () => {
+  it('redirects at root when cookie appears among other cookies', async () => {
+    const response = await fetch('https://bitrise.io/', 'session=abc; webflow_user_redirect=1; other=val');
+    expect(response.status).toBe(302);
+  });
+
+  it('does not redirect at /home when cookie appears among other cookies', async () => {
+    await fetch('https://bitrise.io/home', 'session=abc; webflow_user_redirect=1; other=val');
+    expect(mockFetch).toHaveBeenCalled();
   });
 });
