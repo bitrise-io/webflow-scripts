@@ -9,21 +9,27 @@ export default {
     const cookies = request.headers.get('Cookie') || '';
     const isLoggedIn = parseCookieValue(cookies, REDIRECT_COOKIE) === '1';
 
-    let redirectTo = null;
-    if (url.pathname === '/') {
-      redirectTo = isLoggedIn ? APP_URL : null;
-    } else if (url.pathname === '/home') {
-      redirectTo = isLoggedIn ? null : HOME_URL;
-    }
+    const { pathname } = url;
 
     if (env.DRY_RUN) {
-      console.log(`[home-redirect dry-run] path=${url.pathname} action=${redirectTo ? 'redirect → ' + redirectTo : 'passthrough'}`);
+      let action;
+      if (pathname === '/') action = isLoggedIn ? `redirect → ${APP_URL}` : 'passthrough';
+      else if (pathname === '/home') action = isLoggedIn ? `fetch ${HOME_URL} from origin` : `redirect → ${HOME_URL}`;
+      console.log(`[home-redirect dry-run] path=${pathname} action=${action}`);
       return fetch(request);
     }
 
-    if (redirectTo) {
-      return Response.redirect(redirectTo, 302);
+    if (pathname === '/') {
+      return isLoggedIn ? Response.redirect(APP_URL, 302) : fetch(request);
     }
+
+    if (pathname === '/home') {
+      if (!isLoggedIn) return Response.redirect(HOME_URL, 302);
+      // Origin has a 301 /home → / which would loop back through this worker.
+      // Fetch / directly from origin so the subrequest bypasses worker routing.
+      return fetch(new Request(HOME_URL, request));
+    }
+
     return fetch(request);
   },
 };

@@ -39,9 +39,9 @@ describe('/ (root)', () => {
 });
 
 describe('/home', () => {
-  it('passes through when logged in (escape hatch)', async () => {
+  it('fetches root from origin when logged in, avoiding the origin 301 /home→/ loop', async () => {
     await fetch('https://bitrise.io/home', 'webflow_user_redirect=1');
-    expect(mockFetch).toHaveBeenCalled();
+    expect(mockFetch).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://bitrise.io/' }));
   });
 
   it('redirects to root when not logged in', async () => {
@@ -58,8 +58,8 @@ describe('cookie parsing', () => {
     expect(response.status).toBe(302);
   });
 
-  it('does not redirect at /home when cookie appears among other cookies', async () => {
+  it('fetches root from origin at /home when cookie appears among other cookies', async () => {
     await fetch('https://bitrise.io/home', 'session=abc; webflow_user_redirect=1; other=val');
-    expect(mockFetch).toHaveBeenCalled();
+    expect(mockFetch).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://bitrise.io/' }));
   });
 });
