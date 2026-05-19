@@ -11,16 +11,18 @@ export default {
 
     const { pathname } = url;
 
+    const internalReferrer = isBitriseReferrer(request);
+
     if (env.DRY_RUN) {
       let action;
-      if (pathname === '/') action = isLoggedIn ? `redirect → ${APP_URL}` : 'passthrough';
+      if (pathname === '/') action = isLoggedIn && internalReferrer ? `redirect → ${APP_URL}` : 'passthrough';
       else if (pathname === '/home') action = isLoggedIn ? `fetch ${HOME_URL} from origin` : `redirect → ${HOME_URL}`;
-      console.log(`[home-redirect dry-run] path=${pathname} action=${action}`);
+      console.log(`[home-redirect dry-run] path=${pathname} referrer=${request.headers.get('Referer') || 'none'} action=${action}`);
       return fetch(request);
     }
 
     if (pathname === '/') {
-      return isLoggedIn ? Response.redirect(APP_URL, 302) : fetch(request);
+      return isLoggedIn && internalReferrer ? Response.redirect(APP_URL, 302) : fetch(request);
     }
 
     if (pathname === '/home') {
@@ -37,4 +39,13 @@ export default {
 function parseCookieValue(cookieHeader, name) {
   const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
   return match ? match[1] : null;
+}
+
+function isBitriseReferrer(request) {
+  const referrer = request.headers.get('Referer') || '';
+  try {
+    return new URL(referrer).hostname === 'bitrise.io';
+  } catch {
+    return false;
+  }
 }
