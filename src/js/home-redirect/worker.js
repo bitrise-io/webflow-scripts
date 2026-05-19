@@ -1,35 +1,40 @@
 const REDIRECT_COOKIE = 'webflow_user_redirect';
 const APP_URL = 'https://app.bitrise.io';
-const HOME_URL = 'https://bitrise.io/';
+const BITRISE_ROOT = 'https://bitrise.io/';
+const BITRISE_HOME = 'https://bitrise.io/home';
 
 export default {
   async fetch(request, env, ctx) {
     ctx.passThroughOnException();
-    const url = new URL(request.url);
+    const { pathname } = new URL(request.url);
     const cookies = request.headers.get('Cookie') || '';
     const isLoggedIn = parseCookieValue(cookies, REDIRECT_COOKIE) === '1';
 
-    const { pathname } = url;
-
-    const internalReferrer = isBitriseReferrer(request);
-
     if (env.DRY_RUN) {
       let action;
-      if (pathname === '/') action = isLoggedIn && internalReferrer ? `redirect → ${APP_URL}` : 'passthrough';
-      else if (pathname === '/home') action = isLoggedIn ? `fetch ${HOME_URL} from origin` : `redirect → ${HOME_URL}`;
+      if (pathname === '/') {
+        if (!isLoggedIn) action = 'passthrough';
+        else action = isBitriseReferrer(request) ? `redirect → ${BITRISE_HOME}` : `redirect → ${APP_URL}`;
+      } else if (pathname === '/home') {
+        action = `fetch ${BITRISE_ROOT} from origin (no cookie)`;
+      }
       console.log(`[home-redirect dry-run] path=${pathname} referrer=${request.headers.get('Referer') || 'none'} action=${action}`);
       return fetch(request);
     }
 
     if (pathname === '/') {
-      return isLoggedIn && internalReferrer ? Response.redirect(APP_URL, 302) : fetch(request);
+      if (!isLoggedIn) return fetch(request);
+      return isBitriseReferrer(request)
+        ? Response.redirect(BITRISE_HOME, 302)
+        : Response.redirect(APP_URL, 302);
     }
 
     if (pathname === '/home') {
-      if (!isLoggedIn) return Response.redirect(HOME_URL, 302);
-      // Origin has a 301 /home → / which would loop back through this worker.
-      // Fetch / directly from origin so the subrequest bypasses worker routing.
-      return fetch(new Request(HOME_URL, request));
+      // Origin has a 301 /home → / so fetch / directly to avoid a redirect loop.
+      // Strip cookies so the origin sees an anonymous request.
+      const headers = new Headers(request.headers);
+      headers.delete('Cookie');
+      return fetch(BITRISE_ROOT, { headers });
     }
 
     return fetch(request);
