@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { parse: parseToml } = require('smol-toml');
 const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
@@ -83,22 +84,7 @@ async function discoverWorkers(dir) {
         await discoverWorkers(fullPath);
       } else if (entry.name === 'wrangler.toml') {
         const tomlContent = await fs.promises.readFile(fullPath, 'utf8');
-        // Basic TOML parsing - you may want to use a proper TOML parser library
-        const config = {};
-        const lines = tomlContent.split('\n');
-        lines.forEach((line) => {
-          const matchArray = line.match(/^(\w+)\s*=\s*\[(.*)\]$/);
-          if (matchArray) {
-            const [, key, value] = matchArray;
-            config[key] = JSON.parse(`[${value}]`);
-          } else {
-            const match = line.match(/^(\w+)\s*=\s*["']?([^"'\n]+)["']?/);
-            if (match) {
-              const [, key, value] = match;
-              config[key] = value;
-            }
-          }
-        });
+        const config = parseToml(tomlContent);
 
         workers.push({
           name: path.basename(path.dirname(fullPath)),
@@ -122,17 +108,21 @@ async function getWorker(urlObject) {
   }
 
   const matchedWorker = workers.filter((worker) => {
-    let route = worker.config.route ? worker.config.route : null;
-    if (!route && worker.config.routes) [route] = worker.config.routes;
-    if (!route) return false;
+    const routes = worker.config.routes
+      ? worker.config.routes
+      : worker.config.route
+        ? [worker.config.route]
+        : [];
 
-    let routePattern = route.replace('bitrise.io', '^');
-    if (routePattern.endsWith('*')) {
-      routePattern = routePattern.slice(0, -1);
-    } else {
-      routePattern = `${routePattern}$`;
-    }
-    return urlObject.pathname.match(new RegExp(routePattern));
+    return routes.some((route) => {
+      let routePattern = route.replace('bitrise.io', '^');
+      if (routePattern.endsWith('*')) {
+        routePattern = routePattern.slice(0, -1);
+      } else {
+        routePattern = `${routePattern}$`;
+      }
+      return urlObject.pathname.match(new RegExp(routePattern));
+    });
   });
 
   if (matchedWorker.length > 0) {
@@ -213,10 +203,16 @@ app.get(/\/.*/, async (req, res) => {
 
     process.stdout.write(`[info] Using request handler ${requestHandler.name} (${requestHandler.type})\n`);
 
+    const workerUrl = new URL(urlObject.href);
+    workerUrl.hostname = webflowDomain;
+    workerUrl.protocol = 'https:';
+    workerUrl.port = '';
+
     const fetchEvent = {
-      request: {
-        url: urlObject,
-      },
+      request: new Request(workerUrl.href, {
+        method: req.method,
+        headers: req.headers,
+      }),
       respondWith: async (buffer) => {
         const response = await buffer;
         res.statusCode = response.status;
@@ -232,7 +228,7 @@ app.get(/\/.*/, async (req, res) => {
         if (responseLocation)
           res.setHeader(
             'Location',
-            responseLocation.replace(webflowDomain, `${hostname}:${port}`).replace('https', 'http'),
+            responseLocation.replace(`https://${webflowDomain}`, `http://${hostname}:${port}`),
           );
 
         process.stdout.write(`[info] Serving ${urlObject.href} with status ${res.statusCode}\n`);
@@ -262,7 +258,7 @@ app.get(/\/.*/, async (req, res) => {
     }
 
     if (requestHandler.type === 'ES6 Module') {
-      const ctxMock = { waitUntil: () => {} };
+      const ctxMock = { waitUntil: () => {}, passThroughOnException: () => {} };
       fetchEvent.respondWith(requestHandler.handler.fetch(fetchEvent.request, {}, ctxMock));
     }
   }
