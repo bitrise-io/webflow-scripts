@@ -7,8 +7,3 @@ routes = [
 ]
 no_bundle = true
 workers_dev = true
-
-# Uncomment to deploy in dry-run mode: logs what the worker would do without redirecting.
-# Watch output with: npx wrangler tail --config src/js/home-redirect/wrangler.toml
-# [vars]
-# DRY_RUN = true
