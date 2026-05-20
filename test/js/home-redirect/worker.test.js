@@ -66,9 +66,10 @@ describe('/home', () => {
     expectNoCacheHeaders(response);
   });
 
-  it('fetches root from origin without cookie when not logged in', async () => {
+  it('redirects to / when not logged in', async () => {
     const response = await fetch('https://bitrise.io/home');
-    expect(mockFetch).toHaveBeenCalledWith('https://bitrise.io/', expect.objectContaining({ headers: expect.any(Headers) }));
-    expectNoCacheHeaders(response);
+    expect(response.status).toBe(302);
+    expect(response.headers.get('Location')).toBe('https://bitrise.io/');
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 });
