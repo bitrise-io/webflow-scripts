@@ -25,7 +25,7 @@ export default {
     }
 
     if (pathname === '/home') {
-      // Origin has a 301 /home → / so fetch / directly to avoid a redirect loop.
+      // /home doesn't exist on origin; fetch / directly to serve the marketing homepage.
       // Strip cookies so the origin sees an anonymous request.
       const headers = new Headers(request.headers);
       headers.delete('Cookie');
