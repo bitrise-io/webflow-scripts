@@ -21,11 +21,11 @@ export default {
 
     if (pathname === '/') {
       if (!isLoggedIn) return withNoCacheHeaders(await fetch(request));
-      return redirect(isBitriseReferrer(request) ? BITRISE_HOME : APP_URL);
+      return withNoCacheHeaders(Response.redirect(isBitriseReferrer(request) ? BITRISE_HOME : APP_URL, 302));
     }
 
     if (pathname === '/home') {
-      if (!isLoggedIn) return redirect(BITRISE_ROOT);
+      if (!isLoggedIn) return withNoCacheHeaders(Response.redirect(BITRISE_ROOT, 302));
       // /home doesn't exist on origin; fetch / directly to serve the marketing homepage.
       // Strip cookies so the origin sees a non-logged-in request.
       const headers = new Headers(request.headers);
@@ -37,14 +37,7 @@ export default {
   },
 };
 
-function redirect(url) {
-  return new Response(null, {
-    status: 302,
-    headers: { 'Location': url, ...NO_CACHE_HEADERS },
-  });
-}
-
-async function withNoCacheHeaders(response) {
+function withNoCacheHeaders(response) {
   const headers = new Headers(response.headers);
   for (const [key, value] of Object.entries(NO_CACHE_HEADERS)) {
     headers.set(key, value);

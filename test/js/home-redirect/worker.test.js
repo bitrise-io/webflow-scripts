@@ -43,7 +43,7 @@ describe('/ (root)', () => {
   it('redirects to app.bitrise.io with no-cache headers when logged in with no referrer', async () => {
     const response = await fetch('https://bitrise.io/', { cookies: 'webflow_user_redirect=1' });
     expect(response.status).toBe(302);
-    expect(response.headers.get('Location')).toBe('https://app.bitrise.io');
+    expect(response.headers.get('Location')).toBe('https://app.bitrise.io/');
     expectNoCacheHeaders(response);
   });
 
@@ -53,7 +53,7 @@ describe('/ (root)', () => {
       referrer: 'https://google.com',
     });
     expect(response.status).toBe(302);
-    expect(response.headers.get('Location')).toBe('https://app.bitrise.io');
+    expect(response.headers.get('Location')).toBe('https://app.bitrise.io/');
   });
 });
 
