@@ -30,7 +30,7 @@ describe('/ (root)', () => {
     expectNoCacheHeaders(response);
   });
 
-  it('redirects to /home with no-cache headers when logged in with a bitrise.io referrer', async () => {
+  it('redirects to /home when logged in with a bitrise referrer', async () => {
     const response = await fetch('https://bitrise.io/', {
       cookies: 'webflow_user_redirect=1',
       referrer: 'https://bitrise.io/blog',

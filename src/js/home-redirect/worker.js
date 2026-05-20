@@ -60,7 +60,7 @@ function parseCookieValue(cookieHeader, name) {
 function isBitriseReferrer(request) {
   const referrer = request.headers.get('Referer') || '';
   try {
-    return new URL(referrer).hostname === 'bitrise.io';
+    return new URL(referrer).hostname.includes('bitrise');
   } catch {
     return false;
   }
