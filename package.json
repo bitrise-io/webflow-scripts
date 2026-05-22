@@ -18,6 +18,7 @@
     "jsdom": "^26.0.0",
     "markdown-it": "^13.0.1",
     "prettier": "^3.2.5",
+    "smol-toml": "^1.6.1",
     "style-loader": "^3.3.3",
     "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4",
