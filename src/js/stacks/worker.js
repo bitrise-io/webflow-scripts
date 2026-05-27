@@ -30,6 +30,19 @@ export default {
       });
     }
 
+    // This puts access to the tool version catalog behind a consistent set of URLs
+    // Additional background: https://bitrise.atlassian.net/browse/BE-2056
+    const toolsMatch = urlObject.pathname.match(/^\/stacks\/tools\/v1\/(.*\.json)/);
+    if (toolsMatch) {
+      const sourceURL = new URL(`https://storage.googleapis.com/bitrise-cli-tool-catalog/${toolsMatch[1]}`)
+      const response = await fetch(sourceURL);
+      const data = response.status == 200 ? await response.text() : "";
+      return new Response(data, {
+        status: response.status,
+        statusText: response.statusText,
+      });
+    }
+
     if (urlObject.pathname.match(/^\/stacks\/.+/)) {
       const originalPath = urlObject.pathname;
       urlObject.pathname = '/stacks/subpage';
