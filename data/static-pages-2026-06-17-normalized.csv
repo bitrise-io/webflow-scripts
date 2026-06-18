@@ -186,7 +186,7 @@ source,target
 /customer-stories/prolific-interactive,/customer-stories
 /performance-demo,/demo
 /bitrise-agent/aws,/platform/build-platform/bitrise-on-aws
-/why/features/caching/build-and-test-caching/bazel,platform/devops/build-caching/bazel
+/why/features/caching/build-and-test-caching/bazel,/platform/devops/build-caching/bazel
 /why/technologies/ios-continuous-integration,/solutions/technologies/ios
 /velocity-plan,/pricing
 /why/technologies/android-continuous-integration,/solutions/technologies/android
@@ -637,7 +637,7 @@ source,target
 /blog/post/release-finance-apps-quickly-and-confidently-with-devsecops,/blog/post/devsecops-security-mobile-cicd
 /blog/post/waste-no-time-on-manual-testing-with-autifys-ai-powered-test-automation-step-on-bitrise,/integrations/steps/autify-test-run
 /blog/post/automated-release-management-streamlining-ios-app-releases,/solutions/technologies/ios
-/blog/post/manage-and-store-bitriseyml-in-git,"https://devcenter.bitrise.io/en/builds/configuring-build-settings/managing-an-app-s-bitrise-yml-file.html#:~:text=level%20Env%20Vars.-,The%20bitrise.,you%20actually%20modify%20the%20bitrise."
+/blog/post/manage-and-store-bitriseyml-in-git,https://devcenter.bitrise.io/en/builds/configuring-build-settings/managing-an-app-s-bitrise-yml-file.html
 /blog/post/the-role-of-devsecops-in-finance-app-development,/blog/post/devsecops-security-mobile-cicd
 /blog/post/tune-your-bitrise-workflows-using-cache-in-steps,/integrations/steps/cache-push
 /blog/post/deploy-with-confidence-new-integration-with-configcats-feature-flag-service,/integrations/steps/configcat-feature-flag-sync
@@ -906,7 +906,7 @@ source,target
 /blog/tags/cli,https://app.bitrise.io/cli
 /blog/tags/code-coverage,https://devcenter.bitrise.io/en/testing/measuring-your-code-coverage-with-codecov.html
 /blog/tags/automated-testing,/platform/build-cache
-/blog/tags/bazel,platform/devops/build-caching/bazel
+/blog/tags/bazel,/platform/devops/build-caching/bazel
 /blog/tags/automation,/blog/post/codeless-automation-testing-tools-for-mobile-an-overview-and-10-tools-to-get-you-started
 /blog/tags/codesigndoc,/blog/post/simplifying-automatic-code-signing-on-bitrise
 /blog/tags/key-based-caching,https://devcenter.bitrise.io/en/dependencies-and-caching/key-based-caching.html
@@ -1032,7 +1032,7 @@ source,target
 /platform/devops,/platform/mobile-devops
 /platform/caching,/platform/build-cache
 /platform/devops/devops-build-caching,/platform/build-cache
-/platform/caching/bazel,platform/devops/build-caching/bazel
+/platform/caching/bazel,/platform/devops/build-caching/bazel
 /platform/caching/gradle,/platform/devops/build-caching/gradle
 /platform/devops-build-caching,/platform/build-cache
 /blog/2017/01/27/state-of-app-development-in-2016.html,/blog/post/the-state-of-mobile-app-development-in-2022
@@ -1123,7 +1123,7 @@ source,target
 /guides/what-is-yaml,/guides/yaml
 /partnerships/browserstack,/
 /blog/post/the-devops-impact-comparing-organizations-with-and-without-devops-practices,/guides/devops
-/guides/what-is-continuous-delivery,guides/continuous-delivery
+/guides/what-is-continuous-delivery,/guides/continuous-delivery
 /blog/post/the-lifecycle-in-devops-vs-in-mobile-devops,/guides/mobile-devops
 /blog/post/what-is-devops-or-mobile-devops,/guides/mobile-devops
 /customers,/customer-stories
