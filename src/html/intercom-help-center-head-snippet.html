@@ -3,14 +3,10 @@
      Domain script ID: 74dfda25-8e61-4fab-9330-4718635e7050
      ============================================================ -->
 
-<link rel="preconnect" href="https://cdn.cookielaw.org/">
-
 <!-- Must load first — blocks non-consented scripts before the user chooses -->
-<link rel="preload" href="https://cdn.cookielaw.org/consent/74dfda25-8e61-4fab-9330-4718635e7050/OtAutoBlock.js" as="script">
 <script type="text/javascript" src="https://cdn.cookielaw.org/consent/74dfda25-8e61-4fab-9330-4718635e7050/OtAutoBlock.js"></script>
 
 <!-- OneTrust SDK: renders the consent banner and preference centre -->
-<link rel="preload" href="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" as="script">
 <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js"
         type="text/javascript"
         charset="UTF-8"
@@ -20,13 +16,24 @@
 <script type="text/javascript">function OptanonWrapper() { }</script>
 
 <!-- Bitrise brand override for the OneTrust reject-all button -->
-<style>
-  #onetrust-reject-all-handler {
+<script>
+(function() {
+  if (document.getElementById('bitrise-onetrust-reject-style')) {
+    return;
+  }
+  const style = document.createElement('style');
+  style.id = 'bitrise-onetrust-reject-style';
+  style.textContent = `
+  #onetrust-reject-all-handler { 
     background-color: #351d48 !important;
     color: #fff !important;
     border-color: #fff !important;
   }
-</style>
+  `;
+  const parent = document.head || document.documentElement;
+  parent.appendChild(style);
+})();
+</script>
 
 <!-- ============================================================
      2. GOOGLE TAG MANAGER
