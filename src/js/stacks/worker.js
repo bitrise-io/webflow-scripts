@@ -37,10 +37,10 @@ export default {
       const sourceURL = new URL(`https://storage.googleapis.com/bitrise-cli-tool-catalog/${toolsMatch[1]}`)
       const response = await fetch(sourceURL);
       const data = response.status == 200 ? await response.text() : "";
-      return new Response(data, {
+      return setCorsHeaders(new Response(data, {
         status: response.status,
         statusText: response.statusText,
-      });
+      }));
     }
 
     if (urlObject.pathname.match(/^\/stacks\/.+/)) {
