@@ -16,7 +16,7 @@
     "eslint-plugin-jsdoc": "^46.2.6",
     "express": "^5.0.0",
     "jsdom": "^26.0.0",
-    "markdown-it": "^13.0.1",
+    "markdown-it": "^14.3.0",
     "prettier": "^3.2.5",
     "smol-toml": "^1.6.1",
     "style-loader": "^3.3.3",
