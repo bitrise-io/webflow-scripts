@@ -8,7 +8,7 @@ const SOURCE_URL = 'https://bitrise.io/';
 const VERSION = 'v2';
 const NAV_SELECTOR = 'nav.nav_component';
 const FOOTER_SELECTOR = '.page-wrapper > footer';
-const CSS_HREF_PATTERN = /\.shared\.[a-z0-9]+\.min\.css/;
+const CSS_HREF_PATTERN = /\.shared\.[a-z0-9.]+\.min\.css/;
 const TARGET_ORIGIN = 'https://bitrise.io';
 
 const ABSOLUTE_URL_RE = /^(https?:\/\/|\/\/|#|mailto:|tel:|javascript:|data:)/i;
