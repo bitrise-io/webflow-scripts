@@ -1,0 +1,70 @@
+<!-- ============================================================
+     1. ONETRUST COOKIE CONSENT (CMP)
+     Domain script ID: 74dfda25-8e61-4fab-9330-4718635e7050
+     ============================================================ -->
+
+<!-- Must load first — blocks non-consented scripts before the user chooses -->
+<script type="text/javascript" src="https://cdn.cookielaw.org/consent/74dfda25-8e61-4fab-9330-4718635e7050/OtAutoBlock.js"></script>
+
+<!-- OneTrust SDK: renders the consent banner and preference centre -->
+<script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js"
+        type="text/javascript"
+        charset="UTF-8"
+        data-domain-script="74dfda25-8e61-4fab-9330-4718635e7050"></script>
+
+<!-- Required OneTrust callback -->
+<script type="text/javascript">function OptanonWrapper() { }</script>
+
+<!-- Bitrise brand override for the OneTrust reject-all button -->
+<script>
+(function() {
+  if (document.getElementById('bitrise-onetrust-reject-style')) {
+    return;
+  }
+  const style = document.createElement('style');
+  style.id = 'bitrise-onetrust-reject-style';
+  style.textContent = `
+  #onetrust-reject-all-handler { 
+    background-color: #351d48 !important;
+    color: #fff !important;
+    border-color: #fff !important;
+  }
+  `;
+  const parent = document.head || document.documentElement;
+  parent.appendChild(style);
+})();
+</script>
+
+<!-- ============================================================
+     2. GOOGLE TAG MANAGER
+     Container ID: GTM-TZK32GR
+
+     Using a static <script src> tag instead of the standard dynamic
+     loader snippet (document.createElement) because Intercom's CSP
+     blocks dynamically created script elements.
+
+     class="optanon-category-C0002" makes OneTrust gate GTM behind
+     Performance cookie consent (category 2) before it loads.
+     ============================================================ -->
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+</script>
+<script src="https://www.googletagmanager.com/gtm.js?id=GTM-TZK32GR"
+        class="optanon-category-C0002"
+        defer></script>
+
+<!-- ============================================================
+     3. INTERCOM MESSENGER
+     Without this block, the Messenger is removed when custom scripts
+     are enabled. The standard Intercom snippet uses document.createElement,
+     which is blocked by Intercom's CSP — using a static src tag instead.
+     ============================================================ -->
+
+<script>
+  window.intercomSettings = {
+    app_id: "e2rdidtm"
+  };
+</script>
+<script src="https://widget.intercom.io/widget/e2rdidtm" class="optanon-category-C0003" async></script>
