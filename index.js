@@ -1,7 +1,7 @@
 const fs = require('fs');
-const { parse: parseToml } = require('smol-toml');
 const path = require('path');
 const crypto = require('crypto');
+const { parse: parseToml } = require('smol-toml');
 const express = require('express');
 const webpack = require('webpack');
 const devMiddleware = require('webpack-dev-middleware');
@@ -108,11 +108,12 @@ async function getWorker(urlObject) {
   }
 
   const matchedWorker = workers.filter((worker) => {
-    const routes = worker.config.routes
-      ? worker.config.routes
-      : worker.config.route
-        ? [worker.config.route]
-        : [];
+    let routes = [];
+    if (worker.config.routes) {
+      routes = worker.config.routes;
+    } else if (worker.config.route) {
+      routes = [worker.config.route];
+    }
 
     return routes.some((route) => {
       let routePattern = route.replace('bitrise.io', '^');
@@ -226,10 +227,7 @@ app.get(/\/.*/, async (req, res) => {
         if (responseContentType) res.setHeader('Content-Type', response.headers.get('Content-Type'));
         const responseLocation = response.headers.get('Location');
         if (responseLocation)
-          res.setHeader(
-            'Location',
-            responseLocation.replace(`https://${webflowDomain}`, `http://${hostname}:${port}`),
-          );
+          res.setHeader('Location', responseLocation.replace(`https://${webflowDomain}`, `http://${hostname}:${port}`));
 
         process.stdout.write(`[info] Serving ${urlObject.href} with status ${res.statusCode}\n`);
 

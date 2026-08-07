@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { sameJobs } from './overrides.js';
+import { sameJobs, jobTitlesKeepingModifier } from './overrides.js';
 
 export const fetchConfluencePage = async (pageURL, { apiEmail, apiToken, bodyFormat = 'export_view' }) => {
   const pageId = pageURL.pathname.match(/pages\/(\d+)/)[1];
@@ -197,12 +197,13 @@ export const parseTeam = async (teamName, teamPage) => {
   [...teamPageDom.window.document.querySelectorAll('a')].forEach((link) => {
     const levelMatch = link.textContent.match(/P(10|[2-9])/);
     if (levelMatch && parseInt(levelMatch[1], 10) <= MAX_LEVEL) {
-      let jobName = link.textContent
-        .replace(levelMatch[0], '')
-        .replaceAll(/[^ a-zA-Z0-9]/g, '')
-        .replaceAll(/Associate|Senior|Staff|Principal|Distinguished|Fellow|Tech Lead/g, '')
-        .replaceAll(/Engineering/g, 'Engineer')
-        .trim();
+      let jobName = link.textContent.replace(levelMatch[0], '').replaceAll(/[^ a-zA-Z0-9]/g, '').trim();
+
+      if (!jobTitlesKeepingModifier.some((title) => jobName.match(new RegExp(`^${title}$`, 'i')))) {
+        jobName = jobName.replaceAll(/Associate|Senior|Staff|Principal|Distinguished|Fellow|Tech Lead/g, '').trim();
+      }
+
+      jobName = jobName.replaceAll(/Engineering/g, 'Engineer').trim();
 
       if (sameJobs[teamName]) {
         sameJobs[teamName].forEach((job) => {

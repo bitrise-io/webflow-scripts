@@ -46,14 +46,6 @@ class DepartmentSectionFactory {
     /** @type {HTMLElement} */
     const teamCardTemplate = teamGrid.querySelector('[data-template-id="cm-team"]').cloneNode(true);
 
-    if (department.name === 'Go To Market') {
-      department.teams.push({
-        name: 'Revenue Operations',
-        slug: 'revenue-operations',
-        message: 'Yet to come...',
-      });
-    }
-
     teamGrid.innerHTML = '';
     department.teams.forEach((team) => {
       if (team.message) {
