@@ -9,6 +9,10 @@ export const jobNameOverride = (jobName) => {
   }
 };
 
+// Job titles where the "seniority modifier" (Associate, Senior, Staff, ...) is actually part of
+// the job title itself and must not be stripped by parseTeam's level-modifier removal.
+export const jobTitlesKeepingModifier = ['Revenue Operations Associate'];
+
 export const sameJobs = {
   Engineering: [['Software Engineer', 'Engineer']],
   Support: [['Customer Specialist'], ['Technical Specialist'], ['Technical Writer']],
