@@ -148,7 +148,7 @@ class StacksService {
             stacksLinks.ubuntu[version].title = link.title.replace(/ changelogs?/, '').trim();
             stacksLinks.ubuntu[version].changelogs = [link.path, 'Changelog', link.updated_at];
           }
-          const xcodeMatch = link.path.match(/changelogs\/([^/]+xcode[^/]+)/);
+          const xcodeMatch = link.path.match(/changelogs\/(osx-[^/]+)/);
           if (xcodeMatch) {
             const edgeOrStable = xcodeMatch[1].match(/-edge/) ? 'edge' : 'stable';
             const version = xcodeMatch[1].replace(/-edge/, '');
@@ -185,7 +185,7 @@ class StacksService {
               ? `This stack is deprecated and will be removed on ${deprecated}.`
               : null;
           }
-          const xcodeMatch = link.path.match(/stack_reports\/([^/]+xcode[^/]+)/);
+          const xcodeMatch = link.path.match(/stack_reports\/(osx-[^/]+)/);
           if (xcodeMatch) {
             const edgeOrStable = xcodeMatch[1].match(/-edge/) ? 'edge' : 'stable';
             const version = xcodeMatch[1].replace(/-edge/, '');
@@ -270,7 +270,7 @@ class StacksService {
             stacksLinks.aws[version].stack_reports = [pathname, 'Report', null];
           }
         }
-        const xcodeMatch = pathname.match(/(stack_reports|changelogs)\/([^/]+xcode[^/]+)/);
+        const xcodeMatch = pathname.match(/(stack_reports|changelogs)\/(osx-[^/]+)/);
         if (xcodeMatch) {
           const edge = xcodeMatch[2].match(/-edge/) ? 'edge' : 'stable';
           const version = xcodeMatch[2].replace(/-edge/, '');
