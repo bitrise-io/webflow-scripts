@@ -29,6 +29,14 @@ const ssrWebpackConfig = {
   resolve: {
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
   },
+  module: {
+    rules: [
+      {
+        resourceQuery: /raw/,
+        type: 'asset/source',
+      },
+    ],
+  },
   externals: ({ request }, callback) => {
     if (request && /^[a-zA-Z@]/.test(request)) {
       callback(null, `commonjs2 ${request}`);
