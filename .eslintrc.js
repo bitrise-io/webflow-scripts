@@ -31,5 +31,12 @@ module.exports = {
         'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
       },
     },
+    {
+      // Resolved at bundle time via the webpack `asset/source` rule for `?raw` imports (and natively by Vite in tests).
+      files: ['./src/js/integrations/docsRedirects.js'],
+      rules: {
+        'import/no-unresolved': 'off',
+      },
+    },
   ],
 };

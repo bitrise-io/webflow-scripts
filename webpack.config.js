@@ -50,6 +50,10 @@ module.exports = (mode) => {
             filename: 'images/[name][ext]',
           },
         },
+        {
+          resourceQuery: /raw/,
+          type: 'asset/source',
+        },
       ],
     },
   };

@@ -2,6 +2,7 @@ import { getDocumentContext } from '../shared/context';
 import Integrations from './Integrations';
 import Step from './Step';
 import StepCardComponent from './StepCardComponent';
+import { rewriteDocsLinks } from './docsRedirects';
 
 class DetailsSection {
   constructor() {
@@ -48,7 +49,7 @@ class DetailsSection {
     const description = step.formattedDescription
       .replace(/www\.bitrise\.io/gi, 'bitrise.io')
       .replace(/http:/gi, 'https:');
-    this.descriptionContainer.innerHTML = `${deprecationNotice}${description}`;
+    this.descriptionContainer.innerHTML = rewriteDocsLinks(`${deprecationNotice}${description}`);
 
     this.similarStepsContainer.innerHTML = '';
     const similarSteps = Object.values(integrations.steps)
