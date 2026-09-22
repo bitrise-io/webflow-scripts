@@ -150,7 +150,7 @@ class StacksService {
           }
           const xcodeMatch = link.path.match(/changelogs\/(osx-[^/]+)/);
           if (xcodeMatch) {
-            const edgeOrStable = xcodeMatch[1].match(/-edge/) ? 'edge' : 'stable';
+            const edgeOrStable = xcodeMatch[1].match(/-edge|minimal/) ? 'edge' : 'stable';
             const version = xcodeMatch[1].replace(/-edge/, '');
             if (!stacksLinks.xcode[version]) stacksLinks.xcode[version] = {};
             if (!stacksLinks.xcode[version][edgeOrStable]) stacksLinks.xcode[version][edgeOrStable] = {};
@@ -187,7 +187,7 @@ class StacksService {
           }
           const xcodeMatch = link.path.match(/stack_reports\/(osx-[^/]+)/);
           if (xcodeMatch) {
-            const edgeOrStable = xcodeMatch[1].match(/-edge/) ? 'edge' : 'stable';
+            const edgeOrStable = xcodeMatch[1].match(/-edge|minimal/) ? 'edge' : 'stable';
             const version = xcodeMatch[1].replace(/-edge/, '');
             if (!stacksLinks.xcode[version]) stacksLinks.xcode[version] = {};
             if (!stacksLinks.xcode[version][edgeOrStable]) stacksLinks.xcode[version][edgeOrStable] = {};
@@ -200,105 +200,6 @@ class StacksService {
         });
       }
     });
-
-    return stacksLinks;
-  }
-
-  /**
-   * Fetches the stacks index page and parses it to extract stacks links.
-   * @returns {Promise<StacksLinks>} - A promise that resolves to an object containing the stacks links.
-   */
-  async fetchStacksIndexPage() {
-    const response = await fetch(`${this.stacksAPIBase}index.html`);
-    const html = await response.text();
-    return this.parseStacksIndexPage(html);
-  }
-
-  /**
-   * Parses the stacks index page HTML and extracts the stacks links.
-   * @param {string} html - The HTML content of the stacks index page.
-   * @returns {StacksLinks} - An object containing the stacks links.
-   */
-  parseStacksIndexPage(html) {
-    const match = html.match(/<main.*\/main>/gms);
-
-    const dataContainerId = 'stacks-data-container';
-    let dataContainer = document.getElementById(dataContainerId);
-    if (!dataContainer) {
-      dataContainer = document.createElement('div');
-      dataContainer.style.display = 'none';
-      dataContainer.id = dataContainerId;
-      document.querySelector('body').append(dataContainer);
-    }
-    [dataContainer.innerHTML] = match;
-
-    const stacksLinks = {
-      announcements: {},
-      xcode: {},
-      ubuntu: {},
-      aws: {},
-      tools: {},
-      tips: {},
-    };
-
-    [...dataContainer.querySelectorAll('a')]
-      .map((link) => {
-        return [new URL(link.href).pathname.replace(/\/$/, ''), link.innerHTML];
-      })
-      .forEach(([pathname, title]) => {
-        const announcementsMatch = pathname.match(/announcements\/([^/]+)/);
-        if (announcementsMatch) {
-          stacksLinks.announcements[announcementsMatch[1]] = [pathname, title, null];
-        }
-        const toolsMatch = pathname.match(/tools\/([^/]+)/);
-        if (toolsMatch) {
-          stacksLinks.tools[toolsMatch[1]] = [pathname, title, null];
-        }
-        const tipsMatch = pathname.match(/tips\/([^/]+)/);
-        if (tipsMatch) {
-          stacksLinks.tips[tipsMatch[1]] = [pathname, title, null];
-        }
-        const awsMatch = pathname.match(/(stack_reports|changelogs)\/aws\/([^/]+)/);
-        if (awsMatch) {
-          const version = awsMatch[2];
-          if (!stacksLinks.aws[version]) stacksLinks.aws[version] = {};
-          stacksLinks.aws[version].title = title.replace(/ changelogs?/, '').trim();
-          if (awsMatch[1] === 'changelogs') {
-            stacksLinks.aws[version].changelogs = [pathname, 'Changelog', null];
-          }
-          if (awsMatch[1] === 'stack_reports') {
-            stacksLinks.aws[version].stack_reports = [pathname, 'Report', null];
-          }
-        }
-        const xcodeMatch = pathname.match(/(stack_reports|changelogs)\/(osx-[^/]+)/);
-        if (xcodeMatch) {
-          const edge = xcodeMatch[2].match(/-edge/) ? 'edge' : 'stable';
-          const version = xcodeMatch[2].replace(/-edge/, '');
-          if (!stacksLinks.xcode[version]) stacksLinks.xcode[version] = {};
-          if (!stacksLinks.xcode[version][edge]) stacksLinks.xcode[version][edge] = {};
-          stacksLinks.xcode[version].title = title.replace(/ with edge updates| changelogs?/, '').trim();
-          if (xcodeMatch[1] === 'changelogs') {
-            stacksLinks.xcode[version][edge].changelogs = [pathname, 'Changelog', null];
-          }
-          if (xcodeMatch[1] === 'stack_reports') {
-            stacksLinks.xcode[version][edge].stack_reports = [pathname, 'Report', null];
-          }
-        }
-        const ubuntuMatch = pathname.match(/(stack_reports|changelogs)\/(linux[^/]+|ubuntu[^/]+)/);
-        if (ubuntuMatch) {
-          const version = ubuntuMatch[2];
-          if (!stacksLinks.ubuntu[version]) stacksLinks.ubuntu[version] = {};
-          stacksLinks.ubuntu[version].title = title.replace(/ changelogs?/, '').trim();
-          if (ubuntuMatch[1] === 'changelogs') {
-            stacksLinks.ubuntu[version].changelogs = [pathname, 'Changelog', null];
-          }
-          if (ubuntuMatch[1] === 'stack_reports') {
-            stacksLinks.ubuntu[version].stack_reports = [pathname, 'Report', null];
-          }
-        }
-      });
-
-    dataContainer.remove();
 
     return stacksLinks;
   }
