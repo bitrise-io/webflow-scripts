@@ -284,10 +284,11 @@ const getStackRemovalDate = async (pagePath) => {
           xcodeStackList.appendChild(row);
         } else if (!stacksLinks.xcode[version].stable) {
           // edge only
+          const isMinimal = version.match(/minimal/);
           const row = xcodeEdgeOnlyStack.cloneNode(true);
           row.style.removeProperty('display');
           row.querySelector('.stack-version-title').innerHTML = stacksLinks.xcode[version].title;
-          row.querySelectorAll('.stack-links')[0].innerHTML = 'Coming soon...';
+          if (!isMinimal) row.querySelectorAll('.stack-links')[0].innerHTML = 'Coming soon...';
           renderStackLinks(
             row.querySelectorAll('.stack-links')[1],
             stacksLinks.xcode[version].edge.stack_reports,
