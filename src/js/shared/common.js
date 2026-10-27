@@ -97,6 +97,16 @@ function formatDate(date) {
 }
 
 /**
+ * Parse a date. Date-only values (YYYY-MM-DD) are parsed as local midnight instead of UTC midnight, so they don't
+ * show up as the previous day in time zones behind UTC.
+ * @param {string} value
+ * @returns {Date}
+ */
+function parseDateOnly(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T00:00:00`) : new Date(value);
+}
+
+/**
  * @param {URL} url
  * @param {string} prefix
  * @param {string} fallbackQueryParam
@@ -157,6 +167,7 @@ export {
   getMetaTag,
   icaseEqual,
   icaseIncludes,
+  parseDateOnly,
   setMetaContent,
   detectTopicFromUrl,
 };

@@ -166,3 +166,29 @@ div#stacks-content table tr:nth-child(2n) {
   height: 1rem;
   width: 1rem;
 }
+
+/* Bitkit Badge, subtle variant */
+.stack-flavor-badge {
+  display: block;
+  width: fit-content;
+  margin-bottom: 1rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: .75rem;
+  font-weight: bold;
+  line-height: 1rem;
+  letter-spacing: .009375rem;
+  text-transform: uppercase;
+}
+.stack-flavor-badge.is-edge {
+  color: #1066AC;
+  background-color: #DEF2FC;
+}
+.stack-flavor-badge.is-stable {
+  color: #167231;
+  background-color: #E1F4E7;
+}
+.stack-flavor-badge.is-frozen {
+  color: #875B00;
+  background-color: #FFEFAD;
+}

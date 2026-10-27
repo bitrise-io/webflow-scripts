@@ -1,4 +1,4 @@
-import { formatDate } from '../shared/common';
+import { formatDate, parseDateOnly } from '../shared/common';
 
 /**
  * @typedef {{
@@ -27,7 +27,7 @@ import { formatDate } from '../shared/common';
  *   stack_reports: (StacksJsonLink & {
  *    stack_meta: {
  *      cloud: "aws" | null;
- *      flavor: "stable" | "edge" | null;
+ *      flavor: "stable" | "edge" | "frozen" | null;
  *      platform: "macOS" | "Linux";
  *      removal_date: string | null;
  *      stack_id: string;
@@ -164,7 +164,9 @@ class StacksService {
         const currentSection = section;
         currentSection.stack_reports.forEach((link) => {
           if (link.archived) return;
-          const deprecated = link.stack_meta.removal_date ? formatDate(new Date(link.stack_meta.removal_date)) : null;
+          const deprecated = link.stack_meta.removal_date
+            ? formatDate(parseDateOnly(link.stack_meta.removal_date))
+            : null;
           const awsMatch = link.path.match(/stack_reports\/aws\/([^/]+)/);
           if (awsMatch) {
             const version = awsMatch[1];

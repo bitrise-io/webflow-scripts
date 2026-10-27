@@ -1,5 +1,5 @@
 import MarkdownIt from 'markdown-it';
-import { detectTopicFromUrl, fancyConsoleLog, formatDate, setMetaContent } from './shared/common';
+import { detectTopicFromUrl, fancyConsoleLog, formatDate, parseDateOnly, setMetaContent } from './shared/common';
 
 import StacksService from './stacks/StacksService';
 import { githubIcon, messageAlertIcon } from './icons';
@@ -20,6 +20,7 @@ const stacksAPIBase = 'https://stacks.bitrise.io/';
 /**
  * @typedef {{
  *   content_html: string;
+ *   notice_html?: string | null;
  *   platform: string;
  *   stack_flavor: string;
  *   stack_id: string;
@@ -29,6 +30,7 @@ const stacksAPIBase = 'https://stacks.bitrise.io/';
  * }} StackReportData
  * @typedef {{
  *   content_html: string;
+ *   stack_flavor?: string | null;
  *   summary: string;
  *   title: string;
  *   updated_at: string;
@@ -76,6 +78,22 @@ const postprocessContent = () => {
   });
 };
 
+const stackFlavorDescriptions = {
+  edge: 'Receives more frequent tool updates',
+  stable: 'Receives regular updates',
+  frozen: 'No longer receives updates',
+};
+
+/**
+ * Render the badge of a stack flavor (edge, stable, frozen).
+ * @param {string | null | undefined} flavor
+ * @returns {string}
+ */
+const renderStackFlavorBadge = (flavor) => {
+  if (!stackFlavorDescriptions[flavor]) return '';
+  return `<span class="stack-flavor-badge is-${flavor}" title="${stackFlavorDescriptions[flavor]}">${flavor}</span>`;
+};
+
 /**
  * Get the stack removal date for a given stacks based on the page path.
  * @param {string} pagePath
@@ -88,7 +106,7 @@ const getStackRemovalDate = async (pagePath) => {
   const stackReport = stackReportsSection?.stack_reports?.find(
     (report) => report.path === `/${pagePath.replace('changelogs/', 'stack_reports/')}`,
   );
-  return stackReport?.stack_meta?.removal_date ? formatDate(new Date(stackReport.stack_meta.removal_date)) : null;
+  return stackReport?.stack_meta?.removal_date ? formatDate(parseDateOnly(stackReport.stack_meta.removal_date)) : null;
 };
 
 (async () => {
@@ -391,7 +409,8 @@ const getStackRemovalDate = async (pagePath) => {
     /** @type {StacksPageData} */
     const data = await response.json();
 
-    const deprecated = await getStackRemovalDate(pagePath);
+    // The frozen notice in the content already mentions the removal date
+    const deprecated = data.stack_flavor === 'frozen' ? null : await getStackRemovalDate(pagePath);
     const deprecationNotice = deprecated
       ? `<blockquote class="book-hint warning">
         ⚠️ &nbsp; This stack is deprecated and will be removed on ${deprecated}.
@@ -412,7 +431,7 @@ const getStackRemovalDate = async (pagePath) => {
     setMetaContent({ property: 'twitter:title' }, `${data.title} | Bitrise Stack Updates`);
     if (metaDescription) setMetaContent({ property: 'twitter:description' }, metaDescription);
 
-    document.getElementById('stacks-title').innerHTML = data.title;
+    document.getElementById('stacks-title').innerHTML = `${renderStackFlavorBadge(data.stack_flavor)}${data.title}`;
     document.getElementById('stacks-title').style.textWrap = 'balance';
     document.getElementById('stacks-meta').innerHTML = `${formatDate(new Date(data.updated_at))}`;
     document.getElementById('stacks-content').innerHTML = `${deprecationNotice}${formatHtml(data.content_html)}`;
@@ -423,10 +442,11 @@ const getStackRemovalDate = async (pagePath) => {
     }
 
     const response = await fetch(`${stacksAPIBase}${pagePath}/index.json`);
-    /** @type {StacksPageData} */
+    /** @type {StackReportData} */
     const data = await response.json();
 
-    const deprecated = await getStackRemovalDate(pagePath);
+    // The notice of frozen stacks already mentions the removal date
+    const deprecated = data.notice_html ? null : await getStackRemovalDate(pagePath);
     const deprecationNotice = deprecated
       ? `<blockquote class="book-hint warning">
         ⚠️ This stack is deprecated and will be removed on ${deprecated}.
@@ -451,7 +471,8 @@ const getStackRemovalDate = async (pagePath) => {
     setMetaContent({ property: 'twitter:title' }, `${data.stack_name} | Bitrise Stack Updates`);
     if (metaDescription) setMetaContent({ property: 'twitter:description' }, metaDescription);
 
-    document.getElementById('stacks-title').innerHTML = data.stack_name;
+    document.getElementById('stacks-title').innerHTML =
+      `${renderStackFlavorBadge(data.stack_flavor)}${data.stack_name}`;
     document.getElementById('stacks-title').style.textWrap = 'balance';
     document.getElementById('stacks-meta').innerHTML = `Stack ID: <code>${data.stack_id}</code><br />${
       data.stack_revision && `Current stack revision: <code>${data.stack_revision}</code><br />`
@@ -470,6 +491,7 @@ const getStackRemovalDate = async (pagePath) => {
     `;
     document.getElementById('stacks-content').innerHTML = `
       ${deprecationNotice}
+      ${data.notice_html ? formatHtml(data.notice_html) : ''}
       <p>This Bitrise stack contains the following software:</p>
       ${formatHtml(data.content_html)}
     `;
