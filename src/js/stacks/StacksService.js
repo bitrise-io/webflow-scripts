@@ -27,7 +27,7 @@ import { formatDate } from '../shared/common';
  *   stack_reports: (StacksJsonLink & {
  *    stack_meta: {
  *      cloud: "aws" | null;
- *      flavor: "stable" | "edge" | null;
+ *      flavor: "stable" | "edge" | "frozen" | null;
  *      platform: "macOS" | "Linux";
  *      removal_date: string | null;
  *      stack_id: string;
