@@ -1,4 +1,4 @@
-import { formatDate, parseDateOnly } from '../shared/common';
+import { formatDate } from '../shared/common';
 
 /**
  * @typedef {{
@@ -164,9 +164,7 @@ class StacksService {
         const currentSection = section;
         currentSection.stack_reports.forEach((link) => {
           if (link.archived) return;
-          const deprecated = link.stack_meta.removal_date
-            ? formatDate(parseDateOnly(link.stack_meta.removal_date))
-            : null;
+          const deprecated = link.stack_meta.removal_date ? formatDate(new Date(link.stack_meta.removal_date)) : null;
           const awsMatch = link.path.match(/stack_reports\/aws\/([^/]+)/);
           if (awsMatch) {
             const version = awsMatch[1];

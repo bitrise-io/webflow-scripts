@@ -1,5 +1,5 @@
 import MarkdownIt from 'markdown-it';
-import { detectTopicFromUrl, fancyConsoleLog, formatDate, parseDateOnly, setMetaContent } from './shared/common';
+import { detectTopicFromUrl, fancyConsoleLog, formatDate, setMetaContent } from './shared/common';
 
 import StacksService from './stacks/StacksService';
 import { githubIcon, messageAlertIcon } from './icons';
@@ -106,7 +106,7 @@ const getStackRemovalDate = async (pagePath) => {
   const stackReport = stackReportsSection?.stack_reports?.find(
     (report) => report.path === `/${pagePath.replace('changelogs/', 'stack_reports/')}`,
   );
-  return stackReport?.stack_meta?.removal_date ? formatDate(parseDateOnly(stackReport.stack_meta.removal_date)) : null;
+  return stackReport?.stack_meta?.removal_date ? formatDate(new Date(stackReport.stack_meta.removal_date)) : null;
 };
 
 (async () => {
