@@ -114,11 +114,6 @@ export default {
       response = await fetch(urlObject);
     }
 
-    console.log(
-      `${urlObject.hostname}${urlObject.pathname} -> ${response.status} cache=${cacheStatus}`,
-      JSON.stringify(Object.fromEntries(response.headers)),
-    );
-
     if (transformBody) {
       response = new Response(transformBody(await response.text()), response);
     } else {
