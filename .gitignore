@@ -15,5 +15,6 @@ yarn.lock
 /changelog.json
 /changelog.xml
 /changelog_latest.json
+/changelog_topics
 /wrangler.toml
 .wrangler/tmp

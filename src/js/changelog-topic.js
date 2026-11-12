@@ -33,6 +33,23 @@ document.getElementById('changelog-topic-content').innerHTML =
   "<p class='changelog-loading'>Loading</p>" +
   "<p class='changelog-loading'>Loading</p>";
 
+const renderLoadError = () => {
+  document.getElementById('changelog-topic-title').textContent = 'This changelog entry could not be loaded';
+  document.getElementById('changelog-topic-meta').textContent = '';
+
+  const message = document.createElement('p');
+  message.textContent = 'Please try again in a few minutes.';
+  if (/^[\w-]+\/[1-9]\d*$/.test(topicSlugId || '')) {
+    const discussLink = document.createElement('a');
+    discussLink.href = `https://discuss.bitrise.io/t/${topicSlugId}`;
+    discussLink.target = '_blank';
+    discussLink.textContent = 'read it on Bitrise Discuss';
+    message.textContent = 'Please try again in a few minutes, or ';
+    message.append(discussLink, '.');
+  }
+  document.getElementById('changelog-topic-content').replaceChildren(message);
+};
+
 changelogService.loadTopic(topicSlugId).then((topic) => {
   document.title = `${topic.title} | Bitrise Changelog`;
   // setMetaContent({name: "description"}, step.summary.replace(/\s+/g, " "));
@@ -83,7 +100,7 @@ changelogService.loadTopic(topicSlugId).then((topic) => {
       hljs.highlightElement(block);
     });
   }
-});
+}, renderLoadError);
 
 if (import.meta.webpackHot) {
   import.meta.webpackHot.dispose(() => {

@@ -1,5 +1,6 @@
 const ORIGIN_HOST = 'bitrise.io';
 const DISCOURSE_HOST = 'discuss.bitrise.io';
+const SNAPSHOT_BASE_URL = 'https://web-cdn.bitrise.io/changelog_topics';
 
 // Discourse responses are served from the edge cache so the origin is hit as rarely as possible:
 // - younger than FRESH_TTL: served from cache, Discourse is not contacted
@@ -27,6 +28,27 @@ const fetchFromDiscourse = (urlObject, env) => {
     return fetch(urlObject, { headers });
   }
   return fetch(urlObject);
+};
+
+const topicIdFromApiPath = (pathname) => {
+  const match = pathname.match(/^\/changelog\/api\/t\/(?:[^/]+\/)?(\d+)\.json$/);
+  return match ? match[1] : null;
+};
+
+// Snapshots are written by the changelog generator, so serving them needs no request to Discourse.
+const fetchTopicSnapshot = async (topicId) => {
+  try {
+    const snapshot = await fetch(`${SNAPSHOT_BASE_URL}/${topicId}.json`);
+    if (!snapshot.ok) return null;
+    const response = new Response(snapshot.body, snapshot);
+    response.headers.set('Content-Type', 'application/json');
+    response.headers.set('Cache-Control', `public, max-age=${CLIENT_MAX_AGE_SECONDS}`);
+    response.headers.set('X-Proxy-Cache', 'SNAPSHOT');
+    return response;
+  } catch (error) {
+    console.log('snapshot fetch failed', String(error));
+    return null;
+  }
 };
 
 // Returns { response, cacheStatus } where cacheStatus is HIT, STALE, MISS or BYPASS.
@@ -81,6 +103,11 @@ export default {
     urlObject.hostname = ORIGIN_HOST;
 
     if (urlObject.pathname.match(/^\/changelog\/api\/(.+\.json)$/)) {
+      const topicId = topicIdFromApiPath(urlObject.pathname);
+      const snapshot = topicId && (await fetchTopicSnapshot(topicId));
+      if (snapshot) {
+        return setCorsHeaders(snapshot);
+      }
       urlObject.hostname = DISCOURSE_HOST;
       urlObject.pathname = urlObject.pathname.replace(/^\/changelog\/api\/(.+\.json)$/, '/$1');
       useCors = true;

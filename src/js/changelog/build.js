@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 const fs = require('fs');
 const { generateChangelogRSS } = require('./generate-rss');
+const { buildTopicSnapshots } = require('./topic-snapshots');
 
 
 /**
@@ -21,6 +22,7 @@ function delay(time) {
  *  fancy_title: string,
  *  slug: string,
  *  created_at: string,
+ *  bumped_at?: string,
  *  pinned: boolean,
  *  tags: string[],
  * }} DiscourseTopic
@@ -71,6 +73,7 @@ async function fetchCategory(category) {
         fancy_title: topic.fancy_title,
         slug: topic.slug,
         created_at: topic.created_at,
+        bumped_at: topic.bumped_at,
         tags: topicTags,
       });
     });
@@ -189,6 +192,8 @@ async function buildChangelog() {
     return bDate.getTime() - aDate.getTime(); // reverse
   });
 
+  const publishedTopics = topics.map(({ bumped_at: _bumpedAt, ...topic }) => topic);
+
   const filename = './changelog.json';
   process.stdout.write(`Writing ${filename}: `);
   await fs.promises.writeFile(
@@ -196,7 +201,7 @@ async function buildChangelog() {
     JSON.stringify({
       timestamp: new Date(),
       topic_list: {
-        topics,
+        topics: publishedTopics,
       },
     }),
   );
@@ -208,7 +213,7 @@ async function buildChangelog() {
     JSON.stringify({
       timestamp: new Date(),
       topic_list: {
-        topics: topics.slice(0, 20),
+        topics: publishedTopics.slice(0, 20),
       },
     }),
   );
@@ -218,6 +223,17 @@ async function buildChangelog() {
   process.stdout.write('Generating RSS feed: ');
   await generateChangelogRSS(filename, './changelog.xml');
   process.stdout.write(` \x1b[32mdone\x1b[0m\n`);
+
+  process.stdout.write('Writing topic snapshots: ');
+  try {
+    const { written, pending, rateLimited } = await buildTopicSnapshots(topics);
+    process.stdout.write(
+      ` \x1b[32mdone\x1b[0m (${written} written, ${pending} pending${rateLimited ? ', stopped by rate limit' : ''})\n`,
+    );
+  } catch (error) {
+    // The topic list and feed above are already written; a snapshot failure must not block publishing them.
+    process.stdout.write(` \x1b[33mskipped (${error.message})\x1b[0m\n`);
+  }
 }
 
 buildChangelog();
