@@ -7,3 +7,7 @@ workers_dev = true
 
 [vars]
 DISCOURSE_API_USERNAME = "antal.orcsik"
+
+[[kv_namespaces]]
+binding = "CHANGELOG"
+id = "7581e3327b9f40b89276fc1bf7b2d66d"
