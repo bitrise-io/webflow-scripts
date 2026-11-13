@@ -1,14 +1,15 @@
 const ORIGIN_HOST = 'bitrise.io';
 const DISCOURSE_HOST = 'discuss.bitrise.io';
 
-// Discourse responses are served from the edge cache so the origin is hit as rarely as possible:
-// - younger than FRESH_TTL: served from cache, Discourse is not contacted
-// - older than FRESH_TTL, younger than STALE_TTL: served from cache immediately, refreshed in the background
-// - Discourse failing or rate limiting (429/5xx): the last good copy is kept and keeps being served
-const FRESH_TTL_SECONDS = 5 * 60;
-const STALE_TTL_SECONDS = 7 * 24 * 60 * 60;
+// Discourse JSON is stored in the CHANGELOG KV namespace so the origin is hit as rarely as possible:
+// - stored less than FRESH_TTL ago: served from KV, Discourse is not contacted
+// - older: fetched from Discourse again and KV is updated on success
+// - Discourse failing or rate limiting: the expired copy in KV is served anyway
+// KV entries are not expired after FRESH_TTL (that would delete the fallback); they only expire after
+// KV_RETENTION so abandoned topics eventually get cleaned up.
+const FRESH_TTL_SECONDS = 24 * 60 * 60;
+const KV_RETENTION_SECONDS = 90 * 24 * 60 * 60;
 const CLIENT_MAX_AGE_SECONDS = 60;
-const CACHED_AT_HEADER = 'X-Cached-At';
 
 const setCorsHeaders = (response) => {
   response.headers.set('Access-Control-Allow-Origin', '*');
@@ -29,43 +30,59 @@ const fetchFromDiscourse = (urlObject, env) => {
   return fetch(urlObject);
 };
 
-// Returns { response, cacheStatus } where cacheStatus is HIT, STALE, MISS or BYPASS.
+const jsonResponse = (body) => new Response(body, { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
+
+// A 404 (deleted topic) is passed through; rate limiting, blocking and server errors fall back to KV.
+const isUpstreamFailure = (response) => response.status === 403 || response.status === 429 || response.status >= 500;
+
+// Returns { response, cacheStatus } where cacheStatus is HIT, MISS, STALE or BYPASS.
 const fetchDiscourseCached = async (urlObject, env, ctx) => {
-  const cache = caches.default;
-  // Key on the public URL only, never on credentials.
-  const cacheKey = new Request(urlObject.toString(), { method: 'GET' });
-  const cached = await cache.match(cacheKey);
-
-  const refresh = async () => {
-    const fresh = await fetchFromDiscourse(urlObject, env);
-    if (fresh.ok) {
-      const toStore = new Response(fresh.clone().body, fresh);
-      toStore.headers.delete('Set-Cookie');
-      toStore.headers.set(CACHED_AT_HEADER, String(Date.now()));
-      // Cache API expiry is driven by Cache-Control; keep entries for the whole stale window.
-      toStore.headers.set('Cache-Control', `public, max-age=${STALE_TTL_SECONDS}`);
-      await cache.put(cacheKey, toStore);
-    }
-    return fresh;
-  };
-
-  if (cached) {
-    const ageSeconds = (Date.now() - Number(cached.headers.get(CACHED_AT_HEADER) || 0)) / 1000;
-    if (ageSeconds < FRESH_TTL_SECONDS) {
-      return { response: cached, cacheStatus: 'HIT' };
-    }
-    // Stale: answer right away, refresh in the background. A failed refresh leaves the old copy in place.
-    ctx.waitUntil(refresh().catch((error) => console.log('background refresh failed', String(error))));
-    return { response: cached, cacheStatus: 'STALE' };
+  const kv = env && env.CHANGELOG;
+  if (!kv) {
+    return { response: await fetchFromDiscourse(urlObject, env), cacheStatus: 'BYPASS' };
   }
 
+  // Key on the public path only, never on credentials.
+  const kvKey = `discourse:${urlObject.pathname}${urlObject.search}`;
+  let stored = null;
   try {
-    const fresh = await refresh();
-    return { response: fresh, cacheStatus: fresh.ok ? 'MISS' : 'BYPASS' };
+    stored = await kv.getWithMetadata(kvKey);
+  } catch (error) {
+    console.log('kv read failed', String(error));
+  }
+
+  const hasStored = stored && stored.value !== null;
+  if (hasStored) {
+    const ageSeconds = (Date.now() - Number((stored.metadata && stored.metadata.storedAt) || 0)) / 1000;
+    if (ageSeconds < FRESH_TTL_SECONDS) {
+      return { response: jsonResponse(stored.value), cacheStatus: 'HIT' };
+    }
+  }
+
+  let fresh;
+  try {
+    fresh = await fetchFromDiscourse(urlObject, env);
   } catch (error) {
     console.log('discourse fetch failed', String(error));
-    return { response: new Response('Upstream unavailable', { status: 502 }), cacheStatus: 'BYPASS' };
   }
+
+  if (fresh && fresh.ok) {
+    const body = await fresh.text();
+    ctx.waitUntil(
+      kv
+        .put(kvKey, body, { metadata: { storedAt: Date.now() }, expirationTtl: KV_RETENTION_SECONDS })
+        .catch((error) => console.log('kv write failed', String(error))),
+    );
+    return { response: jsonResponse(body), cacheStatus: 'MISS' };
+  }
+
+  if (hasStored) {
+    return { response: jsonResponse(stored.value), cacheStatus: 'STALE' };
+  }
+  if (fresh && !isUpstreamFailure(fresh)) {
+    return { response: fresh, cacheStatus: 'BYPASS' };
+  }
+  return { response: fresh || new Response('Upstream unavailable', { status: 502 }), cacheStatus: 'BYPASS' };
 };
 
 export default {
