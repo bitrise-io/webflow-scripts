@@ -1,0 +1,946 @@
+{
+  "configVersion" : "20.2",
+  "crawlConfig" : {
+    "crawlImages" : false,
+    "storeImages" : false,
+    "crawlMedia" : false,
+    "storeMedia" : false,
+    "crawlCSS" : true,
+    "storeCSS" : false,
+    "crawlJavaScript" : true,
+    "storeJavaScript" : false,
+    "crawlSWF" : false,
+    "storeSWF" : false,
+    "crawlInternalLinks" : true,
+    "storeInternalLinks" : false,
+    "crawlExternalLinks" : false,
+    "storeExternalLinks" : false,
+    "followInternalNoFollow" : false,
+    "followExternalNoFollow" : false,
+    "limitCrawlTotal" : true,
+    "crawlTotalLimit" : 5000000,
+    "limitSearchDepth" : false,
+    "searchDepthLimit" : 0,
+    "maxThreads" : 5,
+    "checkLinksOutsideFolder" : true,
+    "responseTimeoutInSeconds" : 20,
+    "requestAuthentication" : true,
+    "max5xxRetries" : 0,
+    "connectionFailureRetries" : 2,
+    "alwaysFollowRedirects" : true,
+    "respectNoindex" : true,
+    "respectCanonical" : false,
+    "maxRedirects" : 10,
+    "maxURLLength" : 2000,
+    "limitMaxFolderDepth" : false,
+    "maxFolderDepth" : 5,
+    "limitMaxNumQueryStrings" : false,
+    "maxNumQueryStrings" : 5,
+    "crawlCanonicals" : true,
+    "storeCanonicals" : false,
+    "showInternalBlockedByRobots" : true,
+    "showExternalBlockedByRobots" : true,
+    "extractImgSrcSet" : false,
+    "crawlRelNextPrev" : true,
+    "storeRelNextPrev" : false,
+    "respectRelNextPrev" : false,
+    "crawlerMode" : "AJAX",
+    "ajaxTimeoutMillis" : 5000,
+    "renderWaitMode" : "FIXED_TIMEOUT",
+    "renderWindowResizeTimeoutMillis" : 1000,
+    "renderWindowRotate" : false,
+    "flattenShadowDomHtml" : true,
+    "flattenIframeHtml" : true,
+    "allowRenderScreenShots" : false,
+    "storeChromeConsoleLog" : false,
+    "webSiteArchiveMode" : "NONE",
+    "crawlHreflang" : false,
+    "storeHreflang" : false,
+    "allowBlobUrls" : true,
+    "renderWindowConfig" : {
+      "width" : 1600,
+      "height" : 900,
+      "deviceScaleFactor" : 1.0,
+      "isMobile" : false,
+      "touchEnabled" : false,
+      "resizeToContent" : false
+    },
+    "storeOriginalHtml" : false,
+    "storeRenderedHtml" : false,
+    "storePDF" : false,
+    "extractPDFInfo" : false,
+    "extractPDFLinks" : true,
+    "extractPDFLinkText" : false,
+    "alwaysFollowCanonicals" : false,
+    "crawlSitemaps" : false,
+    "autoDiscoverSitemaps" : true,
+    "crawlSpecifiedSitemaps" : false,
+    "sitemapUrls" : [ ],
+    "robotsTxtMode" : "RESPECT",
+    "crawlAmpHtmlLinks" : false,
+    "storeAmpHtmlLinks" : false,
+    "respectHsts" : false,
+    "respectSelfRefMetaRefresh" : false,
+    "ignoreNonIndexableUrlsForIssues" : true,
+    "ignorePaginatedUrlsForDuplicateFilters" : true,
+    "maxLinks" : 10000,
+    "maxPageSizeBytes" : 50000000,
+    "crawlMetaRefresh" : true,
+    "storeMetaRefresh" : false,
+    "extractPageTitles" : true,
+    "extractMetaDescription" : true,
+    "extractMetaKeywords" : true,
+    "extractMetaRobots" : true,
+    "extractH1" : true,
+    "extractH2" : true,
+    "extractIndexability" : true,
+    "extractWordCount" : true,
+    "extractTextToCodeRatio" : true,
+    "extractHashValue" : true,
+    "extractPageSize" : true,
+    "extractResponseTime" : true,
+    "extractLastModified" : true,
+    "extractXRobots" : true,
+    "extractForms" : true,
+    "extractSocialMetaTags" : true,
+    "crawlIframes" : false,
+    "storeIframes" : false,
+    "crawlFragmentIdentifiers" : false,
+    "extractHttpHeader" : false,
+    "extractCookies" : false,
+    "cookieStorage" : "SESSION",
+    "limitCrawlPerDepth" : false,
+    "perDepthCrawlLimit" : 1000,
+    "calculateReadability" : true,
+    "performHtmlValidation" : true,
+    "isGreenWebHost" : false,
+    "assumeHtml" : false,
+    "crawlMobileAltLinks" : false,
+    "storeMobileAltLinks" : false,
+    "inspectAccessibility" : false,
+    "limitPerSubdomain" : false,
+    "perSubdomainLimit" : 10000,
+    "crawlInvalidLinks" : false,
+    "storeUncrawlableLinks" : false
+  },
+  "excludeManager" : {
+    "rawExcludeListString" : "bitrise.io/blog/tags/*"
+  },
+  "linkPathExcludeManager" : {
+    "rawExcludeListString" : ""
+  },
+  "internalUrlConfig" : {
+    "searchAllSubdomains" : false,
+    "rawInternalString" : "https?://(|webflow-scripts.|web-cdn.|www.|blog.)bitrise.io/\nhttps://cdn.prod.website-files.com/5db35de024bb983af1b4e151/\nhttps://d3e54v103j8qbb.cloudfront.net/\nhttps://ajax.googleapis.com/ajax/libs/webfont/\nhttps://web-cdn.bitrise.io/",
+    "crawlOutsideStartFolder" : false,
+    "rawUrlsToConsiderInternalString" : "https://cdn.prod.website-files.com/5db35de024bb983af1b4e151/\nhttps://d3e54v103j8qbb.cloudfront.net/\nhttps://ajax.googleapis.com/ajax/libs/webfont/\nhttps://web-cdn.bitrise.io/"
+  },
+  "userAgentConfig" : {
+    "userAgent" : "Screaming Frog SEO Spider/25.1",
+    "robotsUserAgent" : "Screaming Frog SEO Spider"
+  },
+  "performanceConfig" : {
+    "limitPerformance" : true,
+    "urlRequestsPerSecond" : 5.0,
+    "autoThrottleEnabled" : true,
+    "rateLimitRetries" : 3,
+    "pauseCrawlOnHostUnreachable" : true,
+    "stopCrawlOnExcessiveRetryAfter" : true
+  },
+  "urlRewritingConfig" : {
+    "convertToHttps" : false,
+    "wwwMode" : "AS_LINKED",
+    "trailingSlashMode" : "AS_LINKED",
+    "convertToLowercase" : false,
+    "regexRules" : [ {
+      "regex" : "\\?.*_page=\\d+",
+      "replace" : ""
+    }, {
+      "regex" : "www.bitrise.io",
+      "replace" : "bitrise.io"
+    }, {
+      "regex" : "blog.bitrise.io/",
+      "replace" : "bitrise.io/blog/"
+    } ],
+    "removeParameters" : [ "" ],
+    "removeAllParameters" : false,
+    "percentEncodingMode" : "UPPER"
+  },
+  "filterWatermarkConfig" : {
+    "titleMinPixels" : 200,
+    "titleMaxPixels" : 561,
+    "titleMinCharacters" : 30,
+    "titleMaxCharacters" : 60,
+    "descriptionMinPixels" : 400,
+    "descriptionMaxPixels" : 985,
+    "descriptionMinCharacters" : 70,
+    "descriptionMaxCharacters" : 155,
+    "highExternalOutlinks" : 10,
+    "highInternalOutlinks" : 1000,
+    "highCrawlDepth" : 3,
+    "uriMaxCharacters" : 115,
+    "h1MaxCharacters" : 70,
+    "h2MaxCharacters" : 70,
+    "imageMaxSizeKiloBytes" : 100,
+    "imageAltTextMaxCharacters" : 100,
+    "lowContentWordCount" : 200,
+    "validDocumentMaxSizeMb" : 2,
+    "validResourceMaxSizeMb" : 2
+  },
+  "customExtractionConfig" : {
+    "filters" : [ ]
+  },
+  "ga4Config" : {
+    "dateRangeConfig" : {
+      "startDate" : "2024-06-01",
+      "endDate" : "2024-06-30",
+      "relativeDateRange" : "CUSTOM"
+    },
+    "ignoreUrlTrailingSlash" : true,
+    "ignoreUrlCase" : false,
+    "limitMaxResults" : true,
+    "maxResults" : 100000,
+    "dimensionFilterConfig" : {
+      "type" : "NONE",
+      "value" : ""
+    },
+    "crawlResults" : false,
+    "enabled" : false,
+    "userSelectedDimensions" : [ {
+      "columnHdrType" : "SESSIONS",
+      "gaName" : "sessions",
+      "friendlyName" : "Sessions",
+      "tableIndex" : 0,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "SCREEN_PAGE_VIEWS",
+      "gaName" : "screenPageViews",
+      "friendlyName" : "Views",
+      "tableIndex" : 1,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ENGAGED_SESSIONS",
+      "gaName" : "engagedSessions",
+      "friendlyName" : "Engaged sessions",
+      "tableIndex" : 2,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ENGAGEMENT_RATE",
+      "gaName" : "engagementRate",
+      "friendlyName" : "Engagement rate",
+      "tableIndex" : 3,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "CONVERSIONS",
+      "gaName" : "conversions",
+      "friendlyName" : "Conversions",
+      "tableIndex" : 4,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "EVENT_COUNT",
+      "gaName" : "eventCount",
+      "friendlyName" : "Event count",
+      "tableIndex" : 5,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "TOTAL_REVENUE",
+      "gaName" : "totalRevenue",
+      "friendlyName" : "Total revenue",
+      "tableIndex" : 6,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ADD_TO_CARTS",
+      "gaName" : "addToCarts",
+      "friendlyName" : "Add-to-carts",
+      "tableIndex" : 7,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "CHECKOUTS",
+      "gaName" : "checkouts",
+      "friendlyName" : "Checkouts",
+      "tableIndex" : 8,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ECOMMERCE_PURCHASES",
+      "gaName" : "ecommercePurchases",
+      "friendlyName" : "Ecommerce purchases",
+      "tableIndex" : 9,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEM_LIST_CLICK_EVENTS",
+      "gaName" : "itemListClickEvents",
+      "friendlyName" : "Item list clicks",
+      "tableIndex" : 10,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEM_LIST_CLICK_THROUGH_RATE",
+      "gaName" : "itemListClickThroughRate",
+      "friendlyName" : "Item list click through rate",
+      "tableIndex" : 11,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEM_LIST_VIEW_EVENTS",
+      "gaName" : "itemListViewEvents",
+      "friendlyName" : "Item list views",
+      "tableIndex" : 12,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEM_PROMOTION_CLICK_THROUGH_RATE",
+      "gaName" : "itemPromotionClickThroughRate",
+      "friendlyName" : "Item promotion click through rate",
+      "tableIndex" : 13,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "PROMOTION_CLICKS",
+      "gaName" : "promotionClicks",
+      "friendlyName" : "Item promotion clicks",
+      "tableIndex" : 14,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "PROMOTION_VIEWS",
+      "gaName" : "promotionViews",
+      "friendlyName" : "Item promotion views",
+      "tableIndex" : 15,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEMS_PURCHASED",
+      "gaName" : "itemsPurchased",
+      "friendlyName" : "Item purchase quantity",
+      "tableIndex" : 16,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEM_REVENUE",
+      "gaName" : "itemRevenue",
+      "friendlyName" : "Item revenue",
+      "tableIndex" : 17,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEM_VIEW_EVENTS",
+      "gaName" : "itemViewEvents",
+      "friendlyName" : "Item views",
+      "tableIndex" : 18,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEMS_ADDED_TO_CART",
+      "gaName" : "itemsAddedToCart",
+      "friendlyName" : "Items added to cart",
+      "tableIndex" : 19,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEMS_CHECKED_OUT",
+      "gaName" : "itemsCheckedOut",
+      "friendlyName" : "Items checked out",
+      "tableIndex" : 20,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEMS_CLICKED_IN_LIST",
+      "gaName" : "itemsClickedInList",
+      "friendlyName" : "Items clicked in list",
+      "tableIndex" : 21,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEMS_CLICKED_IN_PROMOTION",
+      "gaName" : "itemsClickedInPromotion",
+      "friendlyName" : "Items clicked in promotion",
+      "tableIndex" : 22,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEMS_VIEWED",
+      "gaName" : "itemsViewed",
+      "friendlyName" : "Items viewed",
+      "tableIndex" : 23,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEMS_VIEWED_IN_LIST",
+      "gaName" : "itemsViewedInList",
+      "friendlyName" : "Items viewed in list",
+      "tableIndex" : 24,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ITEMS_VIEWED_IN_PROMOTION",
+      "gaName" : "itemsViewedInPromotion",
+      "friendlyName" : "Items viewed in promotion",
+      "tableIndex" : 25,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "PURCHASE_REVENUE",
+      "gaName" : "purchaseRevenue",
+      "friendlyName" : "Purchase revenue",
+      "tableIndex" : 26,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "SHIPPING_AMOUNT",
+      "gaName" : "shippingAmount",
+      "friendlyName" : "Shipping amount",
+      "tableIndex" : 27,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "TAX_AMOUNT",
+      "gaName" : "taxAmount",
+      "friendlyName" : "Tax amount",
+      "tableIndex" : 28,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "TRANSACTIONS",
+      "gaName" : "transactions",
+      "friendlyName" : "Transactions",
+      "tableIndex" : 29,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "TRANSACTIONS_PER_PURCHASER",
+      "gaName" : "transactionsPerPurchaser",
+      "friendlyName" : "Transactions per purchaser",
+      "tableIndex" : 30,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "EVENT_COUNT_PER_USER",
+      "gaName" : "eventCountPerUser",
+      "friendlyName" : "Event count per user",
+      "tableIndex" : 31,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "EVENT_VALUE",
+      "gaName" : "eventValue",
+      "friendlyName" : "Event value",
+      "tableIndex" : 32,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "EVENTS_PER_SESSION",
+      "gaName" : "eventsPerSession",
+      "friendlyName" : "Events per session",
+      "tableIndex" : 33,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "CART_TO_VIEW_RATE",
+      "gaName" : "cartToViewRate",
+      "friendlyName" : "Cart-to-view rate",
+      "tableIndex" : 34,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "PURCHASE_TO_VIEW_RATE",
+      "gaName" : "purchaseToViewRate",
+      "friendlyName" : "Purchase-to-view rate",
+      "tableIndex" : 35,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "PURCHASER_CONVERSION_RATE",
+      "gaName" : "purchaserConversionRate",
+      "friendlyName" : "Purchaser conversion",
+      "tableIndex" : 36,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "TOTAL_AD_REVENUE",
+      "gaName" : "totalAdRevenue",
+      "friendlyName" : "Total ad revenue",
+      "tableIndex" : 37,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "SCREEN_PAGE_VIEWS_PER_SESSION",
+      "gaName" : "screenPageViewsPerSession",
+      "friendlyName" : "Views per session",
+      "tableIndex" : 38,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "PUBLISHER_AD_IMPRESSIONS",
+      "gaName" : "publisherAdImpressions",
+      "friendlyName" : "Ad unit exposure",
+      "tableIndex" : 39,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "PUBLISHER_AD_CLICKS",
+      "gaName" : "publisherAdClicks",
+      "friendlyName" : "Publisher ad impressions",
+      "tableIndex" : 40,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "AD_UNIT_EXPOSURE",
+      "gaName" : "adUnitExposure",
+      "friendlyName" : "Publisher ad clicks",
+      "tableIndex" : 41,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "AVERAGE_PURCHASE_REVENUE_PER_PAYING_USER",
+      "gaName" : "averagePurchaseRevenuePerPayingUser",
+      "friendlyName" : "ARPPU",
+      "tableIndex" : 42,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "AVERAGE_REVENUE_PER_USER",
+      "gaName" : "averageRevenuePerUser",
+      "friendlyName" : "ARPU",
+      "tableIndex" : 43,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "AVERAGE_PURCHASE_REVENUE",
+      "gaName" : "averagePurchaseRevenue",
+      "friendlyName" : "Average purchase revenue",
+      "tableIndex" : 44,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "AVERAGE_PURCHASE_REVENUE_PER_USER",
+      "gaName" : "averagePurchaseRevenuePerUser",
+      "friendlyName" : "Average purchase revenue per user",
+      "tableIndex" : 45,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "AVERAGE_SESSION_DURATION",
+      "gaName" : "averageSessionDuration",
+      "friendlyName" : "Average session duration",
+      "tableIndex" : 46,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "BOUNCE_RATE",
+      "gaName" : "bounceRate",
+      "friendlyName" : "Bounce rate",
+      "tableIndex" : 47,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "SESSION_CONVERSION_RATE",
+      "gaName" : "sessionConversionRate",
+      "friendlyName" : "Session conversion rate",
+      "tableIndex" : 48,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "SESSIONS_PER_USER",
+      "gaName" : "sessionsPerUser",
+      "friendlyName" : "Sessions per user",
+      "tableIndex" : 49,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "TOTAL_USERS",
+      "gaName" : "totalUsers",
+      "friendlyName" : "Total users",
+      "tableIndex" : 50,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "NEW_USERS",
+      "gaName" : "newUsers",
+      "friendlyName" : "New users",
+      "tableIndex" : 51,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ACTIVE_1DAY_USERS",
+      "gaName" : "active1DayUsers",
+      "friendlyName" : "1-day active users",
+      "tableIndex" : 52,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ACTIVE_7DAY_USERS",
+      "gaName" : "active7DayUsers",
+      "friendlyName" : "7-day active users",
+      "tableIndex" : 53,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ACTIVE_28DAY_USERS",
+      "gaName" : "active28DayUsers",
+      "friendlyName" : "28-day active users",
+      "tableIndex" : 54,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "ACTIVE_USERS",
+      "gaName" : "activeUsers",
+      "friendlyName" : "Active users",
+      "tableIndex" : 55,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "DAU_PER_MAU",
+      "gaName" : "dauPerMau",
+      "friendlyName" : "DAU / MAU",
+      "tableIndex" : 56,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "DAU_PER_WAU",
+      "gaName" : "dauPerWau",
+      "friendlyName" : "DAU / WAU",
+      "tableIndex" : 57,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "FIRST_TIME_PURCHASER_CONVERSION_RATE",
+      "gaName" : "firstTimePurchaserConversionRate",
+      "friendlyName" : "First-time purchaser conversion",
+      "tableIndex" : 58,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "FIRST_TIME_PURCHASERS",
+      "gaName" : "firstTimePurchasers",
+      "friendlyName" : "First time purchasers",
+      "tableIndex" : 59,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "FIRST_TIME_PURCHASERS_PER_NEW_USER",
+      "gaName" : "firstTimePurchasersPerNewUser",
+      "friendlyName" : "First-time purchasers per new user",
+      "tableIndex" : 60,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "TOTAL_PURCHASERS",
+      "gaName" : "totalPurchasers",
+      "friendlyName" : "Total purchasers",
+      "tableIndex" : 61,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "USER_CONVERSION_RATE",
+      "gaName" : "userConversionRate",
+      "friendlyName" : "User conversion rate",
+      "tableIndex" : 62,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "USER_ENGAGEMENT_DURATION",
+      "gaName" : "userEngagementDuration",
+      "friendlyName" : "User engagement",
+      "tableIndex" : 63,
+      "dimension" : "landingPage"
+    }, {
+      "columnHdrType" : "WAU_PER_MAU",
+      "gaName" : "wauPerMau",
+      "friendlyName" : "WAU / MAU",
+      "tableIndex" : 64,
+      "dimension" : "landingPage"
+    } ],
+    "userSelectedMetrics" : {
+      "headers" : [ {
+        "columnHdrType" : "SESSIONS",
+        "gaName" : "sessions",
+        "friendlyName" : "Sessions",
+        "tableIndex" : 0,
+        "dimension" : "landingPage"
+      }, {
+        "columnHdrType" : "SCREEN_PAGE_VIEWS",
+        "gaName" : "screenPageViews",
+        "friendlyName" : "Views",
+        "tableIndex" : 1,
+        "dimension" : "landingPage"
+      }, {
+        "columnHdrType" : "ENGAGED_SESSIONS",
+        "gaName" : "engagedSessions",
+        "friendlyName" : "Engaged sessions",
+        "tableIndex" : 2,
+        "dimension" : "landingPage"
+      }, {
+        "columnHdrType" : "ENGAGEMENT_RATE",
+        "gaName" : "engagementRate",
+        "friendlyName" : "Engagement rate",
+        "tableIndex" : 3,
+        "dimension" : "landingPage"
+      }, {
+        "columnHdrType" : "CONVERSIONS",
+        "gaName" : "conversions",
+        "friendlyName" : "Conversions",
+        "tableIndex" : 4,
+        "dimension" : "landingPage"
+      }, {
+        "columnHdrType" : "EVENT_COUNT",
+        "gaName" : "eventCount",
+        "friendlyName" : "Event count",
+        "tableIndex" : 5,
+        "dimension" : "landingPage"
+      }, {
+        "columnHdrType" : "TOTAL_REVENUE",
+        "gaName" : "totalRevenue",
+        "friendlyName" : "Total revenue",
+        "tableIndex" : 6,
+        "dimension" : "landingPage"
+      } ]
+    }
+  },
+  "gscConfig" : {
+    "dateRangeConfig" : {
+      "startDate" : "2026-10-14",
+      "endDate" : "2026-11-12",
+      "relativeDateRange" : "PAST_30_DAYS"
+    },
+    "general" : {
+      "ignoreUrlTrailingSlash" : true,
+      "ignoreUrlCase" : false,
+      "limitMaxResults" : true,
+      "maxResults" : 100000,
+      "crawlResults" : false
+    },
+    "device" : "ALL",
+    "country" : "NONE",
+    "type" : "WEB",
+    "filterOperator" : "NONE",
+    "searchQueryFilter" : "",
+    "enabled" : false
+  },
+  "customRobotsConfig" : {
+    "robots" : { }
+  },
+  "majesticConfig" : {
+    "enabled" : false,
+    "dataSource" : "FRESH",
+    "enabledColumns" : [ "EXTERNAL_BACKLINKS_EXACT", "REFERRING_DOMAINS_EXACT", "TRUST_FLOW_EXACT", "CITATION_FLOW_EXACT" ]
+  },
+  "ahrefsConfig" : {
+    "enabled" : false,
+    "metrics" : [ "BACKLINKS_EXACT", "REFDOMAINS_EXACT", "AHREFS_RANK_EXACT" ],
+    "countryFilter" : "NONE",
+    "volumeMode" : "MONTHLY"
+  },
+  "mozConfig" : {
+    "enabled" : false,
+    "metrics" : [ "PAGE_AUTHORITY" ]
+  },
+  "customHttpHeadersConfig" : {
+    "httpHeaders" : [ {
+      "name" : "Accept",
+      "value" : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    }, {
+      "name" : "Accept-Encoding",
+      "value" : "gzip"
+    }, {
+      "name" : "Cache-Control",
+      "value" : "no-cache"
+    }, {
+      "name" : "Pragma",
+      "value" : "no-cache"
+    } ]
+  },
+  "sitemapConfig" : {
+    "includeLastMod" : false,
+    "lastModMode" : "SERVER_RESPONSE",
+    "lastModCustomDate" : "2022-12-19",
+    "includePriority" : false,
+    "crawlDepthToPriority" : {
+      "0" : 1.0,
+      "1" : 0.9,
+      "2" : 0.8,
+      "3" : 0.7000000000000001,
+      "4" : 0.6000000000000001,
+      "5" : 0.5000000000000001
+    },
+    "includeChangeFrequency" : false,
+    "changeFrequencyMode" : "SERVER_RESPONSE",
+    "crawlDepthToChangeFrequency" : {
+      "0" : "DAILY",
+      "1" : "DAILY",
+      "2" : "DAILY",
+      "3" : "DAILY",
+      "4" : "DAILY",
+      "5" : "DAILY"
+    },
+    "includeNoindexPages" : false,
+    "includeCanonicalised" : false,
+    "includePaginated" : false,
+    "includeHTML" : true,
+    "includePdfs" : false,
+    "includeImages" : false,
+    "includeHreflang" : false,
+    "includeNoindexImages" : false,
+    "includeOnlyRelevantImages" : true,
+    "relevantImagesInlinks" : 10,
+    "imageCDNRegexes" : [ ],
+    "includeNoResponse" : false,
+    "includeBlockedByRobots" : false,
+    "include2xx" : true,
+    "include3xx" : false,
+    "include4xx" : false,
+    "include5xx" : false,
+    "createBySegment" : false
+  },
+  "imagesSitemapConfig" : {
+    "includeLastMod" : true,
+    "lastModMode" : "SERVER_RESPONSE",
+    "lastModCustomDate" : "2022-12-19",
+    "includePriority" : true,
+    "crawlDepthToPriority" : {
+      "0" : 1.0,
+      "1" : 0.9,
+      "2" : 0.8,
+      "3" : 0.7000000000000001,
+      "4" : 0.6000000000000001,
+      "5" : 0.5000000000000001
+    },
+    "includeChangeFrequency" : true,
+    "changeFrequencyMode" : "SERVER_RESPONSE",
+    "crawlDepthToChangeFrequency" : {
+      "0" : "DAILY",
+      "1" : "DAILY",
+      "2" : "DAILY",
+      "3" : "DAILY",
+      "4" : "DAILY",
+      "5" : "DAILY"
+    },
+    "includeNoindexPages" : false,
+    "includeCanonicalised" : false,
+    "includePaginated" : false,
+    "includeHTML" : false,
+    "includePdfs" : false,
+    "includeImages" : true,
+    "includeHreflang" : false,
+    "includeNoindexImages" : false,
+    "includeOnlyRelevantImages" : true,
+    "relevantImagesInlinks" : 10,
+    "imageCDNRegexes" : [ ],
+    "includeNoResponse" : false,
+    "includeBlockedByRobots" : false,
+    "include2xx" : true,
+    "include3xx" : false,
+    "include4xx" : false,
+    "include5xx" : false,
+    "createBySegment" : false
+  },
+  "crawlAnalysisConfig" : {
+    "autoAnalyse" : false,
+    "disabledAnalysisTasks" : [ ]
+  },
+  "issueOverridesConfig" : {
+    "overrides" : { }
+  },
+  "embeddingsConfig" : {
+    "enabled" : false,
+    "cosineSimilarityEnabled" : false,
+    "cosineSimilarityThreshold" : 0.95,
+    "cosineSimilarityIndexableOnly" : true,
+    "cosineSimilarityIgnorePaginated" : true,
+    "lowRelevanceEnabled" : false,
+    "lowRelevanceThreshold" : 0.4,
+    "lowRelevanceIndexableOnly" : true,
+    "lowRelevanceIgnorePaginated" : false,
+    "embeddingFilterInfoList" : [ ]
+  },
+  "spiderStructuredDataConfig" : {
+    "extractJsonLd" : false,
+    "extractMicrodata" : false,
+    "extractRdfa" : false,
+    "caseSensitiveValidation" : false,
+    "googleValidation" : false,
+    "schemaDotOrgValidation" : false
+  },
+  "pageSpeedConfig" : {
+    "enabled" : false,
+    "metrics" : [ "PERFORMANCE_SCORE", "FIRST_CONTENTFUL_PAINT", "SPEED_INDEX", "LARGEST_CONTENTFUL_PAINT", "TIME_TO_INTERACTIVE", "TOTAL_BLOCKING_TIME", "CUMULATIVE_LAYOUT_SHIFT", "TOTAL_OPPORTUNITY_SAVINGS_BYTES", "TOTAL_OPPORTUNITY_SAVINGS_MS", "TOTAL_REQUESTS", "TOTAL_PAGE_SIZE", "HTML_SIZE", "HTML_COUNT", "IMAGE_SIZE", "IMAGE_COUNT", "CSS_SIZE", "CSS_COUNT", "JAVASCRIPT_SIZE", "JAVASCRIPT_COUNT", "FONT_SIZE", "FONT_COUNT", "MEDIA_SIZE", "MEDIA_COUNT", "OTHER_SIZE", "OTHER_COUNT", "THIRD_PARTY_SIZE", "THIRD_PARTY_COUNT", "LOADING_EXPERIENCE_SCORE", "LOADING_EXPERIENCE_LARGEST_CONTENTFUL_PAINT_TIME", "LOADING_EXPERIENCE_CUMULATIVE_LAYOUT_SHIFT", "LOADING_EXPERIENCE_FIRST_CONTENTFUL_PAINT_TIME", "MINIFY_CSS_MS", "MINIFY_JAVASCRIPT_MS", "REMOVE_UNUSED_CSS_MS", "REMOVE_UNUSED_JAVASCRIPT_MS" ],
+    "strategy" : "MOBILE"
+  },
+  "spiderMode" : "SPIDER",
+  "languageToolConfig" : {
+    "spellCheckEnabled" : false,
+    "grammarCheckEnabled" : false,
+    "ignoreWords" : {
+      "ignoreWords" : { }
+    },
+    "disabledGrammarRules" : {
+      "en-GB" : [ "OXFORD_SPELLING_Z_NOT_S", "OXFORD_SPELLING_GRAM" ]
+    },
+    "languageModeData" : {
+      "languageMode" : "AUTO",
+      "languageCode" : "en-US"
+    },
+    "needsRerun" : false
+  },
+  "duplicateConfig" : {
+    "nearDuplicateChecking" : false,
+    "nearDuplicateThreshold" : 90,
+    "onlyIndexableForDuplicates" : true
+  },
+  "contentConfig" : {
+    "checkAltText" : false,
+    "htmlElementsLists" : {
+      "htmlElementMode" : "EXCLUDE",
+      "htmlTags" : {
+        "items" : [ "nav", "footer" ]
+      },
+      "htmlClasses" : {
+        "items" : [ ]
+      },
+      "htmlIds" : {
+        "items" : [ ]
+      }
+    },
+    "soft404Phrases" : [ "404 Not Found", "404 error", "410 Not Found", "can't find the page", "can't seem to find that page", "couldn't find that page", "couldn't find the page", "couldn't find what you're looking for", "error 404", "error occurred", "no products found", "no results found", "no results found", "no search results", "page can't be found", "page cannot be displayed", "page couldn't be found", "page doesn't exist", "page no longer exists", "page not found", "page which no longer exists", "page you are looking for cannot be found", "page you are looking for does not exist", "page you are looking for doesn't exist", "page you requested can't be found", "page you requested couldn't be found", "page you requested does not exist", "page you requested was not found", "page you were looking for is not here", "page you're looking for cannot be found", "page you're looking for does not exist", "page you're looking for doesn't exist", "requested URL was not found", "resource not found", "search returned no results", "unable to locate the requested page" ],
+    "markdown" : {
+      "includeHiddenElements" : false
+    },
+    "includeHiddenContent" : true
+  },
+  "customLinkPositionsConfig" : {
+    "enabled" : true,
+    "definitions" : [ {
+      "name" : "Head",
+      "searchTerm" : "/head/"
+    }, {
+      "name" : "Navigation",
+      "searchTerm" : "nav"
+    }, {
+      "name" : "Header",
+      "searchTerm" : "header"
+    }, {
+      "name" : "Aside",
+      "searchTerm" : "aside"
+    }, {
+      "name" : "Footer",
+      "searchTerm" : "footer"
+    }, {
+      "name" : "Content",
+      "searchTerm" : "/"
+    } ],
+    "testPath" : "/body/header/div/"
+  },
+  "customSearchConfig" : {
+    "searches" : [ ]
+  },
+  "crawlDiffConfig" : {
+    "parityStrategies" : [ ],
+    "ignoreNonIndexableUrls" : false,
+    "urlRewritingConfig" : {
+      "convertToHttps" : false,
+      "wwwMode" : "AS_LINKED",
+      "trailingSlashMode" : "AS_LINKED",
+      "convertToLowercase" : false,
+      "regexRules" : [ ],
+      "removeParameters" : [ ],
+      "removeAllParameters" : false,
+      "percentEncodingMode" : "UPPER"
+    },
+    "contentChangeConfig" : {
+      "similarityThreshold" : 90,
+      "htmlElementListsConfig" : {
+        "htmlElementMode" : "EXCLUDE",
+        "htmlTags" : {
+          "items" : [ "nav", "footer" ]
+        },
+        "htmlClasses" : {
+          "items" : [ ]
+        },
+        "htmlIds" : {
+          "items" : [ ]
+        }
+      }
+    }
+  },
+  "gSCUrlInspectionConfig" : {
+    "configSelected" : false,
+    "ignoreNonIndexable" : false,
+    "enabledStamp" : false,
+    "useMultipleProperties" : false
+  },
+  "urlPathLimitsConfig" : {
+    "definitions" : [ ]
+  },
+  "linksFilterConfig" : {
+    "nonDescriptiveAnchorText" : [ "click here", "click this", "find out more", "go", "here", "learn more", "more", "over here", "read here", "read more", "right here", "start", "this" ]
+  },
+  "segmentsConfig" : {
+    "needsResegment" : false,
+    "segments" : [ ]
+  },
+  "customJavaScriptConfig" : {
+    "jsSnippets" : [ ]
+  },
+  "openAiConfig" : {
+    "enabled" : false,
+    "prompts" : [ ]
+  },
+  "ollamaConfig" : {
+    "enabled" : false,
+    "prompts" : [ ]
+  },
+  "geminiConfig" : {
+    "enabled" : false,
+    "prompts" : [ ]
+  },
+  "anthropicConfig" : {
+    "enabled" : false,
+    "prompts" : [ ]
+  }
+}
