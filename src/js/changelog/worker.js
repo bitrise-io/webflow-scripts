@@ -27,12 +27,13 @@ const setCorsHeaders = (response) => {
 };
 
 const fetchFromDiscourse = (urlObject, env) => {
-  if (env && env.DISCOURSE_API_KEY) {
+  if (env && env.DISCOURSE_API_KEY && env.DISCOURSE_API_USERNAME) {
     // Authenticate with the Discourse API so requests are not throttled as anonymous traffic.
+    // Both the key and the username are required; there is deliberately no default (admin) username.
     const headers = new Headers({
       Accept: 'application/json',
       'Api-Key': env.DISCOURSE_API_KEY,
-      'Api-Username': env.DISCOURSE_API_USERNAME || 'system',
+      'Api-Username': env.DISCOURSE_API_USERNAME,
     });
     return fetch(urlObject, { headers });
   }
