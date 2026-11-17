@@ -1,4 +1,5 @@
 import { formatDate } from '../shared/common';
+import { STACKS_API_BASE } from './config';
 
 /**
  * @typedef {{
@@ -73,7 +74,7 @@ import { formatDate } from '../shared/common';
 
 class StacksService {
   constructor() {
-    this.stacksAPIBase = 'https://stacks.bitrise.io/';
+    this.stacksAPIBase = STACKS_API_BASE;
   }
 
   /**

@@ -6,6 +6,8 @@ import { githubIcon, messageAlertIcon } from './icons';
 
 import '../css/stacks.css';
 import {
+  LEGACY_STACKS_API_BASE,
+  STACKS_API_BASE,
   STACKS_PATH_PREFIX,
   STACKS_PROXY_PATH,
   STACKS_SUBPAGE_PARAM_NAME,
@@ -15,7 +17,7 @@ import { setDocumentContext } from './shared/context';
 
 setDocumentContext(document, document.location.hostname);
 
-const stacksAPIBase = 'https://stacks.bitrise.io/';
+const stacksAPIBase = STACKS_API_BASE;
 
 /**
  * @typedef {{
@@ -56,7 +58,8 @@ const formatHtml = (html) => {
     )
     .replaceAll(/\s+<\/code>/g, '</code>')
     .replaceAll(/href="\//g, 'href="/stacks/')
-    .replaceAll(stacksAPIBase, '/stacks/');
+    .replaceAll(stacksAPIBase, '/stacks/')
+    .replaceAll(LEGACY_STACKS_API_BASE, '/stacks/');
 };
 
 const postprocessContent = () => {

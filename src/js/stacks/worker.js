@@ -18,11 +18,10 @@ export default {
 
     const rssMatch = urlObject.pathname.match(/^\/stacks\/(.*index\.xml)/);
     if (rssMatch) {
-      urlObject.hostname = 'stacks.bitrise.io';
-      urlObject.pathname = `/${rssMatch[1]}`;
-      urlObject.search = '?proxy=1';
-      const response = await fetch(urlObject);
-      const data = (await response.text()).replaceAll('stacks.bitrise.io/', 'bitrise.io/stacks/');
+      const response = await fetch(`https://bitrise-io.github.io/stacks/${rssMatch[1]}`);
+      const data = (await response.text())
+        .replaceAll('bitrise-io.github.io/stacks/', 'bitrise.io/stacks/')
+        .replaceAll('stacks.bitrise.io/', 'bitrise.io/stacks/');
       return new Response(data, {
         status: response.status,
         statusText: response.statusText,
