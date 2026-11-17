@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: image:linux-docker-bitvirt
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NodeJS with npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install NodeJS dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
