@@ -1,15 +1,26 @@
 import { JSDOM } from 'jsdom';
 import { sameJobs, jobTitlesKeepingModifier } from './overrides.js';
 
+// Scoped Atlassian API tokens are only accepted by the api.atlassian.com gateway, not by <site>.atlassian.net.
+// The cloudId is public (https://bitrise.atlassian.net/_edge/tenant_info).
+const CONFLUENCE_CLOUD_ID = process.env.ATLASSIAN_CLOUD_ID || '58b39ce8-ee6b-4ec2-a61a-a4e477b4e591';
+
 export const fetchConfluencePage = async (pageURL, { apiEmail, apiToken, bodyFormat = 'export_view' }) => {
   const pageId = pageURL.pathname.match(/pages\/(\d+)/)[1];
-  const response = await fetch(`https://${pageURL.hostname}/wiki/api/v2/pages/${pageId}?body-format=${bodyFormat}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Basic ${Buffer.from(`${apiEmail}:${apiToken}`).toString('base64')}`,
-      Accept: 'application/json',
+  const response = await fetch(
+    `https://api.atlassian.com/ex/confluence/${CONFLUENCE_CLOUD_ID}/wiki/api/v2/pages/${pageId}?body-format=${bodyFormat}`,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${apiEmail}:${apiToken}`).toString('base64')}`,
+        Accept: 'application/json',
+      },
     },
-  });
+  );
+
+  if (!response.ok) {
+    throw new Error(`Confluence request for page ${pageId} failed: ${response.status} ${response.statusText}`);
+  }
 
   const data = await response.json();
   return {
