@@ -54,7 +54,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    runs-on: ubuntu-latest
+    runs-on: image:linux-docker-bitvirt
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
