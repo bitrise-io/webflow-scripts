@@ -35,6 +35,28 @@ function delay(time) {
  */
 
 /**
+ * Same authentication as the changelog proxy worker (worker.js), so requests are not throttled as anonymous
+ * traffic. Falls back to anonymous requests when neither variable is set (e.g. local runs), and throws when
+ * only one of them is, since there is deliberately no default (admin) username.
+ *
+ * @returns {Record<string, string>}
+ */
+function discourseHeaders() {
+  const { DISCOURSE_API_KEY, DISCOURSE_API_USERNAME } = process.env;
+  if (!DISCOURSE_API_KEY && !DISCOURSE_API_USERNAME) {
+    return { Accept: 'application/json' };
+  }
+  if (!DISCOURSE_API_KEY || !DISCOURSE_API_USERNAME) {
+    throw new Error('DISCOURSE_API_KEY and DISCOURSE_API_USERNAME must be set together');
+  }
+  return {
+    Accept: 'application/json',
+    'Api-Key': DISCOURSE_API_KEY,
+    'Api-Username': DISCOURSE_API_USERNAME,
+  };
+}
+
+/**
  *
  * @param {string} category
  * @returns {Promise<DiscourseTopic[]>}
@@ -53,7 +75,7 @@ async function fetchCategory(category) {
     await delay(500);
 
     const url = `https://discuss.bitrise.io${category}?page=${nextPage}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: discourseHeaders() });
 
     /** @type {DiscourseCategoryResponse} */
     const json = await response.json();
