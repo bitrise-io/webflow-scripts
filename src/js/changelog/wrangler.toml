@@ -1,12 +1,17 @@
 name = "changelog-proxy"
 main = "./worker.js"
 compatibility_date = "2023-08-23"
-routes = ["bitrise.io/changelog*", "app.bitrise.io/changelog*"]
 no_bundle = true
 workers_dev = true
+preview_urls = true
+
+routes = [
+  { pattern = "app.bitrise.io/changelog*", zone_name = "bitrise.io" },
+  { pattern = "bitrise.io/changelog*", zone_name = "bitrise.io" },
+]
 
 [vars]
-DISCOURSE_API_USERNAME = "antal.orcsik"
+DISCOURSE_API_USERNAME = "changelog-proxy-worker"
 
 [[kv_namespaces]]
 binding = "CHANGELOG"
