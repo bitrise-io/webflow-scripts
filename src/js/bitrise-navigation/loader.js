@@ -39,9 +39,19 @@ export function initLoader() {
 }
 
 /**
- * Append the loader script to <head> if not already present.
- * In production, appends a cache-busting query parameter (1-hour time bucket)
- * so Cloudflare treats each hour as a unique URL.
+ * URL of the immutable, content-hashed payload from the release manifest (set by the bootstrap script), or null
+ * when the component was not started through the bootstrap.
+ * @returns {string|null}
+ */
+export function manifestDataUrl() {
+  const manifest = window.bitriseNavigationManifest;
+  return manifest && manifest.base && manifest.data ? `${manifest.base}${manifest.data}` : null;
+}
+
+/**
+ * Append the payload script to <head> if not already present.
+ * In production it loads the hashed payload named by the release manifest, which never needs cache busting.
+ * Without a manifest it falls back to the stable loader URL with a 1-hour cache-busting query parameter.
  */
 export function ensureLoader() {
   if (document.querySelector('script[data-bitrise-navigation-loader]')) return;
@@ -50,7 +60,11 @@ export function ensureLoader() {
   const cacheBust = Math.floor(Date.now() / 3600000);
   const script = document.createElement('script');
   script.setAttribute('data-bitrise-navigation-loader', '');
-  script.src = env === 'development' ? baseUrl : `${baseUrl}?v=${cacheBust}`;
+  if (env === 'development') {
+    script.src = baseUrl;
+  } else {
+    script.src = manifestDataUrl() || `${baseUrl}?v=${cacheBust}`;
+  }
   document.head.appendChild(script);
 }
 
