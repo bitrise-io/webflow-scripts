@@ -17,3 +17,4 @@ yarn.lock
 /changelog_latest.json
 /wrangler.toml
 .wrangler/tmp
+sitemap_writer_sa.json
