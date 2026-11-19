@@ -11,7 +11,7 @@ routes = [
 ]
 
 [vars]
-DISCOURSE_API_USERNAME = "changelog-proxy-worker"
+DISCOURSE_API_USERNAME = "changelog-proxy"
 
 [[kv_namespaces]]
 binding = "CHANGELOG"

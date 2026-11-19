@@ -41,7 +41,7 @@ workflows:
       bitrise.io:
         stack: ubuntu-latest-stable
     envs:
-    - DISCOURSE_API_USERNAME: changelog-proxy-worker
+    - DISCOURSE_API_USERNAME: changelog-proxy
       opts:
         is_expand: false
   career_maps_generator:
