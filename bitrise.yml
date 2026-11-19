@@ -1,0 +1,379 @@
+---
+format_version: '13'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+workflows:
+  changelog_generator:
+    description: |
+      The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.
+
+      Next steps:
+      - Check out [Getting started with iOS apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-ios-apps.html).
+    steps:
+    - bundle::Setup_environment: {}
+    - npm@1:
+        inputs:
+        - command: run build_changelog
+        title: Build changelog json files
+    - script@1:
+        title: Upload changelog json and xml files to GCP Storage
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            KEY_FILE_PATH=$(mktemp -d)/keyfile.json
+            echo "${GCP_SA_SECRET_B64}" | base64 --decode > ${KEY_FILE_PATH}
+            gcloud auth activate-service-account --key-file=${KEY_FILE_PATH}
+
+            gcloud storage cp /bitrise/src/changelog.json gs://web-cdn.bitrise.io/changelog.json
+            gcloud storage cp /bitrise/src/changelog_latest.json gs://web-cdn.bitrise.io/changelog_latest.json
+
+            gcloud storage cp /bitrise/src/changelog.xml gs://web-cdn.bitrise.io/changelog.xml
+    summary: Collect topics from discuss.bitrise.io and upload the collection to
+      Google Web Services.
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+    envs:
+    - DISCOURSE_API_USERNAME: changelog-proxy-worker
+      opts:
+        is_expand: false
+  career_maps_generator:
+    description: |
+      The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.
+
+      Next steps:
+      - Check out [Getting started with iOS apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-ios-apps.html).
+    steps:
+    - bundle::Setup_environment: {}
+    - npm@1:
+        inputs:
+        - command: run build_career_maps
+        title: Build career maps json file
+    - script@1:
+        title: Upload career maps json file to GCP Storage
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            KEY_FILE_PATH=$(mktemp -d)/keyfile.json
+            echo "${GCP_SA_SECRET_B64}" | base64 --decode > ${KEY_FILE_PATH}
+            gcloud auth activate-service-account --key-file=${KEY_FILE_PATH}
+
+            gcloud storage cp /bitrise/src/career-maps.json gs://web-cdn.bitrise.io/career-maps.json
+    summary: Collect topics from discuss.bitrise.io and upload the collection to
+      Google Web Services.
+    envs:
+    - ATLASSIAN_EMAIL: antal.orcsik@bitrise.io
+      opts:
+        is_expand: false
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+  deploy_stacks_worker:
+    description: |
+      The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.
+
+      Next steps:
+      - Check out [Getting started with iOS apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-ios-apps.html).
+    summary: Collect career framework data from Confluence and upload the collection
+      to Google Web Services.
+    steps:
+    - bundle::Setup_environment: {}
+    - bundle::Step_bundle:
+        title: Deploy Cloudflare Worker
+        inputs:
+        - WORKER_NAME: stacks
+    triggers:
+      push:
+      - changed_files:
+          regex: src/js/stacks/(worker\.js|wrangler\.toml)
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+  sitemap_generator:
+    description: |
+      The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.
+
+      Next steps:
+      - Check out [Getting started with iOS apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-ios-apps.html).
+    steps:
+    - script@1:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            set -o pipefail
+            set -x
+
+            apt-get update
+
+            apt-get -y install cabextract xfonts-utils
+
+            MS_CORE_FONTS_VERSION="3.8.1"
+            wget -nv "http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_${MS_CORE_FONTS_VERSION}_all.deb"
+            apt-get -y install "./ttf-mscorefonts-installer_${MS_CORE_FONTS_VERSION}_all.deb"
+
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get -y install fontconfig xvfb fonts-wqy-zenhei
+
+            wget -nv "https://download.screamingfrog.co.uk/products/seo-spider/screamingfrogseospider_${SCREAMING_FROG_VERSION}_amd64.deb"
+            md5sum "./screamingfrogseospider_${SCREAMING_FROG_VERSION}_amd64.deb"
+            apt-get -y install "./screamingfrogseospider_${SCREAMING_FROG_VERSION}_amd64.deb"
+
+            screamingfrogseospider --help
+        title: Install Screaming Frog
+    - script@1:
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            set -o pipefail
+            set -x
+
+            # create license file
+            cat > ~/.ScreamingFrogSEOSpider/licence.txt<< EOF
+            ${SF_USERNAME}
+            ${SF_LICENSE_KEY}
+            EOF
+
+            # append settings to config file
+            cat >> ~/.ScreamingFrogSEOSpider/spider.config<< EOF
+            eula.accepted=${SCREAMING_FROG_EULA}
+            storage.db_dir=/root/.ScreamingFrogSEOSpider
+            storage.mode=DB
+            embeddedBrowser.enable=false
+            EOF
+        title: Setup Screaming Frog
+    - git-clone@8: {}
+    - script@1:
+        title: Crawl Bitrise.io
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            set -o pipefail
+            set -x
+
+            screamingfrogseospider \
+              --config "config/seo_spider_config.json" \
+              --crawl https://bitrise.io \
+              --headless \
+              --create-sitemap
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - deploy_path: "/bitrise/src/sitemap.xml"
+        title: Upload Sitemap.xml to Artifacts
+    - script@1:
+        title: Upload Sitemap.xml to GCP Storage
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            KEY_FILE_PATH=$(mktemp -d)/keyfile.json
+            echo "${GCP_SA_SECRET_B64}" | base64 --decode > ${KEY_FILE_PATH}
+            gcloud auth activate-service-account --key-file=${KEY_FILE_PATH}
+
+            gcloud storage cp /bitrise/src/sitemap.xml gs://web-cdn.bitrise.io/sitemap.xml
+    - slack@4:
+        inputs:
+        - channel: "$SF_SLACK_CHANNEL"
+        - text: Sitemap generation
+        - from_username: Sitemap.xml Builder
+        - webhook_url_on_error: "$SF_SLACK_WEBHOOK"
+        - channel_on_error: "$SF_SLACK_CHANNEL"
+        - text_on_error: ''
+        - emoji_on_error: ":sadge:"
+        - webhook_url: "$SF_SLACK_WEBHOOK"
+    envs:
+    - SF_SLACK_CHANNEL: "#webflow"
+      opts:
+        is_expand: false
+    - SCREAMING_FROG_VERSION: '25.1'
+      opts:
+        is_expand: false
+    - SCREAMING_FROG_EULA: '16'
+      opts:
+        is_expand: false
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+  upload_file_to_cdn:
+    steps:
+    - script@1:
+        title: Upload File to GCP (web-cdn)
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            curl -L -o "devops_awards_badges_160px.png" "https://drive.google.com/uc?export=download&id=1I-QGVptTSehKt74KQT0xLaJaSNsderGm"
+
+            KEY_FILE_PATH=$(mktemp -d)/keyfile.json
+            echo "${GCP_SA_SECRET_B64}" | base64 --decode > ${KEY_FILE_PATH}
+            gcloud auth activate-service-account --key-file=${KEY_FILE_PATH}
+
+            gcloud storage cp "/bitrise/src/devops_awards_badges_160px.png" "gs://web-cdn.bitrise.io/devops_awards_badges_160px.png"
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+  deploy_changelog_worker:
+    description: |
+      The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.
+
+      Next steps:
+      - Check out [Getting started with iOS apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-ios-apps.html).
+    summary: Collect career framework data from Confluence and upload the collection
+      to Google Web Services.
+    steps:
+    - bundle::Setup_environment: {}
+    - bundle::Step_bundle:
+        title: Deploy Cloudflare Worker
+        inputs:
+        - WORKER_NAME: changelog
+    triggers:
+      push:
+      - changed_files:
+          regex: src/js/changelog/(worker\.js|wrangler\.toml)
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+  navigation_loader:
+    description: |
+      The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.
+
+      Next steps:
+      - Check out [Getting started with iOS apps](https://devcenter.bitrise.io/en/getting-started/getting-started-with-ios-apps.html).
+    steps:
+    - bundle::Setup_environment: {}
+    - npm@1:
+        inputs:
+        - command: run build:navigation
+        title: Build navigation_loader.js files
+    - npm@1:
+        inputs:
+        - command: run build
+        title: Build webflow-scripts files
+    - script@1:
+        title: Deploy Bitrise Navigation Web Components
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            ./bitrise-navigation-deploy.sh "$GCP_SA_SECRET_B64" "$CF_ZONE_ID" "$CF_WORKER_API_KEY"
+    summary: Collect topics from discuss.bitrise.io and upload the collection to
+      Google Web Services.
+    triggers:
+      push:
+      - changed_files:
+          regex: "^.*bitrise-navigation.*$"
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+  build_integrations_ssr:
+    steps:
+    - bundle::Setup_environment: {}
+    - npm@1:
+        inputs:
+        - command: run build:navigation
+        title: Build navigation_loader.js files
+    - npm@1:
+        inputs:
+        - command: run build:ssr
+        title: Build webflow-scripts files
+    - script@1:
+        title: Deploy Integrations SSR to GCS
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            ./integrations-ssr-deploy.sh "$GCP_SA_SECRET_B64"
+    triggers:
+      push:
+      - changed_files:
+          regex: "^.*bitrise-navigation.*$"
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+meta:
+  bitrise.io:
+    stack: linux-docker-android-22.04
+    machine_type_id: g2.linux.medium
+step_bundles:
+  Setup_environment:
+    steps:
+    - git-clone@8: {}
+    - nvm@1:
+        inputs:
+        - node_version: '22'
+    - npm@1:
+        inputs:
+        - command: ci
+        title: Install dependencies
+    summary: Checkout GitHub repository, install node and dependencies
+  Step_bundle:
+    steps:
+    - script@1:
+        inputs:
+        - script_file_path:
+        - content: |-
+            #!/usr/bin/env bash
+
+            export CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID"
+            export CLOUDFLARE_API_TOKEN="$CF_WORKER_API_KEY"
+            # Write the wrangler log into the deploy dir so the next step can upload it
+            export WRANGLER_LOG_PATH="$BITRISE_DEPLOY_DIR/wrangler-${WORKER_NAME}.log"
+            npx wrangler deploy --config "src/js/${WORKER_NAME}/wrangler.toml"
+        title: Deploy worker with wrangler
+    - deploy-to-bitrise-io@2:
+        title: Upload wrangler log
+        is_always_run: true
+        inputs:
+        - deploy_path: "$BITRISE_DEPLOY_DIR/wrangler-${WORKER_NAME}.log"
+        - is_compress: 'false'
+    inputs:
+    - WORKER_NAME: ''
+      opts:
+        title: Worker name
