@@ -1,7 +1,5 @@
-/* eslint-disable no-await-in-loop */
 const fs = require('fs');
 const { generateChangelogRSS } = require('./generate-rss');
-
 
 /**
  *
@@ -38,7 +36,6 @@ function delay(time) {
  * Same authentication as the changelog proxy worker (worker.js), so requests are not throttled as anonymous
  * traffic. Falls back to anonymous requests when neither variable is set (e.g. local runs), and throws when
  * only one of them is, since there is deliberately no default (admin) username.
- *
  * @returns {Record<string, string>}
  */
 function discourseHeaders() {
@@ -56,58 +53,94 @@ function discourseHeaders() {
   };
 }
 
+// Discourse rate-limits API keys (default 60 requests/minute), so stay just under that.
+const REQUEST_DELAY_MS = 1100;
+const MAX_RETRIES = 5;
+
+/**
+ * Fetches a Discourse URL, pausing between requests and retrying on 429 for the wait time Discourse asks for.
+ * Throws on any other non-OK response.
+ * @param {string} url
+ * @param {number} [attempt]
+ * @returns {Promise<Response>}
+ */
+async function fetchWithRetry(url, attempt = 0) {
+  await delay(REQUEST_DELAY_MS);
+  const response = await fetch(url, { headers: discourseHeaders() });
+  if (response.ok) return response;
+
+  const body = await response.text();
+  if (response.status !== 429 || attempt >= MAX_RETRIES) {
+    throw new Error(`Discourse request failed: ${response.status} ${url} ${body.slice(0, 300)}`);
+  }
+
+  let waitSeconds = Number(response.headers.get('retry-after'));
+  if (!waitSeconds) {
+    try {
+      waitSeconds = JSON.parse(body).extras.wait_seconds;
+    } catch (e) {
+      // fall through to the default wait
+    }
+  }
+  waitSeconds = (Number(waitSeconds) || 10) + 1;
+  process.stdout.write(`\x1b[33m429, waiting ${waitSeconds}s\x1b[0m `);
+  await delay(waitSeconds * 1000);
+
+  return fetchWithRetry(url, attempt + 1);
+}
+
 /**
  *
  * @param {string} category
  * @returns {Promise<DiscourseTopic[]>}
  */
 async function fetchCategory(category) {
-  const topics = [];
-
   const skipTag = 'skip-changelog';
 
   const skipTopics = [24064, 24172, 24514, 24668, 24786, 24951];
 
-  process.stdout.write(`Fetching ${category}: `);
-
-  let nextPage = 0;
-  while (nextPage !== null) {
-    await delay(500);
-
-    const url = `https://discuss.bitrise.io${category}?page=${nextPage}`;
-    const response = await fetch(url, { headers: discourseHeaders() });
-
-    if (!response.ok) {
-      const body = (await response.text()).slice(0, 300);
-      throw new Error(`Discourse request failed: ${response.status} ${url} ${body}`);
-    }
+  /**
+   * Fetches one page, then the next one (if any) only after this one is done, to respect the rate limit.
+   * @param {number} page
+   * @param {DiscourseTopic[]} collected
+   * @returns {Promise<DiscourseTopic[]>}
+   */
+  async function fetchPage(page, collected) {
+    const url = `https://discuss.bitrise.io${category}?page=${page}`;
+    const response = await fetchWithRetry(url);
 
     /** @type {DiscourseCategoryResponse} */
     const json = await response.json();
     process.stdout.write('.');
 
-    json.topic_list.topics.forEach((topic) => {
-      const topicTags = topic.tags.map((tag) => (typeof tag === 'object' ? tag.slug : tag));
-      if (topic.pinned) return; // skip if pinned
-      if (skipTag && topicTags.includes(skipTag)) return; // skip if has skip tag
-      if (skipTopics.includes(topic.id)) return; // skip if in skip id list
-
-      topics.push({
+    const pageTopics = json.topic_list.topics
+      .filter((topic) => !topic.pinned) // skip if pinned
+      .map((topic) => ({
+        topic,
+        tags: topic.tags.map((tag) => (typeof tag === 'object' ? tag.slug : tag)),
+      }))
+      .filter(({ tags }) => !(skipTag && tags.includes(skipTag))) // skip if has skip tag
+      .filter(({ topic }) => !skipTopics.includes(topic.id)) // skip if in skip id list
+      .map(({ topic, tags }) => ({
         id: topic.id,
         title: topic.title,
         fancy_title: topic.fancy_title,
         slug: topic.slug,
         created_at: topic.created_at,
-        tags: topicTags,
-      });
-    });
+        tags,
+      }));
+    const allTopics = [...collected, ...pageTopics];
 
-    nextPage = null;
-    if (json.topic_list.more_topics_url) {
-      const moreTopicsUrlMatch = json.topic_list.more_topics_url.match(/page=(\d+)/);
-      nextPage = parseInt(moreTopicsUrlMatch[1], 10);
-    }
+    const moreTopicsUrl = json.topic_list.more_topics_url;
+    if (!moreTopicsUrl) return allTopics;
+
+    const nextPage = parseInt(moreTopicsUrl.match(/page=(\d+)/)[1], 10);
+    return fetchPage(nextPage, allTopics);
   }
+
+  process.stdout.write(`Fetching ${category}: `);
+
+  const topics = await fetchPage(0, []);
 
   process.stdout.write(` \x1b[32mdone\x1b[0m (${topics.length})\n`);
 
@@ -157,7 +190,6 @@ const GCS_BASE_URL = 'https://storage.googleapis.com/bitrise-release-management-
  * Fetch one RM API changelog file and convert its entries to topics.
  * Only entries that are actually present in the file produce topics —
  * no entry is created if the file is empty or missing.
- *
  * @param {RMApiConfig} config
  * @returns {Promise<DiscourseTopic[]>}
  */
@@ -205,10 +237,15 @@ async function buildChangelog() {
   const changelogTopics = await fetchCategory('/c/changelog/6.json');
   changelogTopics.forEach((topic) => topics.push(topic));
 
-  for (const config of RM_API_CONFIGS) {
-    const apiTopics = await fetchRMApiChangelog(config);
-    apiTopics.forEach((topic) => topics.push(topic));
-  }
+  // Chain the requests so they run one after another (parallel calls would defeat the throttling)
+  await RM_API_CONFIGS.reduce(
+    (previous, config) =>
+      previous.then(async () => {
+        const apiTopics = await fetchRMApiChangelog(config);
+        apiTopics.forEach((topic) => topics.push(topic));
+      }),
+    Promise.resolve(),
+  );
 
   topics.sort((a, b) => {
     const aDate = new Date(a.created_at);
