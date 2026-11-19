@@ -77,6 +77,11 @@ async function fetchCategory(category) {
     const url = `https://discuss.bitrise.io${category}?page=${nextPage}`;
     const response = await fetch(url, { headers: discourseHeaders() });
 
+    if (!response.ok) {
+      const body = (await response.text()).slice(0, 300);
+      throw new Error(`Discourse request failed: ${response.status} ${url} ${body}`);
+    }
+
     /** @type {DiscourseCategoryResponse} */
     const json = await response.json();
     process.stdout.write('.');
