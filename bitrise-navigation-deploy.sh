@@ -1,26 +1,36 @@
 #!/usr/bin/env bash
-# Deploy bitrise-navigation assets to GCS and purge Cloudflare cache.
+# Deploy the bitrise-navigation release to GCS.
 #
-# Usage: ./bitrise-navigation-deploy.sh <gcp-sa-secret-b64> <cf-zone-id> <cf-api-token>
+# Usage: ./bitrise-navigation-deploy.sh <gcp-sa-secret-b64>
 #
 #   gcp-sa-secret-b64  Base64-encoded GCP service account key JSON
-#   cf-zone-id         Cloudflare zone ID for bitrise.io
-#   cf-api-token       Cloudflare API token (needs only "Cache Purge" permission)
+#
+# Expects `npm run release:navigation` to have produced the release directory (see
+# src/js/bitrise-navigation/release.js, which documents the layout). Nothing needs to be purged from the CDN:
+#
+#   - content-hashed files are immutable, so they are cached for a year and never overwritten
+#   - bootstrap and loader contain no version information and change rarely, so they can be cached for a while
+#   - the manifest is the only thing that changes per release; pages request it with a time-bucketed query string
+#
+# The deploy is idempotent: files that are already identical on the bucket are skipped, so running it on a
+# schedule does nothing unless the navigation or the component changed.
 set -euo pipefail
 
-GCP_SA_SECRET_B64="${1:?Usage: $0 <gcp-sa-secret-b64> <cf-zone-id> <cf-api-token>}"
-CF_ZONE_ID="${2:?Usage: $0 <gcp-sa-secret-b64> <cf-zone-id> <cf-api-token>}"
-CF_API_TOKEN="${3:?Usage: $0 <gcp-sa-secret-b64> <cf-zone-id> <cf-api-token>}"
+GCP_SA_SECRET_B64="${1:?Usage: $0 <gcp-sa-secret-b64>}"
 
 DIST_DIR="${DIST_DIR:-/bitrise/src/dist}"
+RELEASE_DIR="${RELEASE_DIR:-${DIST_DIR}/release}"
 GCS_BUCKET="gs://web-cdn.bitrise.io"
-CDN_BASE="https://web-cdn.bitrise.io"
+ASSET_DIR="bitrise-navigation"
 
-FILES=(
-  bitrise-navigation-loader.js
-  bitrise-navigation.js
-  bitrise-navigation.html
-)
+CACHE_IMMUTABLE="public, max-age=31536000, immutable"
+CACHE_STABLE="public, max-age=3600"
+CACHE_MANIFEST="public, max-age=60, stale-while-revalidate=600"
+
+if [ ! -f "${RELEASE_DIR}/${ASSET_DIR}/manifest.json" ]; then
+  echo "No release found in ${RELEASE_DIR}. Run 'npm run release:navigation' first." >&2
+  exit 1
+fi
 
 # --- Authenticate with GCP ---------------------------------------------------
 
@@ -29,39 +39,52 @@ echo "${GCP_SA_SECRET_B64}" | base64 --decode > "${KEY_FILE}"
 gcloud auth activate-service-account --key-file="${KEY_FILE}"
 rm -f "${KEY_FILE}"
 
-# --- Upload to GCS -----------------------------------------------------------
+# --- Helpers -----------------------------------------------------------------
 
-echo "Uploading ${#FILES[@]} files to ${GCS_BUCKET}:"
-for FILE in "${FILES[@]}"; do
+# Upload a file unless the bucket already holds identical content.
+upload_if_changed() {
+  local file="$1" cache_control="$2"
+  printf '  %s ... ' "${file}"
+  if gcloud storage cat "${GCS_BUCKET}/${file}" 2>/dev/null | cmp -s - "${RELEASE_DIR}/${file}"; then
+    echo "unchanged"
+  else
+    gcloud storage cp --cache-control="${cache_control}" "${RELEASE_DIR}/${file}" "${GCS_BUCKET}/${file}"
+    echo "uploaded"
+  fi
+}
+
+# --- 1. Hashed assets (never overwritten) -----------------------------------------
+
+echo "Uploading versioned assets:"
+for LOCAL_PATH in "${RELEASE_DIR}/${ASSET_DIR}/"*.js; do
+  FILE="${ASSET_DIR}/$(basename "${LOCAL_PATH}")"
+  if [ "${FILE}" = "${ASSET_DIR}/manifest.js" ]; then
+    continue
+  fi
   printf '  %s ... ' "${FILE}"
-  gcloud storage cp "${DIST_DIR}/${FILE}" "${GCS_BUCKET}/${FILE}"
+  gcloud storage cp --no-clobber --cache-control="${CACHE_IMMUTABLE}" "${LOCAL_PATH}" "${GCS_BUCKET}/${FILE}"
   echo "done"
 done
 
-# --- Purge Cloudflare cache ---------------------------------------------------
-# Uses the per-URL purge API ("files" key) — only the listed URLs are
-# invalidated, NOT the entire zone cache.
+# --- 2. Stable entry points (generic, rarely change) ----------------------------
 
-CDN_URLS=()
-for FILE in "${FILES[@]}"; do
-  CDN_URLS+=("${CDN_BASE}/${FILE}")
-done
+echo "Uploading entry points:"
+upload_if_changed "bitrise-navigation.js" "${CACHE_STABLE}"
+upload_if_changed "bitrise-navigation-loader.js" "${CACHE_STABLE}"
 
-JSON_FILES=$(printf '"%s",' "${CDN_URLS[@]}")
-JSON_FILES="[${JSON_FILES%,}]"
+# --- 3. Demo page ----------------------------------------------------------------
 
-echo "Purging Cloudflare cache for ${#CDN_URLS[@]} URLs:"
-printf '  %s\n' "${CDN_URLS[@]}"
-
-RESPONSE=$(curl -sf -X POST \
-  "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
-  -H "Authorization: Bearer ${CF_API_TOKEN}" \
-  -H "Content-Type: application/json" \
-  --data "{\"files\":${JSON_FILES}}")
-
-if echo "${RESPONSE}" | grep -q '"success":true'; then
-  echo "Cache purged successfully."
-else
-  echo "Cache purge failed: ${RESPONSE}" >&2
-  exit 1
+if [ -f "${DIST_DIR}/bitrise-navigation.html" ]; then
+  echo "Uploading demo page:"
+  printf '  bitrise-navigation.html ... '
+  gcloud storage cp "${DIST_DIR}/bitrise-navigation.html" "${GCS_BUCKET}/bitrise-navigation.html"
+  echo "done"
 fi
+
+# --- 4. Manifest last: this is what makes the new version live ------------------------
+
+echo "Publishing manifest:"
+upload_if_changed "${ASSET_DIR}/manifest.json" "${CACHE_MANIFEST}"
+upload_if_changed "${ASSET_DIR}/manifest.js" "${CACHE_MANIFEST}"
+
+echo "Done."

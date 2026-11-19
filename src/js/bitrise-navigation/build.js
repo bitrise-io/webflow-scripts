@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const fs = require('fs');
 const { JSDOM } = require('jsdom');
 
@@ -161,13 +162,16 @@ async function buildNavigation() {
   }
 
   // --- Build the output ---
-  const navigationData = {
+  // The version is derived from the content, not the build time, so rebuilding an unchanged page produces a
+  // byte-identical file (the release step hashes it, and an unchanged hash means nothing needs to be deployed).
+  const payload = {
     html,
     css,
     inlineCss,
     error: errors.length > 0 ? errors : null,
-    version: `${VERSION}-${Date.now()}`,
   };
+  const contentHash = crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex').slice(0, 10);
+  const navigationData = { ...payload, version: `${VERSION}-${contentHash}` };
 
   // Escape </script> sequences so the output is safe to inline if needed.
   const jsonPayload = JSON.stringify(navigationData).replace(/<\/script>/gi, '<\\/script>');

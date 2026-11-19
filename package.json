@@ -37,6 +37,7 @@
     "build_career_maps": "node ./src/js/career-maps/build.js",
     "debug_career_maps_structure": "node ./src/js/career-maps/debug-structure.js",
     "build:navigation": "node ./src/js/bitrise-navigation/build.js ./dist/bitrise-navigation-loader.js",
+    "release:navigation": "node ./src/js/bitrise-navigation/release.js --component ./dist/bitrise-navigation.js --data ./dist/bitrise-navigation-loader.js --out ./dist/release",
     "build:maintenance": "node ./src/js/maintenance/build.js",
     "check_cert:bitrise": "node ./src/js/tools/cert_check.js bitrise.io",
     "check_cert:docs": "node ./src/js/tools/cert_check.js docs.bitrise.io",

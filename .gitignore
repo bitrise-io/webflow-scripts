@@ -8,6 +8,7 @@ yarn.lock
 /dist/*.js
 /dist/*.LICENSE.txt
 /dist/maintenance.html
+/dist/release
 /dist/integrations.html
 /dist/integrations/*
 /dist/images/*
@@ -17,3 +18,4 @@ yarn.lock
 /changelog_latest.json
 /wrangler.toml
 .wrangler/tmp
+sitemap_writer_sa.json

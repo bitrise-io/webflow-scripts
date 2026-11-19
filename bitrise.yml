@@ -282,6 +282,10 @@ workflows:
         inputs:
         - command: run build
         title: Build webflow-scripts files
+    - npm@1:
+        inputs:
+        - command: run release:navigation
+        title: Assemble versioned navigation release
     - script@1:
         title: Deploy Bitrise Navigation Web Components
         inputs:
@@ -294,7 +298,7 @@ workflows:
             # debug log
             set -x
 
-            ./bitrise-navigation-deploy.sh "$GCP_SA_SECRET_B64" "$CF_ZONE_ID" "$CF_WORKER_API_KEY"
+            ./bitrise-navigation-deploy.sh "$GCP_SA_SECRET_B64"
     summary: Collect topics from discuss.bitrise.io and upload the collection to
       Google Web Services.
     triggers:
@@ -308,10 +312,6 @@ workflows:
   build_integrations_ssr:
     steps:
     - bundle::Setup_environment: {}
-    - npm@1:
-        inputs:
-        - command: run build:navigation
-        title: Build navigation_loader.js files
     - npm@1:
         inputs:
         - command: run build:ssr
@@ -329,11 +329,6 @@ workflows:
             set -x
 
             ./integrations-ssr-deploy.sh "$GCP_SA_SECRET_B64"
-    triggers:
-      push:
-      - changed_files:
-          regex: "^.*bitrise-navigation.*$"
-        branch: main
     meta:
       bitrise.io:
         stack: ubuntu-latest-stable
