@@ -2,8 +2,8 @@ name = "changelog-proxy"
 main = "./worker.js"
 compatibility_date = "2023-08-23"
 no_bundle = true
-workers_dev = true
-preview_urls = true
+workers_dev = false
+preview_urls = false
 
 routes = [
   { pattern = "app.bitrise.io/changelog*", zone_name = "bitrise.io" },
