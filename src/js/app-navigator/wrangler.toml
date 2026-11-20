@@ -1,6 +1,11 @@
 name = "app-navigator"
 main = "./worker.js"
 compatibility_date = "2026-03-10"
-routes = ["bitrise.io/resources/tools/app-navigator*", "app.bitrise.io/resources/tools/app-navigator*"]
 no_bundle = true
-workers_dev = true
+workers_dev = false
+preview_urls = false
+
+routes = [
+  { pattern = "bitrise.io/resources/tools/app-navigator*", zone_name = "bitrise.io" },
+  { pattern = "app.bitrise.io/resources/tools/app-navigator*", zone_name = "bitrise.io" },
+]
