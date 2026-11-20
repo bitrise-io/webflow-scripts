@@ -204,6 +204,23 @@ workflows:
     meta:
       bitrise.io:
         stack: ubuntu-latest-stable
+  deploy_size_analyzer_worker:
+    description: Deploy the size-analyzer proxy Cloudflare Worker.
+    summary: Deploy the size-analyzer worker when its code or config changes on main.
+    steps:
+    - bundle::Setup_environment: {}
+    - bundle::Step_bundle:
+        title: Deploy Cloudflare Worker
+        inputs:
+        - WORKER_NAME: size-analyzer
+    triggers:
+      push:
+      - changed_files:
+          regex: src/js/size-analyzer/(worker\.js|wrangler\.toml)
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
   sitemap_generator:
     description: |
       The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.
