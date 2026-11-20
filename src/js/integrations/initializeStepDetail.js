@@ -2,9 +2,8 @@ import { fancyConsoleLog } from '../shared/common';
 
 /**
  * Initializes client-side behavior for the step detail page.
- * Expects document context to be already set.
- * @param {import('./Step').default} step
+ * @param {string} title
  */
-export function initializeStepDetail(step) {
-  fancyConsoleLog(`Bitrise.io Integrations: ${step.title}`);
+export function initializeStepDetail(title) {
+  fancyConsoleLog(`Bitrise.io Integrations: ${title}`);
 }

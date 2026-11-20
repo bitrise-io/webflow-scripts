@@ -1,6 +1,11 @@
 const ORIGIN_HOST = 'bitrise.io';
 const PRERENDERED_BASE_URL = 'https://storage.googleapis.com/web-cdn.bitrise.io/webflow-ssr';
 
+// Compact steplib data for the client-side list filters, published by the SSR job next to the pre-rendered pages.
+const DATA_PATH = '/integrations/data.json';
+const DATA_SOURCE_URL = `${PRERENDERED_BASE_URL}/integrations-data.json`;
+const DATA_MAX_AGE_SECONDS = 300;
+
 const routingPatterns = [
   {
     pattern: /^\/integrations\/steps\/(.+)/,
@@ -77,6 +82,30 @@ const fetchPrerenderedHtml = async (url, ctx) => {
   return null;
 };
 
+const serveData = async (ctx) => {
+  const cache = caches.default;
+  const cacheKey = DATA_SOURCE_URL;
+  const cached = await cache.match(cacheKey);
+  if (cached) {
+    return setCorsHeaders(new Response(cached.body, cached));
+  }
+
+  const upstream = await fetch(DATA_SOURCE_URL);
+  if (!upstream.ok) {
+    // The client falls back to the full steplib spec on any non-OK answer.
+    return new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
+  }
+
+  const response = new Response(upstream.body, {
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': `public, max-age=${DATA_MAX_AGE_SECONDS}`,
+    },
+  });
+  ctx.waitUntil(cache.put(cacheKey, response.clone()));
+  return setCorsHeaders(response);
+};
+
 export default {
   async fetch(request, env, ctx) {
     const urlObject = new URL(request.url);
@@ -84,6 +113,10 @@ export default {
 
     if (urlObject.pathname === '/integrations-proxy') {
       return setCorsHeaders(new Response('OK'));
+    }
+
+    if (urlObject.pathname === DATA_PATH) {
+      return serveData(ctx);
     }
 
     const isTemplateRequest = urlObject.searchParams.has('template');

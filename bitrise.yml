@@ -104,6 +104,23 @@ workflows:
     meta:
       bitrise.io:
         stack: ubuntu-latest-stable
+  deploy_integrations_worker:
+    description: Deploy the integrations proxy Cloudflare Worker.
+    summary: Deploy the integrations worker when its code or config changes on main.
+    steps:
+    - bundle::Setup_environment: {}
+    - bundle::Step_bundle:
+        title: Deploy Cloudflare Worker
+        inputs:
+        - WORKER_NAME: integrations
+    triggers:
+      push:
+      - changed_files:
+          regex: src/js/integrations/(worker\.js|wrangler\.toml)
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
   sitemap_generator:
     description: |
       The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.

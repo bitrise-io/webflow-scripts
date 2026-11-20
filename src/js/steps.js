@@ -1,33 +1,28 @@
 import IntegrationsService from './integrations/IntegrationsService';
 import { renderStepDetail, isStepDetailRendered } from './integrations/renderStepDetail';
 import { initializeStepDetail } from './integrations/initializeStepDetail';
-import { detectTopicFromUrl } from './shared/common';
-import { setDocumentContext } from './shared/context';
-import { INTEGRATIONS_PATH_PREFIX, INTEGRATIONS_SUBPAGE_PARAM_NAME, applyProxyFallback } from './integrations/config';
+import { applyProxyFallback } from './integrations/config';
 
 import '../css/steps.css';
 
 const url = new URL(document.location.href);
 
 (async () => {
-  const integrations = await IntegrationsService.loadIntegrations();
-
-  let step;
+  let title;
   if (isStepDetailRendered(document)) {
-    const canonicalUrl = new URL(document.querySelector('link[rel="canonical"]')?.href);
-    setDocumentContext(document, url.hostname);
-    const stepFilter = detectTopicFromUrl(canonicalUrl, INTEGRATIONS_PATH_PREFIX, INTEGRATIONS_SUBPAGE_PARAM_NAME);
-    step = integrations.steps[stepFilter];
+    // Everything on a pre-rendered page is already in the DOM, no need to download the steplib data.
+    title = document.getElementById('integrations-step-details-title')?.textContent;
   } else {
-    step = renderStepDetail(document, integrations, url);
+    const integrations = await IntegrationsService.loadIntegrations();
+    title = renderStepDetail(document, integrations, url)?.title;
   }
 
-  if (!step) {
+  if (!title) {
     window.location.href = '/integrations';
     return;
   }
 
-  initializeStepDetail(step);
+  initializeStepDetail(title);
   await applyProxyFallback();
 })();
 

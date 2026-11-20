@@ -14,12 +14,19 @@ import { createMockIntegrations, STEP_LIST_HTML } from './fixtures';
  */
 function visibleStepCards(doc) {
   return Array.from(doc.querySelectorAll('.step-card')).filter(
-    (card) => !card.classList.contains('display-none') && !card.closest('.step_grid').classList.contains('display-none'),
+    (card) =>
+      !card.classList.contains('display-none') && !card.closest('.step_grid').classList.contains('display-none'),
   );
 }
 
+/**
+ * Resolves after pending timers, i.e. after the stubbed requestAnimationFrame callbacks ran.
+ * @returns {Promise<void>}
+ */
 function nextFrame() {
-  return new Promise((resolve) => setTimeout(resolve, 0));
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
 }
 
 describe('renderStepList', () => {
@@ -56,7 +63,12 @@ describe('renderStepList', () => {
   it('filters by platform', async () => {
     const url = new URL('https://bitrise.io/integrations?platform=ios');
     const { content } = renderStepList(doc, integrations, url);
-    content.update(integrations, url.searchParams.get('platform'), url.searchParams.get('category'), url.searchParams.get('query'));
+    content.update(
+      integrations,
+      url.searchParams.get('platform'),
+      url.searchParams.get('category'),
+      url.searchParams.get('query'),
+    );
     await nextFrame();
 
     expect(visibleStepCards(doc).length).toBe(2);
@@ -65,7 +77,12 @@ describe('renderStepList', () => {
   it('filters by query', async () => {
     const url = new URL('https://bitrise.io/integrations?query=gradle');
     const { content } = renderStepList(doc, integrations, url);
-    content.update(integrations, url.searchParams.get('platform'), url.searchParams.get('category'), url.searchParams.get('query'));
+    content.update(
+      integrations,
+      url.searchParams.get('platform'),
+      url.searchParams.get('category'),
+      url.searchParams.get('query'),
+    );
     await nextFrame();
 
     expect(visibleStepCards(doc).length).toBe(1);
