@@ -12,6 +12,9 @@ yarn.lock
 /dist/integrations.html
 /dist/integrations-data.json
 /dist/integrations/*
+/dist/careers/
+/dist/career-maps-data.json
+/dist/career-maps-pages.json
 /dist/images/*
 /career-maps.json
 /changelog.json

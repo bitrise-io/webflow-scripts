@@ -15,11 +15,21 @@ const webpackBuild = (config) =>
 const buildPath = path.resolve(__dirname, 'build');
 const distPath = path.resolve(__dirname, 'dist');
 
+// Usage: node build-ssr.js [integrations] [career-maps] — renders the named pages, or all of them without names.
+const renderers = ['integrations', 'career-maps'];
+const selectedRenderers = process.argv.slice(2);
+const unknownRenderers = selectedRenderers.filter((name) => !renderers.includes(name));
+if (unknownRenderers.length) {
+  process.stderr.write(`Unknown SSR pages: ${unknownRenderers.join(', ')} (known: ${renderers.join(', ')})\n`);
+  process.exit(1);
+}
+
 const ssrWebpackConfig = {
   target: 'node',
   mode: 'production',
   entry: {
     integrations: path.resolve(__dirname, 'src/js/integrations/ssr.js'),
+    'career-maps': path.resolve(__dirname, 'src/js/career-maps/ssr.js'),
   },
   output: {
     path: buildPath,
@@ -34,6 +44,16 @@ const ssrWebpackConfig = {
       {
         resourceQuery: /raw/,
         type: 'asset/source',
+      },
+      {
+        // The same URLs as in the browser bundle (see webpack.config.js), where the images are published.
+        test: /\.(png|jpe?g|gif|svg|webp)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]',
+          publicPath: 'https://webflow-scripts.bitrise.io/',
+          emit: false,
+        },
       },
     ],
   },
@@ -63,12 +83,17 @@ const build = async () => {
     );
   }
 
-  // eslint-disable-next-line global-require
-  const { render: renderIntegrations } = require('./build/integrations-ssr.js');
-  await renderIntegrations({
-    destination: distPath,
-    templateHostname: 'bitrise.io',
-  });
+  const names = selectedRenderers.length ? selectedRenderers : renderers;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const name of names) {
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    const { render } = require(`./build/${name}-ssr.js`);
+    // eslint-disable-next-line no-await-in-loop
+    await render({
+      destination: distPath,
+      templateHostname: 'bitrise.io',
+    });
+  }
 };
 
 build().catch((error) => {
