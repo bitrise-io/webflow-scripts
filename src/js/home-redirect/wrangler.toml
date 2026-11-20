@@ -1,9 +1,13 @@
 name = "home-redirect"
 main = "./worker.js"
 compatibility_date = "2026-05-15"
-routes = [
-  "bitrise.io/",
-  "bitrise.io/home"
-]
 no_bundle = true
-workers_dev = true
+workers_dev = false
+preview_urls = false
+
+# These patterns match the bare URLs only: Cloudflare route patterns cannot contain a query string, and a URL with
+# one (bitrise.io/?utm_source=x) only matches a pattern that ends in a wildcard.
+routes = [
+  { pattern = "bitrise.io/", zone_name = "bitrise.io" },
+  { pattern = "bitrise.io/home", zone_name = "bitrise.io" },
+]
