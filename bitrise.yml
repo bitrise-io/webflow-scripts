@@ -276,18 +276,6 @@ workflows:
               --crawl https://bitrise.io \
               --headless \
               --create-sitemap
-    - nvm@1:
-        inputs:
-        - node_version: '22'
-        title: Install node
-    - script@1:
-        title: Add career map pages to the sitemap
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -e
-            set -o pipefail
-            node src/js/sitemap/add-career-maps.js /bitrise/src/sitemap.xml
     - deploy-to-bitrise-io@2:
         inputs:
         - deploy_path: "/bitrise/src/sitemap.xml"
