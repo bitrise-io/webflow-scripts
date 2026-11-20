@@ -1,37 +1,20 @@
+/* global HTMLRewriter */
+import ChangelogTopic from './ChangelogTopic';
+import { fetchDiscourseTopic } from './discourse';
+import { resolveLastVisit } from './lastVisit';
+import { ALL_TAGS, buildTopicPage, parseTopicPath, renderDescriptionMeta, renderList } from './render';
+
 const ORIGIN_HOST = 'bitrise.io';
-const DISCOURSE_HOST = 'discuss.bitrise.io';
+const CDN_HOST = 'web-cdn.bitrise.io';
 
-// Discourse JSON is cached in two layers so the origin is hit as rarely as possible.
-//
-// 1. Edge cache (Cache API, per data centre, in front):
-//    - younger than EDGE_FRESH_TTL: served straight from the edge cache
-//    - older, but younger than EDGE_STALE_TTL: served immediately and refreshed in the background
-//    - nothing cached: falls through to layer 2
-// 2. KV (CHANGELOG namespace, global and durable, behind):
-//    - stored less than KV_FRESH_TTL ago: served from KV, Discourse is not contacted
-//    - older: fetched from Discourse again and KV is updated on success
-//    - Discourse failing or rate limiting: the expired KV copy is served anyway
-//    KV entries are not expired after KV_FRESH_TTL (that would delete the fallback); they only expire
-//    after KV_RETENTION so abandoned topics eventually get cleaned up.
-const EDGE_FRESH_TTL_SECONDS = 60 * 60;
-const EDGE_STALE_TTL_SECONDS = 7 * 24 * 60 * 60;
-const KV_FRESH_TTL_SECONDS = 24 * 60 * 60;
-const KV_RETENTION_SECONDS = 90 * 24 * 60 * 60;
-const CLIENT_MAX_AGE_SECONDS = 60;
-const CACHED_AT_HEADER = 'X-Cached-At';
+// Browsers and the edge may keep a rendered topic for a few minutes.
+const TOPIC_MAX_AGE_SECONDS = 300;
+const UPSTREAM_CACHE_TTL_SECONDS = 300;
 
-// Discourse rate limiting. The frontend shows a skeleton while it waits for the topic JSON, so stalling a request
-// for a while is better than failing it.
-// - A 429 is retried after the wait Discourse asks for, within RATE_LIMIT_BUDGET_MS and MAX_ATTEMPTS.
-// - A cooldown marker in KV tells other data centres (and later requests) to hold off until the limit is over.
-//   KV is eventually consistent and has no atomic operations, so this is a soft lock that cuts the pile-up, not a
-//   strict mutex.
-// - Concurrent requests for the same URL in one isolate share a single Discourse call.
-// Requests that can be answered from an expired KV copy never wait: they get the copy straight away.
-const RATE_LIMIT_BUDGET_MS = 20 * 1000;
-const MAX_ATTEMPTS = 3;
-const DEFAULT_WAIT_SECONDS = 10;
-const COOLDOWN_KEY = 'discourse:cooldown';
+// The full changelog (all topics, ~1 MB) is only read for Release Management API entries. Keep the parsed copy
+// around in this isolate so it is not parsed again for every request.
+const FULL_CHANGELOG_TTL_MS = 5 * 60 * 1000;
+let fullChangelog = { loadedAt: 0, json: null };
 
 const setCorsHeaders = (response) => {
   response.headers.set('Access-Control-Allow-Origin', '*');
@@ -39,203 +22,166 @@ const setCorsHeaders = (response) => {
   return response;
 };
 
-const fetchFromDiscourse = (urlObject, env) => {
-  if (env && env.DISCOURSE_API_KEY && env.DISCOURSE_API_USERNAME) {
-    // Authenticate with the Discourse API so requests are not throttled as anonymous traffic.
-    // Both the key and the username are required; there is deliberately no default (admin) username.
-    const headers = new Headers({
-      Accept: 'application/json',
-      'Api-Key': env.DISCOURSE_API_KEY,
-      'Api-Username': env.DISCOURSE_API_USERNAME,
-    });
-    return fetch(urlObject, { headers });
+const fetchJson = async (url) => {
+  try {
+    const response = await fetch(url, { cf: { cacheTtl: UPSTREAM_CACHE_TTL_SECONDS, cacheEverything: true } });
+    return response.ok ? await response.json() : null;
+  } catch (error) {
+    return null;
   }
-  return fetch(urlObject);
 };
 
-const jsonResponse = (body) => new Response(body, { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
+const loadFullChangelog = async () => {
+  if (fullChangelog.json && Date.now() - fullChangelog.loadedAt < FULL_CHANGELOG_TTL_MS) return fullChangelog.json;
+  const json = await fetchJson(`https://${CDN_HOST}/changelog.json`);
+  if (json) fullChangelog = { loadedAt: Date.now(), json };
+  // A failed refresh keeps serving the previous copy.
+  return json || fullChangelog.json;
+};
 
-const sleep = (ms) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
+// The generic bitrise.io 404 page, served with a real 404 status.
+const notFoundResponse = async () => {
+  const response = await fetch(`https://${ORIGIN_HOST}/404`);
+  return new Response(response.body, {
+    status: 404,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
   });
-// Spread retries out so requests that were rate limited together do not all return at the same moment.
-const jitter = () => Math.floor(Math.random() * 1000);
+};
 
-// A plain-object copy of the upstream response, so one Discourse call can be shared between several requests.
-const readUpstream = async (response) => ({
-  status: response.status,
-  ok: response.ok,
-  body: await response.text(),
-  contentType: response.headers.get('Content-Type') || 'application/json; charset=utf-8',
-  retryAfter: response.headers.get('Retry-After'),
+const isHtml = (response) => (response.headers.get('Content-Type') || '').includes('text/html');
+
+const setAttr = (name, value) => ({
+  element: (element) => element.setAttribute(name, value),
 });
 
-const toResponse = (upstream) =>
-  new Response(upstream.body, { status: upstream.status, headers: { 'Content-Type': upstream.contentType } });
+const templateUrl = (urlObject, pathname) => {
+  const url = new URL(urlObject);
+  url.hostname = ORIGIN_HOST;
+  url.pathname = pathname;
+  return url;
+};
 
-const rateLimitedUpstream = () => ({
-  status: 429,
-  ok: false,
-  body: 'Rate limited',
-  contentType: 'text/plain; charset=utf-8',
-  retryAfter: null,
-});
+/**
+ * The list page: the latest topics, rendered with the unread state of this visitor (from their cookie).
+ * The browser script takes over for search, filters and loading more.
+ * @param {Request} request
+ * @param {URL} urlObject
+ * @returns {Promise<Response>}
+ */
+const renderListPage = async (request, urlObject) => {
+  const [template, latest] = await Promise.all([
+    fetch(templateUrl(urlObject, '/changelog')),
+    fetchJson(`https://${CDN_HOST}/changelog_latest.json`),
+  ]);
+  // Without the data the browser script loads the list itself, as before.
+  if (!template.ok || !isHtml(template) || !latest) return template;
 
-// Discourse sends the wait in the Retry-After header or as extras.wait_seconds in the JSON body.
-const waitSecondsFrom = (upstream) => {
-  let seconds = Number(upstream.retryAfter);
-  if (!seconds) {
-    try {
-      seconds = JSON.parse(upstream.body).extras.wait_seconds;
-    } catch (error) {
-      // not a Discourse rate limit body; use the default
+  const { lastVisitDate } = resolveLastVisit({
+    cookieHeader: request.headers.get('Cookie') || '',
+    overrideDays: urlObject.searchParams.get('lastVisit'),
+  });
+  const topics = latest.topic_list.topics.map((data) => new ChangelogTopic(data));
+  const listHtml = renderList(topics, lastVisitDate, { showTags: ALL_TAGS });
+
+  const rewriter = new HTMLRewriter().on('#changelog-list', {
+    element: (element) => {
+      // Tells the browser script that the list is already in place.
+      element.setAttribute('data-ssr', 'true');
+      element.setInnerContent(listHtml, { html: true });
+    },
+  });
+
+  const response = new Response(rewriter.transform(template).body, template);
+  response.headers.delete('Content-Length');
+  // Depends on the visitor's cookie: must not be shared.
+  response.headers.set('Cache-Control', 'private, max-age=0');
+  response.headers.set('Vary', 'Cookie');
+  return response;
+};
+
+const renderTopicPage = (template, topic, cacheStatus) => {
+  const view = buildTopicPage(topic);
+  const rewriter = new HTMLRewriter()
+    .on('title', { element: (element) => element.setInnerContent(view.title) })
+    .on('link[rel="canonical"]', setAttr('href', view.canonical))
+    .on('meta[property="og:title"]', setAttr('content', view.title))
+    .on('meta[name="twitter:title"]', setAttr('content', view.title))
+    .on('head', {
+      element: (element) => element.append(renderDescriptionMeta(view.description), { html: true }),
+    })
+    .on('#changelog-topic-title', { element: (element) => element.setInnerContent(view.titleHtml, { html: true }) })
+    .on('#changelog-topic-meta', { element: (element) => element.setInnerContent(view.metaHtml, { html: true }) })
+    // The template shows one sample of every tag; keep only the one of this topic, in front of the separator.
+    .on(
+      '#changelog-tag-purple-filled, #changelog-tag-purple, #changelog-tag-blue, #changelog-tag-green, #changelog-tag-yellow',
+      { element: (element) => element.remove() },
+    )
+    .on('#changelog-topic-meta-separator', {
+      element: (element) => {
+        if (view.tagHtml) element.before(view.tagHtml, { html: true });
+        element.setAttribute('style', view.tagHtml ? 'display: block' : 'display: none');
+      },
+    })
+    .on('#changelog-topic-content', {
+      element: (element) => {
+        // Tells the browser script that the content is already in place, and what it still has to enhance.
+        element.setAttribute('data-ssr', 'true');
+        element.setAttribute('data-topic-kind', view.isApiTopic ? 'api' : 'discourse');
+        element.setInnerContent(view.contentHtml, { html: true });
+      },
+    })
+    .on('#changelog-topic-leave-feedback-button', {
+      element: (element) => {
+        element.setAttribute('href', view.feedbackUrl);
+        element.setAttribute('target', '_blank');
+        if (view.feedbackLabel) element.setInnerContent(view.feedbackLabel);
+      },
+    });
+  if (view.footerText) {
+    rewriter.on('.changelog-topic-footer > div:first-child', {
+      element: (element) => element.setInnerContent(view.footerText),
+    });
+  }
+
+  const response = new Response(rewriter.transform(template).body, template);
+  response.headers.delete('Content-Length');
+  response.headers.set('Cache-Control', `public, max-age=${TOPIC_MAX_AGE_SECONDS}`);
+  response.headers.set('X-Proxy-Cache', cacheStatus);
+  return response;
+};
+
+/**
+ * A topic page: the worker reads the topic (Discourse, or changelog.json for Release Management API entries)
+ * and renders it into the template. A topic that cannot be loaded is a 404.
+ * @param {URL} urlObject
+ * @param {object} env - the worker bindings (KV namespace, Discourse credentials)
+ * @param {{ waitUntil: (promise: Promise<unknown>) => void }} ctx
+ * @returns {Promise<Response>}
+ */
+const handleTopic = async (urlObject, env, ctx) => {
+  let topicPath = urlObject.pathname.replace(/^\/changelog\//, '');
+  // Link of the form /changelog/topic?topic=<slug>/<id>, used where there is no worker in front of the page
+  if (topicPath === 'topic') topicPath = urlObject.searchParams.get('topic') || '';
+
+  const parsed = parseTopicPath(topicPath);
+  if (!parsed) return notFoundResponse();
+
+  const loadTopic = async () => {
+    if (parsed.kind === 'api') {
+      const json = await loadFullChangelog();
+      const data = json && json.topic_list.topics.find((topic) => topic.id === 0 && topic.slug === parsed.slug);
+      return { topic: data || null, cacheStatus: 'CDN' };
     }
-  }
-  return Number(seconds) || DEFAULT_WAIT_SECONDS;
-};
-
-const readCooldownMs = async (kv) => {
-  try {
-    const until = Number(await kv.get(COOLDOWN_KEY));
-    return until > Date.now() ? until - Date.now() : 0;
-  } catch (error) {
-    console.log('kv cooldown read failed', String(error));
-    return 0;
-  }
-};
-
-// KV allows about one write per second to a key, so do not rewrite a cooldown this isolate already published.
-let cooldownPublishedUntil = 0;
-const writeCooldown = (kv, ctx, untilMs) => {
-  if (!kv || untilMs <= cooldownPublishedUntil) return;
-  cooldownPublishedUntil = untilMs;
-  ctx.waitUntil(
-    kv
-      .put(COOLDOWN_KEY, String(untilMs), { expirationTtl: Math.max(60, Math.ceil((untilMs - Date.now()) / 1000)) })
-      .catch((error) => console.log('kv cooldown write failed', String(error))),
-  );
-};
-
-// Calls Discourse, honouring the shared cooldown and retrying rate limited responses while the time budget allows.
-const fetchThrottled = async (urlObject, env, ctx, startedAt, budgetMs, attempt = 0, cooldownChecked = false) => {
-  const kv = env.CHANGELOG;
-  if (!cooldownChecked && kv) {
-    const cooldownMs = await readCooldownMs(kv);
-    if (cooldownMs > 0) {
-      if (Date.now() - startedAt + cooldownMs > budgetMs) return rateLimitedUpstream();
-      await sleep(cooldownMs + jitter());
-    }
-  }
-
-  const upstream = await readUpstream(await fetchFromDiscourse(urlObject, env));
-  if (upstream.status !== 429) return upstream;
-
-  const waitMs = waitSecondsFrom(upstream) * 1000;
-  writeCooldown(kv, ctx, Date.now() + waitMs);
-  if (attempt + 1 >= MAX_ATTEMPTS || Date.now() - startedAt + waitMs > budgetMs) return upstream;
-
-  await sleep(waitMs + jitter());
-  return fetchThrottled(urlObject, env, ctx, startedAt, budgetMs, attempt + 1, true);
-};
-
-// Concurrent requests for the same key in this isolate share one Discourse call.
-const inflight = new Map();
-const fetchShared = (key, urlObject, env, ctx, budgetMs) => {
-  const sharedKey = `${key}|${budgetMs > 0}`;
-  if (!inflight.has(sharedKey)) {
-    const call = fetchThrottled(urlObject, env, ctx, Date.now(), budgetMs).finally(() => inflight.delete(sharedKey));
-    inflight.set(sharedKey, call);
-  }
-  return inflight.get(sharedKey);
-};
-
-// KV layer. Returns { response, cacheStatus } where cacheStatus is KV-HIT, KV-MISS, KV-STALE or BYPASS.
-const loadFromKvOrDiscourse = async (urlObject, env, ctx) => {
-  const kv = env && env.CHANGELOG;
-  if (!kv) {
-    return { response: await fetchFromDiscourse(urlObject, env), cacheStatus: 'BYPASS' };
-  }
-
-  // Key on the public path only, never on credentials.
-  const kvKey = `discourse:${urlObject.pathname}${urlObject.search}`;
-  let stored = null;
-  try {
-    stored = await kv.getWithMetadata(kvKey);
-  } catch (error) {
-    console.log('kv read failed', String(error));
-  }
-
-  const hasStored = stored && stored.value !== null;
-  if (hasStored) {
-    const ageSeconds = (Date.now() - Number((stored.metadata && stored.metadata.storedAt) || 0)) / 1000;
-    if (ageSeconds < KV_FRESH_TTL_SECONDS) {
-      return { response: jsonResponse(stored.value), cacheStatus: 'KV-HIT' };
-    }
-  }
-
-  // With an expired copy to fall back on there is no reason to make the visitor wait out a rate limit.
-  const budgetMs = hasStored ? 0 : RATE_LIMIT_BUDGET_MS;
-  let fresh;
-  try {
-    fresh = await fetchShared(kvKey, urlObject, env, ctx, budgetMs);
-  } catch (error) {
-    console.log('discourse fetch failed', String(error));
-  }
-
-  if (fresh && fresh.ok) {
-    ctx.waitUntil(
-      kv
-        .put(kvKey, fresh.body, { metadata: { storedAt: Date.now() }, expirationTtl: KV_RETENTION_SECONDS })
-        .catch((error) => console.log('kv write failed', String(error))),
-    );
-    return { response: jsonResponse(fresh.body), cacheStatus: 'KV-MISS' };
-  }
-
-  if (hasStored) {
-    return { response: jsonResponse(stored.value), cacheStatus: 'KV-STALE' };
-  }
-  if (fresh) {
-    return { response: toResponse(fresh), cacheStatus: 'BYPASS' };
-  }
-  return { response: new Response('Upstream unavailable', { status: 502 }), cacheStatus: 'BYPASS' };
-};
-
-// Edge layer in front of KV. Returns { response, cacheStatus } where cacheStatus is EDGE-HIT or EDGE-STALE,
-// or whatever the KV layer reported (KV-HIT, KV-MISS, KV-STALE, BYPASS).
-const fetchDiscourseCached = async (urlObject, env, ctx) => {
-  const cache = caches.default;
-  // Key on the public URL only, never on credentials. Unchanged from the original cache so entries stay warm.
-  const cacheKey = new Request(urlObject.toString(), { method: 'GET' });
-  const cached = await cache.match(cacheKey);
-
-  // Loads through KV/Discourse and, for good responses, (re)populates the edge cache.
-  // A KV-STALE result is stored too, so during a Discourse outage each data centre retries at most once per
-  // EDGE_FRESH_TTL instead of on every request.
-  const refresh = async () => {
-    const result = await loadFromKvOrDiscourse(urlObject, env, ctx);
-    if (result.response.ok && result.cacheStatus !== 'BYPASS') {
-      const toStore = new Response(result.response.clone().body, result.response);
-      toStore.headers.delete('Set-Cookie');
-      toStore.headers.set(CACHED_AT_HEADER, String(Date.now()));
-      // Cache API expiry is driven by Cache-Control; keep entries for the whole stale window.
-      toStore.headers.set('Cache-Control', `public, max-age=${EDGE_STALE_TTL_SECONDS}`);
-      await cache.put(cacheKey, toStore);
-    }
-    return result;
+    return fetchDiscourseTopic(parsed.path, env, ctx);
   };
 
-  if (cached) {
-    const ageSeconds = (Date.now() - Number(cached.headers.get(CACHED_AT_HEADER) || 0)) / 1000;
-    if (ageSeconds < EDGE_FRESH_TTL_SECONDS) {
-      return { response: cached, cacheStatus: 'EDGE-HIT' };
-    }
-    // Stale: answer right away, refresh in the background. A failed refresh leaves the old copy in place.
-    ctx.waitUntil(refresh().catch((error) => console.log('background refresh failed', String(error))));
-    return { response: cached, cacheStatus: 'EDGE-STALE' };
-  }
+  const [template, { topic, cacheStatus }] = await Promise.all([
+    fetch(templateUrl(urlObject, '/changelog/topic')),
+    loadTopic(),
+  ]);
+  if (!topic || !template.ok || !isHtml(template)) return notFoundResponse();
 
-  return refresh();
+  return renderTopicPage(template, new ChangelogTopic(topic), cacheStatus);
 };
 
 export default {
@@ -246,64 +192,30 @@ export default {
       return setCorsHeaders(new Response('OK'));
     }
 
-    let useCors = false;
-    let transformBody = null;
+    // Static files the build job publishes next to the site: the topic lists the list page loads and filters,
+    // and the RSS feed.
+    const staticFiles = {
+      '/changelog.json': { file: 'changelog.json', cors: true },
+      '/changelog_latest.json': { file: 'changelog_latest.json', cors: true },
+      '/changelog.xml': { file: 'changelog.xml', cors: false },
+    };
+    const staticFile = staticFiles[urlObject.pathname];
+    if (staticFile) {
+      // The query string (clients add a cache buster) is passed on, as it always was
+      const upstream = await fetch(`https://${CDN_HOST}/${staticFile.file}${urlObject.search}`);
+      const response = new Response(upstream.body, upstream);
+      return staticFile.cors ? setCorsHeaders(response) : response;
+    }
+
+    if (urlObject.pathname.match(/^\/changelog\/?$/)) {
+      return renderListPage(request, urlObject);
+    }
+
+    if (urlObject.pathname.match(/^\/changelog\/.+/)) {
+      return handleTopic(urlObject, env, ctx);
+    }
+
     urlObject.hostname = ORIGIN_HOST;
-
-    if (urlObject.pathname.match(/^\/changelog\/api\/(.+\.json)$/)) {
-      urlObject.hostname = DISCOURSE_HOST;
-      urlObject.pathname = urlObject.pathname.replace(/^\/changelog\/api\/(.+\.json)$/, '/$1');
-      useCors = true;
-    } else if (urlObject.pathname.match(/^\/changelog\.json$/)) {
-      urlObject.hostname = 'web-cdn.bitrise.io';
-      urlObject.pathname = 'changelog.json';
-      useCors = true;
-    } else if (urlObject.pathname.match(/^\/changelog_latest\.json$/)) {
-      urlObject.hostname = 'web-cdn.bitrise.io';
-      urlObject.pathname = 'changelog_latest.json';
-      useCors = true;
-    } else if (urlObject.pathname.match(/^\/changelog\.xml$/)) {
-      urlObject.hostname = 'web-cdn.bitrise.io';
-      urlObject.pathname = 'changelog.xml';
-    } else if (urlObject.pathname.match(/^\/changelog\/.+/)) {
-      const originalPath = urlObject.pathname;
-      urlObject.pathname = '/changelog/topic';
-      transformBody = (data) => data.replace('https://bitrise.io/changelog/topic', `https://bitrise.io${originalPath}`);
-    }
-
-    if (!useCors && !transformBody) {
-      return fetch(urlObject);
-    }
-
-    const isDiscourse = urlObject.hostname === DISCOURSE_HOST;
-    let response;
-    let cacheStatus = 'NONE';
-    if (isDiscourse) {
-      ({ response, cacheStatus } = await fetchDiscourseCached(urlObject, env, ctx));
-    } else {
-      response = await fetch(urlObject);
-    }
-
-    if (transformBody) {
-      response = new Response(transformBody(await response.text()), response);
-    } else {
-      response = new Response(response.body, response);
-    }
-
-    if (isDiscourse) {
-      response.headers.set('X-Proxy-Cache', cacheStatus);
-      if (response.ok) {
-        // Let browsers and the edge reuse it briefly too; the worker handles longer-term staleness.
-        response.headers.set('Cache-Control', `public, max-age=${CLIENT_MAX_AGE_SECONDS}`);
-      } else {
-        response.headers.set('Cache-Control', 'no-store');
-      }
-    }
-
-    if (useCors) {
-      response = setCorsHeaders(response);
-    }
-
-    return response;
+    return fetch(urlObject);
   },
 };

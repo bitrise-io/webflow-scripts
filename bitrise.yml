@@ -99,7 +99,7 @@ workflows:
     triggers:
       push:
       - changed_files:
-          regex: src/js/stacks/(worker\.js|wrangler\.toml|render\.js|renderOverview\.js|stackIcons\.js|StacksService\.js|config\.js)
+          regex: (src/js/stacks/(worker\.js|wrangler\.toml|render\.js|renderOverview\.js|stackIcons\.js|StacksService\.js|config\.js)|src/js/shared/format\.js)
         branch: main
     meta:
       bitrise.io:
@@ -278,7 +278,7 @@ workflows:
     triggers:
       push:
       - changed_files:
-          regex: src/js/changelog/(worker\.js|wrangler\.toml)
+          regex: (src/js/changelog/(worker\.js|wrangler\.toml|discourse\.js|render\.js|lastVisit\.js|ChangelogTopic\.js)|src/js/shared/format\.js)
         branch: main
     meta:
       bitrise.io:
