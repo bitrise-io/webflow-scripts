@@ -1,7 +1,6 @@
 name = "stacks-proxy"
 main = "./worker.js"
 compatibility_date = "2023-08-23"
-no_bundle = true
 workers_dev = false
 preview_urls = false
 
