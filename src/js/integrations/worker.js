@@ -33,8 +33,36 @@ const setCorsHeaders = (response) => {
   return response;
 };
 
+// The keys of the steps in the current steplib, read from the compact data file the SSR job publishes with the pages.
+// The deploy only adds files to the bucket, so pages of steps that left the steplib stay there; they are not served.
+let currentStepKeys = { loadedAt: 0, keys: null };
+
+const loadCurrentStepKeys = async () => {
+  if (currentStepKeys.keys && Date.now() - currentStepKeys.loadedAt < DATA_MAX_AGE_SECONDS * 1000) {
+    return currentStepKeys.keys;
+  }
+  try {
+    const response = await fetch(DATA_SOURCE_URL, { cf: { cacheTtl: DATA_MAX_AGE_SECONDS, cacheEverything: true } });
+    if (response.ok) {
+      const data = await response.json();
+      currentStepKeys = { loadedAt: Date.now(), keys: new Set(Object.keys(data.steps)) };
+    }
+  } catch (error) {
+    // keep the previous copy
+  }
+  // null when the data has never been loaded: pages are then served without the check.
+  return currentStepKeys.keys;
+};
+
 const fetchPrerenderedHtml = async (url, ctx) => {
   const { pathname } = new URL(url);
+
+  const stepMatch = pathname.match(/^\/integrations\/steps\/(.+)/);
+  if (stepMatch) {
+    const stepKeys = await loadCurrentStepKeys();
+    // Not a current step: no pre-rendered page, the request takes the template route like any unknown step.
+    if (stepKeys && !stepKeys.has(stepMatch[1])) return null;
+  }
 
   const prerenderedPath = routingPatterns
     .map((route) => {

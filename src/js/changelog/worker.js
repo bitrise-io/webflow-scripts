@@ -1,6 +1,6 @@
 /* global HTMLRewriter */
 import ChangelogTopic from './ChangelogTopic';
-import { fetchDiscourseTopic } from './discourse';
+import { fetchChangelogCategoryIds, fetchDiscourseTopic } from './discourse';
 import { resolveLastVisit } from './lastVisit';
 import { ALL_TAGS, buildTopicPage, parseTopicPath, renderDescriptionMeta, renderList } from './render';
 
@@ -175,11 +175,14 @@ const handleTopic = async (urlObject, env, ctx) => {
     return fetchDiscourseTopic(parsed.path, env, ctx);
   };
 
-  const [template, { topic, cacheStatus }] = await Promise.all([
+  const [template, { topic, cacheStatus }, categoryIds] = await Promise.all([
     fetch(templateUrl(urlObject, '/changelog/topic')),
     loadTopic(),
+    parsed.kind === 'discourse' ? fetchChangelogCategoryIds(env, ctx) : null,
   ]);
   if (!topic || !template.ok || !isHtml(template)) return notFoundResponse();
+  // Any Discourse topic can be asked for by id; only changelog posts are pages here.
+  if (categoryIds && !categoryIds.has(topic.category_id)) return notFoundResponse();
 
   return renderTopicPage(template, new ChangelogTopic(topic), cacheStatus);
 };
