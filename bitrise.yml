@@ -73,6 +73,21 @@ workflows:
             gcloud auth activate-service-account --key-file=${KEY_FILE_PATH}
 
             gcloud storage cp /bitrise/src/career-maps.json gs://web-cdn.bitrise.io/career-maps.json
+    - npm@1:
+        inputs:
+        - command: run build:ssr -- career-maps
+        title: Render career maps pages
+    - script@1:
+        title: Deploy Career Maps SSR to GCS
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+
+            ./career-maps-ssr-deploy.sh "$GCP_SA_SECRET_B64"
     summary: Collect topics from discuss.bitrise.io and upload the collection to
       Google Web Services.
     envs:
@@ -134,6 +149,23 @@ workflows:
       push:
       - changed_files:
           regex: src/js/app-navigator/(worker\.js|wrangler\.toml)
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
+  deploy_career_maps_worker:
+    description: Deploy the career maps proxy Cloudflare Worker.
+    summary: Deploy the career maps worker when its code or config changes on main.
+    steps:
+    - bundle::Setup_environment: {}
+    - bundle::Step_bundle:
+        title: Deploy Cloudflare Worker
+        inputs:
+        - WORKER_NAME: career-maps
+    triggers:
+      push:
+      - changed_files:
+          regex: src/js/career-maps/(worker\.js|wrangler\.toml)
         branch: main
     meta:
       bitrise.io:
@@ -348,7 +380,7 @@ workflows:
     - bundle::Setup_environment: {}
     - npm@1:
         inputs:
-        - command: run build:ssr
+        - command: run build:ssr -- integrations
         title: Build webflow-scripts files
     - script@1:
         title: Deploy Integrations SSR to GCS

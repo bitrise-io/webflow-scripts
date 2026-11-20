@@ -84,9 +84,14 @@ class DepartmentSectionFactory {
       }
 
       if (team.jobs && Object.keys(team.jobs).length > 0) {
+        // Straight to the first level of a job: the team and job paths are only redirects to it.
+        const jobPath = (jobName) =>
+          `/careers/maps/${team.slug}/${createSlug(jobName)}/${createSlug(Object.keys(team.jobs[jobName])[0])}`;
+        const teamPath = jobPath(Object.keys(team.jobs)[0]);
+
         /** @type {HTMLAnchorElement} */
         const teamCardElement = teamCardTemplate.cloneNode(true);
-        teamCardElement.href = `/careers/maps/${team.slug}`;
+        teamCardElement.href = teamPath;
 
         /** @type {HTMLElement} */
         const teamNameElement = teamCardElement.querySelector('[data-template-id="cm-team-name"]');
@@ -100,7 +105,7 @@ class DepartmentSectionFactory {
         /** @type {HTMLElement} */
         const teamLinkElement = teamCardElement.querySelector('[data-template-id="cm-team-link"]');
         teamLinkElement.textContent = teamLinkElement.textContent.replace('{team_name}', team.name);
-        teamLinkElement.href = `/careers/maps/${team.slug}`;
+        teamLinkElement.href = teamPath;
 
         /** @type {HTMLUListElement} */
         const teamJobListElement = teamCardElement.querySelector('[data-template-id="cm-team-job-list"]');
@@ -118,7 +123,7 @@ class DepartmentSectionFactory {
             '{job_name}',
             jobNameOverride(jobName),
           );
-          teamJobListItemLinkElement.href = `/careers/maps/${team.slug}/${createSlug(jobName)}`;
+          teamJobListItemLinkElement.href = jobPath(jobName);
           teamJobListElement.appendChild(teamJobListItemElement);
         });
 
