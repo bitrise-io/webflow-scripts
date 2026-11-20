@@ -323,6 +323,25 @@ workflows:
             # only log the gcloud output (not the xtrace above, which contains secrets)
             gcloud storage cp /bitrise/src/sitemap.xml gs://web-cdn.bitrise.io/sitemap.xml 2>&1 | tee -a "$SITEMAP_LOG"
     - script@1:
+        title: Generate and upload sitemap breakdown chart
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # best effort: a chart problem must not fail the sitemap build
+            set +e
+            set -x
+
+            cd "$BITRISE_SOURCE_DIR"
+            CHART=/tmp/sitemap_breakdown.png
+
+            npm install --no-save --no-package-lock --ignore-scripts sharp@0.34.5 \
+              && node src/js/tools/sitemap-chart.mjs /bitrise/src/sitemap.xml "$CHART" \
+              && gcloud storage cp "$CHART" gs://web-cdn.bitrise.io/sitemap_stats/sitemap_breakdown.png \
+                   --cache-control="public, max-age=300" \
+              && envman add --key SITEMAP_CHART_URL --value "https://web-cdn.bitrise.io/sitemap_stats/sitemap_breakdown.png?v=${BITRISE_BUILD_NUMBER}"
+
+            exit 0
+    - script@1:
         title: Compute sitemap stats
         inputs:
         - content: |-
@@ -357,6 +376,7 @@ workflows:
         - buttons: ''
         - footer: ''
         - timestamp: 'no'
+        - image_url: "$SITEMAP_CHART_URL"
     - script@1:
         title: Notify Slack (failure)
         is_always_run: true
