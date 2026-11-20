@@ -187,6 +187,23 @@ workflows:
     meta:
       bitrise.io:
         stack: ubuntu-latest-stable
+  deploy_maintenance_worker:
+    description: Deploy the maintenance Cloudflare Worker.
+    summary: Deploy the maintenance worker when its code or config changes on main. Routes and settings stay in the dashboard.
+    steps:
+    - bundle::Setup_environment: {}
+    - bundle::Step_bundle:
+        title: Deploy Cloudflare Worker
+        inputs:
+        - WORKER_NAME: maintenance
+    triggers:
+      push:
+      - changed_files:
+          regex: src/js/maintenance/(worker\.js|wrangler\.toml)
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
   sitemap_generator:
     description: |
       The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.

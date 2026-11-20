@@ -1,21 +1,54 @@
+/**
+ * Answers every request it gets with a 503 maintenance page. The routes are managed in the Cloudflare dashboard (not
+ * in wrangler.toml), so a deploy never starts or ends a maintenance window: the worker is attached to the paths that
+ * are under maintenance for as long as the window lasts.
+ *
+ * Settings, in the worker's variables (kept across deploys, see keep_vars in wrangler.toml):
+ * - MAINTENANCE_END (variable): when the maintenance ends, an ISO date such as 2026-12-01T16:00:00Z. Sent as the
+ *   Retry-After header. Left out when it is not set, not a date, or already past.
+ * - MAINTENANCE_BYPASS_SECRET (secret): /maintenance.bypass?<secret> sets a cookie that lets a browser through to the
+ *   origin for a day. Without the secret nobody can bypass.
+ */
 const MAINTENANCE_PAGE_URL = 'https://webflow-scripts.bitrise.io/maintenance.html';
-const MAINTENANCE_END_DATETIME = new Date(Date.UTC(2026, 2, 21, 16, 0, 0)).toUTCString(); // March 21, 2026, 16:00 UTC
-
 const MAINTENANCE_MESSAGE = 'Service under maintenance';
-const BYPASS_SECRET = 'purrequest';
+const FALLBACK_HTML =
+  '<html><body><h1>Under maintenance</h1><p>A quick tune-up is in progress. Faster builds on the way.</p></body></html>';
 const BYPASS_COOKIE = 'maintenance_bypass';
+
+/**
+ * The Retry-After header of the maintenance window: the end date as an HTTP date, if it is a date in the future.
+ * @param {string | undefined} maintenanceEnd
+ * @returns {Record<string, string>}
+ */
+const retryAfterHeader = (maintenanceEnd) => {
+  const end = maintenanceEnd ? new Date(maintenanceEnd) : null;
+  if (!end || Number.isNaN(end.getTime()) || end.getTime() <= Date.now()) return {};
+  return { 'Retry-After': end.toUTCString() };
+};
+
+/**
+ * @param {string} cookieHeader
+ * @param {string} name
+ * @returns {string | null}
+ */
+const parseCookieValue = (cookieHeader, name) => {
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? match[1] : null;
+};
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const secret = env.MAINTENANCE_BYPASS_SECRET;
+    const retryAfter = retryAfterHeader(env.MAINTENANCE_END);
 
-    // /maintenance.bypass?purrequest -> set bypass cookie
+    // /maintenance.bypass?<secret> -> set bypass cookie
     // /maintenance.bypass?off -> clear bypass cookie
     if (url.pathname === '/maintenance.bypass') {
-      if (url.searchParams.has(BYPASS_SECRET)) {
+      if (secret && url.searchParams.has(secret)) {
         return new Response('Bypass enabled', {
           headers: {
-            'Set-Cookie': `${BYPASS_COOKIE}=${BYPASS_SECRET}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Lax`,
+            'Set-Cookie': `${BYPASS_COOKIE}=${secret}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Lax`,
           },
         });
       }
@@ -29,8 +62,7 @@ export default {
     }
 
     // If bypass cookie is set, pass through to origin
-    const cookies = request.headers.get('Cookie') || '';
-    if (cookies.includes(`${BYPASS_COOKIE}=${BYPASS_SECRET}`)) {
+    if (secret && parseCookieValue(request.headers.get('Cookie') || '', BYPASS_COOKIE) === secret) {
       return fetch(request);
     }
 
@@ -40,10 +72,7 @@ export default {
     if (accept.includes('application/json')) {
       return new Response(JSON.stringify({ error: MAINTENANCE_MESSAGE }), {
         status: 503,
-        headers: {
-          'Content-Type': 'application/json',
-          'Retry-After': MAINTENANCE_END_DATETIME,
-        },
+        headers: { 'Content-Type': 'application/json', ...retryAfter },
       });
     }
 
@@ -51,10 +80,7 @@ export default {
     if (!accept.includes('text/html')) {
       return new Response(MAINTENANCE_MESSAGE, {
         status: 503,
-        headers: {
-          'Content-Type': 'text/plain',
-          'Retry-After': MAINTENANCE_END_DATETIME,
-        },
+        headers: { 'Content-Type': 'text/plain', ...retryAfter },
       });
     }
 
@@ -68,6 +94,8 @@ export default {
     } else {
       try {
         const response = await fetch(MAINTENANCE_PAGE_URL);
+        // An error page is not the maintenance page: it is neither shown nor cached.
+        if (!response.ok) throw new Error(`Maintenance page answered ${response.status}`);
         maintenanceHTML = await response.text();
 
         ctx.waitUntil(
@@ -79,17 +107,13 @@ export default {
           ),
         );
       } catch (err) {
-        maintenanceHTML =
-          '<html><body><h1>Under maintenance</h1><p>A quick tune-up is in progress. Faster builds on the way.</p></body></html>';
+        maintenanceHTML = FALLBACK_HTML;
       }
     }
 
     return new Response(maintenanceHTML, {
       status: 503,
-      headers: {
-        'Content-Type': 'text/html',
-        'Retry-After': MAINTENANCE_END_DATETIME,
-      },
+      headers: { 'Content-Type': 'text/html', ...retryAfter },
     });
   },
 };

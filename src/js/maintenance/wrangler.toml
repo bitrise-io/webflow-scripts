@@ -1,6 +1,15 @@
 name = "maintenance"
 main = "./worker.js"
 compatibility_date = "2026-03-20"
-route = "app.bitrise.io/maintenance.*"
 no_bundle = true
-workers_dev = true
+workers_dev = false
+preview_urls = false
+
+# The routes are managed in the Cloudflare dashboard on purpose: they decide which paths are under maintenance, and a
+# deploy must not start or end a maintenance window. (No "routes" here, so wrangler leaves them alone.)
+#
+# The settings are in the worker's variables, also managed in the dashboard (Workers > maintenance > Settings):
+#   MAINTENANCE_END            variable  when the maintenance ends, e.g. 2026-12-01T16:00:00Z (Retry-After header)
+#   MAINTENANCE_BYPASS_SECRET  secret    /maintenance.bypass?<secret> lets a browser through to the origin
+# keep_vars keeps the variables set in the dashboard when the worker is deployed. Secrets are never deleted by a deploy.
+keep_vars = true
