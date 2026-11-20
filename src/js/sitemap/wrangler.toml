@@ -1,6 +1,10 @@
 name = "sitemap-proxy"
 main = "./worker.js"
-compatibility_date = "2023-08-23"
-route = "bitrise.io/sitemap.xml"
+compatibility_date = "2024-02-28"
 no_bundle = true
-workers_dev = true
+workers_dev = false
+preview_urls = false
+
+routes = [
+  { pattern = "bitrise.io/sitemap.xml", zone_name = "bitrise.io" },
+]
