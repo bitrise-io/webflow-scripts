@@ -33,7 +33,7 @@ export default {
       return withNoCacheHeaders(await fetch(BITRISE_ROOT, { headers }));
     }
 
-    // Intended to be unreachable: wrangler.toml routes this worker only to / and /home
+    // Intended to be unreachable: wrangler.toml routes this worker only to / and /home (with or without a query string)
     return fetch(request);
   },
 };

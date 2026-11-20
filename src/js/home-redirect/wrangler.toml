@@ -1,9 +1,14 @@
 name = "home-redirect"
 main = "./worker.js"
 compatibility_date = "2026-05-15"
-routes = [
-  "bitrise.io/",
-  "bitrise.io/home"
-]
 no_bundle = true
-workers_dev = true
+workers_dev = false
+preview_urls = false
+
+# The "?*" routes cover URLs with a query string (campaign links, "/?"), which the bare patterns do not match.
+routes = [
+  { pattern = "bitrise.io/", zone_name = "bitrise.io" },
+  { pattern = "bitrise.io/?*", zone_name = "bitrise.io" },
+  { pattern = "bitrise.io/home", zone_name = "bitrise.io" },
+  { pattern = "bitrise.io/home?*", zone_name = "bitrise.io" },
+]
