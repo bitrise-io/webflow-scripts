@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy integrations SSR assets to GCS.
+# Deploy integrations SSR assets (pages and compact data file) to GCS.
 #
 # Usage: ./integrations-ssr-deploy.sh <gcp-sa-secret-b64>
 #
@@ -24,6 +24,10 @@ rm -f "${KEY_FILE}"
 echo "Uploading integrations.html to ${GCS_BUCKET}/${GCS_PREFIX}/:"
 gcloud storage cp "${DIST_DIR}/integrations.html" "${GCS_BUCKET}/${GCS_PREFIX}/integrations.html"
 echo "  integrations.html ... done"
+
+echo "Uploading integrations-data.json to ${GCS_BUCKET}/${GCS_PREFIX}/:"
+gcloud storage cp "${DIST_DIR}/integrations-data.json" "${GCS_BUCKET}/${GCS_PREFIX}/integrations-data.json"
+echo "  integrations-data.json ... done"
 
 STEP_COUNT=$(find "${DIST_DIR}/integrations" -name '*.html' | wc -l | tr -d ' ')
 echo "Uploading ${STEP_COUNT} files from dist/integrations/ to ${GCS_BUCKET}/${GCS_PREFIX}/integrations/:"

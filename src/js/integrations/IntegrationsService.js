@@ -51,22 +51,80 @@ import Step from './Step';
  * }} SteplibResponse
  */
 
+/**
+ * Where the SSR job publishes the compact data file and the worker serves it from (same origin as the pages).
+ * It only carries the fields the client needs to filter the pre-rendered list, see compactSpec().
+ */
+export const COMPACT_DATA_PATH = '/integrations/data.json';
+
+/**
+ * Reduces the steplib spec to what the list page filters and sidebar need: the latest version's title, summary and
+ * tags, plus the deprecation flag. The result has the same shape as the spec, so Step works on it unchanged.
+ * @param {SteplibResponse} spec
+ * @returns {{steps: {[key: string]: StepData}}}
+ */
+export function compactSpec(spec) {
+  const steps = {};
+  Object.entries(spec.steps).forEach(([slug, data]) => {
+    const [latestKey] = Object.keys(data.versions);
+    const latest = data.versions[latestKey];
+    steps[slug] = {
+      info: data.info.deprecate_notes ? { deprecate_notes: data.info.deprecate_notes } : {},
+      versions: {
+        [latestKey]: {
+          title: latest.title,
+          summary: latest.summary,
+          type_tags: latest.type_tags,
+          project_type_tags: latest.project_type_tags,
+        },
+      },
+    };
+  });
+  return { steps };
+}
+
 class IntegrationsService {
   constructor() {
     this.url = 'https://bitrise-steplib-collection.s3.amazonaws.com/slim-spec.json.gz';
   }
 
+  /** @returns {Promise<SteplibResponse>} */
+  async loadSpec() {
+    const response = await fetch(this.url);
+    return response.json();
+  }
+
+  /**
+   * Loads the compact data file served next to the pre-rendered pages.
+   * Falls back to the full spec when it is unavailable.
+   * @returns {Promise<Integrations>}
+   */
+  async loadCompactIntegrations() {
+    try {
+      const response = await fetch(COMPACT_DATA_PATH);
+      if (response.ok) {
+        return this.fromSpec(await response.json());
+      }
+    } catch (error) {
+      // fall through to the full spec
+    }
+    return this.loadIntegrations();
+  }
+
   /** @returns {Promise<Integrations>} */
   async loadIntegrations() {
-    const response = await fetch(this.url);
+    return this.fromSpec(await this.loadSpec());
+  }
 
-    /** @type {SteplibResponse} */
-    const json = await response.json();
-
+  /**
+   * @param {{steps: {[key: string]: StepData}}} spec
+   * @returns {Integrations}
+   */
+  fromSpec(spec) {
     const integrations = new Integrations();
 
-    Object.keys(json.steps).forEach((slug) => {
-      const step = new Step(slug, json.steps[slug]);
+    Object.keys(spec.steps).forEach((slug) => {
+      const step = new Step(slug, spec.steps[slug]);
       integrations.steps[slug] = step;
 
       step.categories.forEach((category) => integrations.categories.addStep(category, slug));

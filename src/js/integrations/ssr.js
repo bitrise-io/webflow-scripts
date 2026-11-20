@@ -3,17 +3,23 @@ import { join, dirname } from 'path';
 import { JSDOM } from 'jsdom';
 import { renderStepList } from './renderStepList';
 import { renderStepDetail } from './renderStepDetail';
-import IntegrationsService from './IntegrationsService';
+import IntegrationsService, { compactSpec } from './IntegrationsService';
 
 /**
  * @param {{ destination: string, templateHostname: string }} options
  */
 export async function render({ destination, templateHostname }) {
-  const [listTemplate, detailTemplate, integrations] = await Promise.all([
+  const [listTemplate, detailTemplate, spec] = await Promise.all([
     fetch(`https://${templateHostname}/integrations?template=true`).then((r) => r.text()),
     fetch(`https://${templateHostname}/integrations/step`).then((r) => r.text()),
-    IntegrationsService.loadIntegrations(),
+    IntegrationsService.loadSpec(),
   ]);
+  const integrations = IntegrationsService.fromSpec(spec);
+
+  const dataPath = join(destination, 'integrations-data.json');
+  await fs.mkdir(dirname(dataPath), { recursive: true });
+  await fs.writeFile(dataPath, JSON.stringify(compactSpec(spec)));
+  process.stdout.write(`Wrote ${dataPath}\n`);
 
   const listDom = new JSDOM(listTemplate);
   renderStepList(listDom.window.document, integrations, new URL('https://bitrise.io/integrations'));

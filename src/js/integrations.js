@@ -9,9 +9,13 @@ import '../css/integrations.css';
 const url = new URL(document.location.href);
 
 (async () => {
-  const integrations = await IntegrationsService.loadIntegrations();
+  // A pre-rendered page only needs the compact data to filter; anything else renders the list itself.
+  const prerendered = isStepListRendered(document);
+  const integrations = prerendered
+    ? await IntegrationsService.loadCompactIntegrations()
+    : await IntegrationsService.loadIntegrations();
 
-  if (!isStepListRendered(document)) {
+  if (!prerendered) {
     renderStepList(document, integrations, url);
   } else {
     setDocumentContext(document, url.hostname);

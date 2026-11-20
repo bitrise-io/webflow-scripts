@@ -10,6 +10,7 @@ yarn.lock
 /dist/maintenance.html
 /dist/release
 /dist/integrations.html
+/dist/integrations-data.json
 /dist/integrations/*
 /dist/images/*
 /career-maps.json
