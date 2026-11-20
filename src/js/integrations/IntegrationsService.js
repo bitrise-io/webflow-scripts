@@ -85,7 +85,7 @@ export function compactSpec(spec) {
 
 class IntegrationsService {
   constructor() {
-    this.url = 'https://bitrise-steplib-collection.s3.amazonaws.com/slim-spec.json.gz';
+    this.url = 'https://steplib.bitrise.io/slim-spec.json.gz';
   }
 
   /** @returns {Promise<SteplibResponse>} */
