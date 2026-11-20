@@ -288,11 +288,15 @@ workflows:
             set -o pipefail
             set -x
 
+            START=$(date +%s)
+
             screamingfrogseospider \
               --config "config/seo_spider_config.json" \
               --crawl https://bitrise.io \
               --headless \
-              --create-sitemap
+              --create-sitemap 2>&1 | tee -a "$SITEMAP_LOG"
+
+            envman add --key CRAWL_SECONDS --value "$(( $(date +%s) - START ))"
     - deploy-to-bitrise-io@2:
         inputs:
         - deploy_path: "/bitrise/src/sitemap.xml"
@@ -313,19 +317,67 @@ workflows:
             echo "${GCP_SA_SECRET_B64}" | base64 --decode > ${KEY_FILE_PATH}
             gcloud auth activate-service-account --key-file=${KEY_FILE_PATH}
 
-            gcloud storage cp /bitrise/src/sitemap.xml gs://web-cdn.bitrise.io/sitemap.xml
+            # keep the previous sitemap for the Slack diff (ignore failure, e.g. first run)
+            gcloud storage cp gs://web-cdn.bitrise.io/sitemap.xml /tmp/sitemap_prev.xml || rm -f /tmp/sitemap_prev.xml
+
+            # only log the gcloud output (not the xtrace above, which contains secrets)
+            gcloud storage cp /bitrise/src/sitemap.xml gs://web-cdn.bitrise.io/sitemap.xml 2>&1 | tee -a "$SITEMAP_LOG"
+    - script@1:
+        title: Compute sitemap stats
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -eu
+            FILE=/bitrise/src/sitemap.xml
+            PREV=/tmp/sitemap_prev.xml
+            URLS=$(grep -o '<loc>' "$FILE" | wc -l | tr -d ' ')
+            SIZE=$(du -h "$FILE" | cut -f1)
+            DURATION="$(( CRAWL_SECONDS / 60 ))m $(( CRAWL_SECONDS % 60 ))s"
+            DIFF=""
+            if [ -s "$PREV" ]; then
+              grep -o '<loc>[^<]*</loc>' "$PREV" | sort -u > /tmp/prev_urls.txt
+              grep -o '<loc>[^<]*</loc>' "$FILE" | sort -u > /tmp/new_urls.txt
+              ADDED=$(comm -13 /tmp/prev_urls.txt /tmp/new_urls.txt | wc -l | tr -d ' ')
+              REMOVED=$(comm -23 /tmp/prev_urls.txt /tmp/new_urls.txt | wc -l | tr -d ' ')
+              DIFF=" (+${ADDED} / -${REMOVED})"
+            fi
+            envman add --key SITEMAP_STATS --value "${URLS} URLs${DIFF} · ${SIZE} · crawled in ${DURATION}"
     - slack@4:
+        title: Notify Slack (success)
         inputs:
         - channel: "$SF_SLACK_CHANNEL"
-        - text: Sitemap generation
         - from_username: Sitemap.xml Builder
-        - webhook_url_on_error: "$SF_SLACK_WEBHOOK"
-        - channel_on_error: "$SF_SLACK_CHANNEL"
-        - text_on_error: ''
-        - emoji_on_error: ":sadge:"
         - webhook_url: "$SF_SLACK_WEBHOOK"
+        - text: ":white_check_mark: Sitemap generated and uploaded to the CDN.\n$SITEMAP_STATS"
+        - pretext: ''
+        - author_name: ''
+        - title: ''
+        - message: ''
+        - fields: ''
+        - buttons: ''
+        - footer: ''
+        - timestamp: 'no'
+    - script@1:
+        title: Notify Slack (failure)
+        is_always_run: true
+        run_if: ".IsBuildFailed"
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -eu
+            LOG_TAIL=$(tail -n 15 "$SITEMAP_LOG" 2>/dev/null | cut -c1-300 | tail -c 2500 || true)
+            [ -n "$LOG_TAIL" ] || LOG_TAIL="(no log captured)"
+            jq -n \
+              --arg channel "$SF_SLACK_CHANNEL" \
+              --arg text ":x: Sitemap generation failed - <${BITRISE_BUILD_URL}|view build>
+            \`\`\`${LOG_TAIL}\`\`\`" \
+              '{channel: $channel, username: "Sitemap.xml Builder", text: $text}' \
+              | curl -sS -X POST -H 'Content-type: application/json' --data @- "$SF_SLACK_WEBHOOK"
     envs:
     - SF_SLACK_CHANNEL: "#webflow"
+      opts:
+        is_expand: false
+    - SITEMAP_LOG: "/tmp/sitemap_error.log"
       opts:
         is_expand: false
     - SCREAMING_FROG_VERSION: '25.1'
