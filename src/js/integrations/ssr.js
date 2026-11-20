@@ -6,12 +6,27 @@ import { renderStepDetail } from './renderStepDetail';
 import IntegrationsService, { compactSpec } from './IntegrationsService';
 
 /**
+ * Fetches a page template. Fails on anything but a successful HTML answer, so an error or maintenance page is never
+ * rendered and uploaded over the published pages.
+ * @param {string} url
+ * @returns {Promise<string>}
+ */
+async function fetchTemplate(url) {
+  const response = await fetch(url);
+  const contentType = response.headers.get('Content-Type') || '';
+  if (!response.ok || !contentType.includes('text/html')) {
+    throw new Error(`Template ${url} could not be loaded: ${response.status} ${contentType}`);
+  }
+  return response.text();
+}
+
+/**
  * @param {{ destination: string, templateHostname: string }} options
  */
 export async function render({ destination, templateHostname }) {
   const [listTemplate, detailTemplate, spec] = await Promise.all([
-    fetch(`https://${templateHostname}/integrations?template=true`).then((r) => r.text()),
-    fetch(`https://${templateHostname}/integrations/step`).then((r) => r.text()),
+    fetchTemplate(`https://${templateHostname}/integrations?template=true`),
+    fetchTemplate(`https://${templateHostname}/integrations/step`),
     IntegrationsService.loadSpec(),
   ]);
   const integrations = IntegrationsService.fromSpec(spec);

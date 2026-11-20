@@ -37,6 +37,13 @@ describe('detailPageType', () => {
     expect(detailPageType('subpage')).toBeNull();
     expect(detailPageType('')).toBeNull();
   });
+  it('accepts nested paths and rejects anything that is not a plain path segment', () => {
+    expect(detailPageType('changelogs/aws/aws-mac-virtualized')).toBe('changelogs');
+    expect(detailPageType('tools/node.js')).toBe('tools');
+    ['changelogs/..', 'changelogs/../../x', 'changelogs/.', 'changelogs/a//b', 'changelogs/a%2F..', 'tips/a b'].forEach(
+      (path) => expect(detailPageType(path)).toBeNull(),
+    );
+  });
   it('knows which pages need the removal date', () => {
     expect(needsRemovalDate('changelogs')).toBe(true);
     expect(needsRemovalDate('stack_reports')).toBe(true);

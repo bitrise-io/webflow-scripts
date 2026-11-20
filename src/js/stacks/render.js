@@ -53,7 +53,9 @@ export const renderStackFlavorBadge = (flavor) => {
  */
 export const detailPageType = (pagePath) => {
   const [pageType, ...rest] = pagePath.split('/');
-  return PAGE_TYPES.includes(pageType) && rest.join('/') !== '' ? pageType : null;
+  // The rest of the path goes into an upstream URL, so only plain path segments are accepted.
+  const validRest = rest.length > 0 && rest.every((segment) => /^[\w.-]+$/.test(segment) && !/^\.\.?$/.test(segment));
+  return PAGE_TYPES.includes(pageType) && validRest ? pageType : null;
 };
 
 /**

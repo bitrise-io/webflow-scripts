@@ -249,3 +249,30 @@ export const fetchDiscourseTopic = async (topicPath, env, ctx) => {
     return { topic: null, cacheStatus };
   }
 };
+
+// The changelog category on Discourse; the build job (build.js) lists its topics, subcategories included.
+export const CHANGELOG_CATEGORY_ID = 6;
+
+/**
+ * The categories whose topics may be shown as changelog pages: the changelog category and its public
+ * subcategories. Loaded through the same caches as topics, so it costs Discourse about one request a day.
+ * Falls back to the changelog category alone when the list cannot be loaded.
+ * @param {object} env
+ * @param {{ waitUntil: (promise: Promise<unknown>) => void }} ctx
+ * @returns {Promise<Set<number>>}
+ */
+export const fetchChangelogCategoryIds = async (env, ctx) => {
+  const ids = new Set([CHANGELOG_CATEGORY_ID]);
+  try {
+    const urlObject = new URL(`https://${DISCOURSE_HOST}/categories.json?parent_category_id=${CHANGELOG_CATEGORY_ID}`);
+    const { response } = await fetchDiscourseCached(urlObject, env, ctx);
+    if (!response.ok) return ids;
+    const json = await response.json();
+    json.category_list.categories
+      .filter((category) => category.parent_category_id === CHANGELOG_CATEGORY_ID && !category.read_restricted)
+      .forEach((category) => ids.add(category.id));
+  } catch (error) {
+    console.log('changelog categories could not be loaded', String(error));
+  }
+  return ids;
+};

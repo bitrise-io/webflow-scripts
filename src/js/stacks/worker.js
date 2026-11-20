@@ -1,7 +1,7 @@
 /* global HTMLRewriter */
 import { STACKS_API_BASE } from './config';
 import StacksService from './StacksService';
-import { buildPage, detailPageType, needsRemovalDate } from './render';
+import { PAGE_TYPES, buildPage, detailPageType, needsRemovalDate } from './render';
 import { renderOverview } from './renderOverview';
 
 const ORIGIN_HOST = 'bitrise.io';
@@ -159,6 +159,9 @@ export default {
       const originalPath = urlObject.pathname;
       const pagePath = originalPath.replace(/^\/stacks\//, '').replace(/\/$/, '');
       const pageType = detailPageType(pagePath);
+      // A detail page path with segments that are not plain names is an unknown page too.
+      const [section, ...rest] = pagePath.split('/');
+      if (!pageType && PAGE_TYPES.includes(section) && rest.join('/') !== '') return notFoundResponse();
       urlObject.pathname = '/stacks/subpage';
 
       const [response, pageData, indexJson] = await Promise.all([
