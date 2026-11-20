@@ -1,3 +1,5 @@
+import { formatIsoDate } from '../shared/format';
+
 /** @typedef {("new-feature" | "feature-update" | "step-update" | "deprecation")} ChangelogTag */
 
 /**
@@ -66,25 +68,25 @@ class ChangelogTopic {
     return new Date(this.data.created_at);
   }
 
+  /**
+   * The creation date as published, e.g. "Nov 17, 2026" (not converted to the viewer's time zone).
+   * @returns {string}
+   */
+  get createdDate() {
+    return formatIsoDate(this.data.created_at);
+  }
+
   /** @returns {string} */
   get slug() {
     return this.data.slug;
   }
 
-  /**
-   * @param {boolean} useFallback
-   * @returns {string}
-   */
-  webflowUrl(useFallback = false) {
-    let basePath = '/changelog/';
-    if (useFallback) {
-      basePath = '/changelog/topic?topic=';
-    }
-
+  /** @returns {string} path of the topic's page */
+  webflowUrl() {
     if (this.id === 0) {
-      return `${basePath}${this.slug}`;
+      return `/changelog/${this.slug}`;
     }
-    return `${basePath}${this.slug}/${this.id}`;
+    return `/changelog/${this.slug}/${this.id}`;
   }
 
   /** @returns {boolean} */
@@ -126,9 +128,9 @@ class ChangelogTopic {
 
   /** @returns {ChangelogTag[]} */
   get tags() {
-    return (this.data.tags || []).filter((tag) =>
-      ['new-feature', 'feature-update', 'step-update', 'deprecation', 'api-update'].includes(tag),
-    );
+    return (this.data.tags || [])
+      .map((tag) => (typeof tag === 'object' ? tag.slug : tag))
+      .filter((tag) => ['new-feature', 'feature-update', 'step-update', 'deprecation', 'api-update'].includes(tag));
   }
 }
 

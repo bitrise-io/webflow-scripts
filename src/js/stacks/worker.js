@@ -146,7 +146,7 @@ export default {
     if (toolsMatch) {
       const sourceURL = new URL(`https://storage.googleapis.com/bitrise-cli-tool-catalog/${toolsMatch[1]}`);
       const response = await fetch(sourceURL);
-      const data = response.status == 200 ? await response.text() : '';
+      const data = response.status === 200 ? await response.text() : '';
       return setCorsHeaders(
         new Response(data, {
           status: response.status,

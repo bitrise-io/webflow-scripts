@@ -1,32 +1,14 @@
 // Pure rendering of stacks detail pages. Shared by the Cloudflare worker (server-side, so crawlers and the first
 // paint get the full page) and the browser script (fallback when the page was not rendered by the worker).
 // Must not touch `document` or import anything that needs a bundler loader (e.g. SVG icons).
+import { escapeHtml, formatIsoDate } from '../shared/format';
 import { LEGACY_STACKS_API_BASE, STACKS_API_BASE } from './config';
+
+export { escapeHtml, formatIsoDate };
 
 export const STACKS_SITE_URL = 'https://bitrise.io/stacks';
 
 export const PAGE_TYPES = ['changelogs', 'announcements', 'tools', 'tips', 'stack_reports'];
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-/**
- * Formats the calendar date written in an ISO timestamp ("2026-11-17T17:16:53-06:00" -> "Nov 17, 2026").
- * The date is taken as published instead of converted to a time zone, so the worker (UTC) and every browser agree.
- * @param {string} isoString
- * @returns {string}
- */
-export const formatIsoDate = (isoString) => {
-  const match = String(isoString).match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!match) return '';
-  return `${MONTHS[Number(match[2]) - 1]} ${Number(match[3])}, ${match[1]}`;
-};
-
-/**
- * @param {string} text
- * @returns {string}
- */
-export const escapeHtml = (text) =>
-  String(text).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 
 /**
  * Format HTML content

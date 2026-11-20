@@ -33,7 +33,7 @@ function delay(time) {
  */
 
 /**
- * Same authentication as the changelog proxy worker (worker.js), so requests are not throttled as anonymous
+ * Same authentication as the changelog worker (discourse.js), so requests are not throttled as anonymous
  * traffic. Falls back to anonymous requests when neither variable is set (e.g. local runs), and throws when
  * only one of them is, since there is deliberately no default (admin) username.
  * @returns {Record<string, string>}

@@ -1,26 +1,16 @@
 import ChangelogList from './changelog/ChangelogList';
 import ChangelogService from './changelog/ChangelogService';
+import { LAST_VISIT_COOKIE, resolveLastVisit } from './changelog/lastVisit';
 
 import '../css/changelog.css';
 
 const url = new URL(document.location.href);
-const overrideLastVisit = url.searchParams.get('lastVisit');
 
-let lastVisitDate = new Date();
-const newLastVisitDate = new Date();
-
-/** @type {string} */
-const cookieName = 'changelogLastVisit';
-const cookiePattern = new RegExp(`${cookieName}=([^;]+);?`);
-const cookieMatch = document.cookie.match(cookiePattern);
-if (cookieMatch) {
-  lastVisitDate = new Date(decodeURIComponent(cookieMatch[1]));
-}
-
-if (overrideLastVisit) {
-  newLastVisitDate.setDate(newLastVisitDate.getDate() - parseInt(overrideLastVisit, 10));
-  lastVisitDate = new Date(newLastVisitDate);
-}
+const cookieName = LAST_VISIT_COOKIE;
+const { lastVisitDate, newLastVisitDate } = resolveLastVisit({
+  cookieHeader: document.cookie,
+  overrideDays: url.searchParams.get('lastVisit'),
+});
 
 const expires = new Date();
 expires.setMonth(expires.getMonth() + 12);
@@ -34,7 +24,7 @@ document.cookie = `${cookieName}=${cookieValue};expires=${expires};${domain ? `d
 
 /** @type {string} */
 const apiBase = document.location.hostname.match(/(localhost|127\.0\.0\.1)/) ? '' : 'https://bitrise.io';
-const changelogService = new ChangelogService(apiBase, 'https://app.bitrise.io');
+const changelogService = new ChangelogService(apiBase);
 
 /** @type {HTMLElement} */
 const changelogList = new ChangelogList(document.getElementById('changelog-list'));
@@ -82,8 +72,7 @@ const getChangelogSettings = () => {
  */
 const renderFullChangelog = async (fullUrl) => {
   const topics = await changelogService.loadTopics(fullUrl);
-  const useFallback = changelogService.currentApiBase === changelogService.fallbackApiBase;
-  changelogList.render(topics, lastVisitDate, getChangelogSettings(), useFallback);
+  changelogList.render(topics, lastVisitDate, getChangelogSettings());
 };
 
 const loadMoreClickHandler = async (event) => {
@@ -114,8 +103,7 @@ const loadMoreClickHandler = async (event) => {
  */
 const renderLatestChangelog = async (latestUrl) => {
   const topics = await changelogService.loadTopics(latestUrl);
-  const useFallback = changelogService.currentApiBase === changelogService.fallbackApiBase;
-  changelogList.render(topics, lastVisitDate, getChangelogSettings(), useFallback);
+  changelogList.render(topics, lastVisitDate, getChangelogSettings());
 };
 
 const changelogSettingsTriggerClickHandler = () => {
@@ -139,7 +127,8 @@ const changelogSettingsChangeHandler = () => {
   }
 };
 
-renderLatestChangelog('/changelog_latest.json');
+// The worker has already rendered the latest topics into the page.
+if (!changelogList.isServerRendered) renderLatestChangelog('/changelog_latest.json');
 // observer.observe(changelogLoadMoreButton);
 if (changelogLoadMoreButton) changelogLoadMoreButton.addEventListener('click', loadMoreClickHandler);
 
