@@ -187,6 +187,23 @@ workflows:
     meta:
       bitrise.io:
         stack: ubuntu-latest-stable
+  deploy_sitemap_worker:
+    description: Deploy the sitemap proxy Cloudflare Worker.
+    summary: Deploy the sitemap worker when its code or config changes on main.
+    steps:
+    - bundle::Setup_environment: {}
+    - bundle::Step_bundle:
+        title: Deploy Cloudflare Worker
+        inputs:
+        - WORKER_NAME: sitemap
+    triggers:
+      push:
+      - changed_files:
+          regex: src/js/sitemap/(worker\.js|wrangler\.toml)
+        branch: main
+    meta:
+      bitrise.io:
+        stack: ubuntu-latest-stable
   sitemap_generator:
     description: |
       The workflow executes the tests. The *retry_on_failure* test repetition mode is enabled.
@@ -259,6 +276,18 @@ workflows:
               --crawl https://bitrise.io \
               --headless \
               --create-sitemap
+    - nvm@1:
+        inputs:
+        - node_version: '22'
+        title: Install node
+    - script@1:
+        title: Add career map pages to the sitemap
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            set -o pipefail
+            node src/js/sitemap/add-career-maps.js /bitrise/src/sitemap.xml
     - deploy-to-bitrise-io@2:
         inputs:
         - deploy_path: "/bitrise/src/sitemap.xml"
