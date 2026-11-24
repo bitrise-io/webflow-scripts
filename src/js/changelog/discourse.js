@@ -34,8 +34,12 @@ const MAX_ATTEMPTS = 3;
 const DEFAULT_WAIT_SECONDS = 10;
 const COOLDOWN_KEY = 'discourse:cooldown';
 
+// Public data that must not depend on who the API user is: a logged-in user's category list leaves out the
+// categories they muted, which made changelog subcategories look like they did not exist.
+const ANONYMOUS_PATHS = new Set(['/categories.json']);
+
 const fetchFromDiscourse = (urlObject, env) => {
-  if (env && env.DISCOURSE_API_KEY && env.DISCOURSE_API_USERNAME) {
+  if (!ANONYMOUS_PATHS.has(urlObject.pathname) && env && env.DISCOURSE_API_KEY && env.DISCOURSE_API_USERNAME) {
     // Authenticate with the Discourse API so requests are not throttled as anonymous traffic.
     // Both the key and the username are required; there is deliberately no default (admin) username.
     const headers = new Headers({
