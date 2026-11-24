@@ -1,7 +1,7 @@
 /* global HTMLRewriter */
 import ChangelogTopic from './ChangelogTopic';
 import { fetchWithTimeout } from './fetchWithTimeout';
-import { fetchChangelogCategoryIds, fetchDiscourseTopic, isChangelogCategory } from './discourse';
+import { CHANGELOG_CATEGORY_ID, fetchDiscourseTopic, isChangelogTopic } from './discourse';
 import { resolveLastVisit } from './lastVisit';
 import { ALL_TAGS, buildTopicPage, parseTopicPath, renderDescriptionMeta, renderList } from './render';
 
@@ -195,19 +195,22 @@ const handleTopic = async (urlObject, env, ctx) => {
     return fetchDiscourseTopic(parsed.path, env, ctx);
   };
 
-  const [template, { topic, cacheStatus }, categoryIds] = await Promise.all([
+  const [template, { topic, cacheStatus }] = await Promise.all([
     fetchTemplate(templateUrl(urlObject, '/changelog/topic')),
     loadTopic(),
-    parsed.kind === 'discourse' ? fetchChangelogCategoryIds(env, ctx) : null,
   ]);
   // The template or the topic timed out: an error, not a missing page, so it is not cached as a 404.
   if (!template) return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
   if (!topic) return notFoundResponse('topic-not-found');
   if (!template.ok || !isHtml(template)) return notFoundResponse(`template-${template.status}`);
   // Any Discourse topic can be asked for by id; only changelog posts are pages here.
-  if (categoryIds) {
-    const { allowed, detail } = await isChangelogCategory(topic.category_id, categoryIds, env, ctx);
-    if (!allowed) return notFoundResponse(`category-${topic.category_id}-${detail}`);
+  if (parsed.kind === 'discourse') {
+    // Only topics in the changelog category take the list-free shortcut; the rest are looked up in changelog.json.
+    const changelog = topic.category_id === CHANGELOG_CATEGORY_ID ? null : await loadFullChangelog();
+    if (topic.category_id !== CHANGELOG_CATEGORY_ID && !changelog) {
+      return new Response('Changelog unavailable', { status: 503, headers: { 'Cache-Control': 'no-store' } });
+    }
+    if (!isChangelogTopic(topic, changelog)) return notFoundResponse(`not-in-changelog-category-${topic.category_id}`);
   }
 
   return renderTopicPage(template, new ChangelogTopic(topic), cacheStatus);
