@@ -1,7 +1,7 @@
 /* global HTMLRewriter */
 import ChangelogTopic from './ChangelogTopic';
 import { fetchWithTimeout } from './fetchWithTimeout';
-import { fetchChangelogCategoryIds, fetchDiscourseTopic } from './discourse';
+import { fetchChangelogCategoryIds, fetchDiscourseTopic, isChangelogCategory } from './discourse';
 import { resolveLastVisit } from './lastVisit';
 import { ALL_TAGS, buildTopicPage, parseTopicPath, renderDescriptionMeta, renderList } from './render';
 
@@ -203,7 +203,7 @@ const handleTopic = async (urlObject, env, ctx) => {
   if (!template) return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
   if (!topic || !template.ok || !isHtml(template)) return notFoundResponse();
   // Any Discourse topic can be asked for by id; only changelog posts are pages here.
-  if (categoryIds && !categoryIds.has(topic.category_id)) return notFoundResponse();
+  if (categoryIds && !(await isChangelogCategory(topic.category_id, categoryIds, env, ctx))) return notFoundResponse();
 
   return renderTopicPage(template, new ChangelogTopic(topic), cacheStatus);
 };
