@@ -1,7 +1,7 @@
 /* global HTMLRewriter */
 import ChangelogTopic from './ChangelogTopic';
 import { fetchWithTimeout } from './fetchWithTimeout';
-import { CHANGELOG_CATEGORY_ID, fetchDiscourseTopic, isChangelogTopic } from './discourse';
+import { CHANGELOG_CATEGORY_ID, fetchDiscourseTopic, isListedInChangelog } from './discourse';
 import { resolveLastVisit } from './lastVisit';
 import { ALL_TAGS, buildTopicPage, parseTopicPath, renderDescriptionMeta, renderList } from './render';
 
@@ -12,8 +12,8 @@ const CDN_HOST = 'web-cdn.bitrise.io';
 const TOPIC_MAX_AGE_SECONDS = 300;
 const UPSTREAM_CACHE_TTL_SECONDS = 300;
 
-// The full changelog (all topics, ~1 MB) is only read for Release Management API entries. Keep the parsed copy
-// around in this isolate so it is not parsed again for every request.
+// The full changelog (all topics, ~1 MB) is read for Release Management API entries and to recognise topics of the
+// changelog subcategories. Keep the parsed copy around in this isolate so it is not parsed again for every request.
 const FULL_CHANGELOG_TTL_MS = 5 * 60 * 1000;
 let fullChangelog = { loadedAt: 0, json: null };
 
@@ -41,6 +41,9 @@ const loadFullChangelog = async () => {
   // A failed refresh keeps serving the previous copy.
   return json || fullChangelog.json;
 };
+
+// An upstream did not answer in time or is unusable: an error, never cached, and not a missing page.
+const errorResponse = (status, text) => new Response(text, { status, headers: { 'Cache-Control': 'no-store' } });
 
 // The generic bitrise.io 404 page, served with a real 404 status.
 // reason is sent as X-Proxy-404-Reason, so a 404 can be traced without the worker's logs.
@@ -92,8 +95,8 @@ const renderListPage = async (request, urlObject) => {
     fetchTemplate(templateUrl(urlObject, '/changelog')),
     fetchJson(`https://${CDN_HOST}/changelog_latest.json`),
   ]);
+  if (!template) return errorResponse(504, 'Upstream timeout');
   // Without the data the browser script loads the list itself, as before.
-  if (!template) return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
   if (!template.ok || !isHtml(template) || !latest) return template;
 
   const { lastVisitDate } = resolveLastVisit({
@@ -199,18 +202,15 @@ const handleTopic = async (urlObject, env, ctx) => {
     fetchTemplate(templateUrl(urlObject, '/changelog/topic')),
     loadTopic(),
   ]);
-  // The template or the topic timed out: an error, not a missing page, so it is not cached as a 404.
-  if (!template) return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
+  if (!template) return errorResponse(504, 'Upstream timeout');
   if (!topic) return notFoundResponse('topic-not-found');
   if (!template.ok || !isHtml(template)) return notFoundResponse(`template-${template.status}`);
-  // Any Discourse topic can be asked for by id; only changelog posts are pages here.
-  if (parsed.kind === 'discourse') {
-    // Only topics in the changelog category take the list-free shortcut; the rest are looked up in changelog.json.
-    const changelog = topic.category_id === CHANGELOG_CATEGORY_ID ? null : await loadFullChangelog();
-    if (topic.category_id !== CHANGELOG_CATEGORY_ID && !changelog) {
-      return new Response('Changelog unavailable', { status: 503, headers: { 'Cache-Control': 'no-store' } });
-    }
-    if (!isChangelogTopic(topic, changelog)) return notFoundResponse(`not-in-changelog-category-${topic.category_id}`);
+  // Any Discourse topic can be asked for by id; only changelog posts are pages here. Topics of the changelog
+  // category are; those of its subcategories are recognised by being in the generated changelog.json.
+  if (parsed.kind === 'discourse' && topic.category_id !== CHANGELOG_CATEGORY_ID) {
+    const changelog = await loadFullChangelog();
+    if (!changelog) return errorResponse(503, 'Changelog unavailable');
+    if (!isListedInChangelog(topic, changelog)) return notFoundResponse(`category-${topic.category_id}`);
   }
 
   return renderTopicPage(template, new ChangelogTopic(topic), cacheStatus);
@@ -238,7 +238,7 @@ export default {
       try {
         upstream = await fetchWithTimeout(`https://${CDN_HOST}/${staticFile.file}${urlObject.search}`);
       } catch (error) {
-        return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
+        return errorResponse(504, 'Upstream timeout');
       }
       const response = new Response(upstream.body, upstream);
       return staticFile.cors ? setCorsHeaders(response) : response;

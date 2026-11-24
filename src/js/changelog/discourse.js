@@ -256,14 +256,12 @@ export const fetchDiscourseTopic = async (topicPath, env, ctx) => {
 export const CHANGELOG_CATEGORY_ID = 6;
 
 /**
- * Whether a Discourse topic is a changelog post: in the changelog category itself, or listed in the changelog the
- * build job generated, which also holds the topics of the subcategories (Steps, Stacks, Website, ...).
- * That list is used instead of asking Discourse for the subcategories: the worker's API key cannot list
- * categories, and anonymous requests from Cloudflare are rate limited.
- * @param {{ id: number, category_id: number }} topic
- * @param {{ topic_list: { topics: { id: number }[] } } | null} changelog - changelog.json, null when unavailable
+ * Whether a topic is in the changelog the build job generated, which also holds the topics of the changelog
+ * subcategories (Steps, Stacks, Website, ...). Used instead of asking Discourse for the subcategories: the worker's
+ * API key cannot list categories, and anonymous requests from Cloudflare are rate limited.
+ * @param {{ id: number }} topic
+ * @param {{ topic_list: { topics: { id: number }[] } }} changelog - changelog.json
  * @returns {boolean}
  */
-export const isChangelogTopic = (topic, changelog) =>
-  topic.category_id === CHANGELOG_CATEGORY_ID ||
-  Boolean(changelog && changelog.topic_list.topics.some((entry) => entry.id === topic.id));
+export const isListedInChangelog = (topic, changelog) =>
+  changelog.topic_list.topics.some((entry) => entry.id === topic.id);
