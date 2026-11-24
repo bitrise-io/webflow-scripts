@@ -1,4 +1,6 @@
 /* eslint-disable no-console -- the console output of a Worker is its log (Workers Logs / wrangler tail) */
+import { fetchWithTimeout } from './fetchWithTimeout';
+
 export const DISCOURSE_HOST = 'discuss.bitrise.io';
 
 // Discourse JSON is cached in two layers so the origin is hit as rarely as possible.
@@ -41,9 +43,9 @@ const fetchFromDiscourse = (urlObject, env) => {
       'Api-Key': env.DISCOURSE_API_KEY,
       'Api-Username': env.DISCOURSE_API_USERNAME,
     });
-    return fetch(urlObject, { headers });
+    return fetchWithTimeout(urlObject, { headers });
   }
-  return fetch(urlObject);
+  return fetchWithTimeout(urlObject);
 };
 
 const jsonResponse = (body) => new Response(body, { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
