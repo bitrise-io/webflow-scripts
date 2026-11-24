@@ -269,16 +269,16 @@ const loadChangelogCategoryIds = async (env, ctx, options) => {
     const { response } = await fetchDiscourseCached(categoriesUrl(), env, ctx, options);
     if (!response.ok) {
       console.log('changelog categories request failed', response.status);
-      return { ids, loaded: false };
+      return { ids, loaded: false, detail: `http-${response.status}` };
     }
     const json = await response.json();
     json.category_list.categories
       .filter((category) => category.parent_category_id === CHANGELOG_CATEGORY_ID && !category.read_restricted)
       .forEach((category) => ids.add(category.id));
-    return { ids, loaded: true };
+    return { ids, loaded: true, detail: 'listed' };
   } catch (error) {
     console.log('changelog categories could not be loaded', String(error));
-    return { ids, loaded: false };
+    return { ids, loaded: false, detail: `error-${error && error.name}` };
   }
 };
 
@@ -305,14 +305,16 @@ let lastCategoryRefreshAt = 0;
  * @param {Set<number>} cachedIds - the list from fetchChangelogCategoryIds
  * @param {object} env
  * @param {{ waitUntil: (promise: Promise<unknown>) => void }} ctx
- * @returns {Promise<boolean>}
+ * @returns {Promise<{ allowed: boolean, detail: string }>} detail says what the check was based on
  */
 export const isChangelogCategory = async (categoryId, cachedIds, env, ctx) => {
-  if (cachedIds.has(categoryId)) return true;
-  if (Date.now() - lastCategoryRefreshAt < CATEGORY_REFRESH_MIN_INTERVAL_MS) return false;
+  if (cachedIds.has(categoryId)) return { allowed: true, detail: 'cached' };
+  if (Date.now() - lastCategoryRefreshAt < CATEGORY_REFRESH_MIN_INTERVAL_MS) {
+    return { allowed: false, detail: 'refresh-throttled' };
+  }
   lastCategoryRefreshAt = Date.now();
-  const { ids, loaded } = await loadChangelogCategoryIds(env, ctx, { force: true });
+  const { ids, loaded, detail } = await loadChangelogCategoryIds(env, ctx, { force: true });
   const allowed = ids.has(categoryId);
   console.log('category not in cached changelog categories', categoryId, 'refreshed:', loaded, 'allowed:', allowed);
-  return allowed;
+  return { allowed, detail: `refresh-${detail}` };
 };
