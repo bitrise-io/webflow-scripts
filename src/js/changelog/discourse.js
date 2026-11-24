@@ -146,7 +146,7 @@ const fetchShared = (key, urlObject, env, ctx, budgetMs) => {
 };
 
 // KV layer. Returns { response, cacheStatus } where cacheStatus is KV-HIT, KV-MISS, KV-STALE or BYPASS.
-const loadFromKvOrDiscourse = async (urlObject, env, ctx) => {
+const loadFromKvOrDiscourse = async (urlObject, env, ctx, force = false) => {
   const kv = env && env.CHANGELOG;
   if (!kv) {
     return { response: await fetchFromDiscourse(urlObject, env), cacheStatus: 'BYPASS' };
@@ -164,7 +164,7 @@ const loadFromKvOrDiscourse = async (urlObject, env, ctx) => {
   const hasStored = stored && stored.value !== null;
   if (hasStored) {
     const ageSeconds = (Date.now() - Number((stored.metadata && stored.metadata.storedAt) || 0)) / 1000;
-    if (ageSeconds < KV_FRESH_TTL_SECONDS) {
+    if (!force && ageSeconds < KV_FRESH_TTL_SECONDS) {
       return { response: jsonResponse(stored.value), cacheStatus: 'KV-HIT' };
     }
   }
@@ -198,17 +198,18 @@ const loadFromKvOrDiscourse = async (urlObject, env, ctx) => {
 
 // Edge layer in front of KV. Returns { response, cacheStatus } where cacheStatus is EDGE-HIT or EDGE-STALE,
 // or whatever the KV layer reported (KV-HIT, KV-MISS, KV-STALE, BYPASS).
-export const fetchDiscourseCached = async (urlObject, env, ctx) => {
+export const fetchDiscourseCached = async (urlObject, env, ctx, { force = false } = {}) => {
   const cache = caches.default;
   // Key on the public URL only, never on credentials. Unchanged from the original cache so entries stay warm.
   const cacheKey = new Request(urlObject.toString(), { method: 'GET' });
-  const cached = await cache.match(cacheKey);
+  // force: skip both caches and go to Discourse; a good answer still replaces the cached copies.
+  const cached = force ? null : await cache.match(cacheKey);
 
   // Loads through KV/Discourse and, for good responses, (re)populates the edge cache.
   // A KV-STALE result is stored too, so during a Discourse outage each data centre retries at most once per
   // EDGE_FRESH_TTL instead of on every request.
   const refresh = async () => {
-    const result = await loadFromKvOrDiscourse(urlObject, env, ctx);
+    const result = await loadFromKvOrDiscourse(urlObject, env, ctx, force);
     if (result.response.ok && result.cacheStatus !== 'BYPASS') {
       const toStore = new Response(result.response.clone().body, result.response);
       toStore.headers.delete('Set-Cookie');
@@ -255,6 +256,28 @@ export const fetchDiscourseTopic = async (topicPath, env, ctx) => {
 // The changelog category on Discourse; the build job (build.js) lists its topics, subcategories included.
 export const CHANGELOG_CATEGORY_ID = 6;
 
+const categoriesUrl = () =>
+  new URL(`https://${DISCOURSE_HOST}/categories.json?parent_category_id=${CHANGELOG_CATEGORY_ID}`);
+
+const loadChangelogCategoryIds = async (env, ctx, options) => {
+  const ids = new Set([CHANGELOG_CATEGORY_ID]);
+  try {
+    const { response } = await fetchDiscourseCached(categoriesUrl(), env, ctx, options);
+    if (!response.ok) {
+      console.log('changelog categories request failed', response.status);
+      return { ids, loaded: false };
+    }
+    const json = await response.json();
+    json.category_list.categories
+      .filter((category) => category.parent_category_id === CHANGELOG_CATEGORY_ID && !category.read_restricted)
+      .forEach((category) => ids.add(category.id));
+    return { ids, loaded: true };
+  } catch (error) {
+    console.log('changelog categories could not be loaded', String(error));
+    return { ids, loaded: false };
+  }
+};
+
 /**
  * The categories whose topics may be shown as changelog pages: the changelog category and its public
  * subcategories. Loaded through the same caches as topics, so it costs Discourse about one request a day.
@@ -263,18 +286,29 @@ export const CHANGELOG_CATEGORY_ID = 6;
  * @param {{ waitUntil: (promise: Promise<unknown>) => void }} ctx
  * @returns {Promise<Set<number>>}
  */
-export const fetchChangelogCategoryIds = async (env, ctx) => {
-  const ids = new Set([CHANGELOG_CATEGORY_ID]);
-  try {
-    const urlObject = new URL(`https://${DISCOURSE_HOST}/categories.json?parent_category_id=${CHANGELOG_CATEGORY_ID}`);
-    const { response } = await fetchDiscourseCached(urlObject, env, ctx);
-    if (!response.ok) return ids;
-    const json = await response.json();
-    json.category_list.categories
-      .filter((category) => category.parent_category_id === CHANGELOG_CATEGORY_ID && !category.read_restricted)
-      .forEach((category) => ids.add(category.id));
-  } catch (error) {
-    console.log('changelog categories could not be loaded', String(error));
-  }
-  return ids;
+export const fetchChangelogCategoryIds = async (env, ctx) => (await loadChangelogCategoryIds(env, ctx)).ids;
+
+// A forced reload is at most once a minute per isolate, so topics of other categories cannot make every request
+// go to Discourse.
+const CATEGORY_REFRESH_MIN_INTERVAL_MS = 60 * 1000;
+let lastCategoryRefreshAt = 0;
+
+/**
+ * Whether a topic's category is a changelog category. The cached category list can be a day old (or the
+ * fallback after a failed load), so a category missing from it is checked against a fresh list from Discourse
+ * before the topic is rejected. The fresh list also replaces the cached one.
+ * @param {number} categoryId
+ * @param {Set<number>} cachedIds - the list from fetchChangelogCategoryIds
+ * @param {object} env
+ * @param {{ waitUntil: (promise: Promise<unknown>) => void }} ctx
+ * @returns {Promise<boolean>}
+ */
+export const isChangelogCategory = async (categoryId, cachedIds, env, ctx) => {
+  if (cachedIds.has(categoryId)) return true;
+  if (Date.now() - lastCategoryRefreshAt < CATEGORY_REFRESH_MIN_INTERVAL_MS) return false;
+  lastCategoryRefreshAt = Date.now();
+  const { ids, loaded } = await loadChangelogCategoryIds(env, ctx, { force: true });
+  const allowed = ids.has(categoryId);
+  console.log('category not in cached changelog categories', categoryId, 'refreshed:', loaded, 'allowed:', allowed);
+  return allowed;
 };
