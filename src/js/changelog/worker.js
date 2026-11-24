@@ -1,5 +1,6 @@
 /* global HTMLRewriter */
 import ChangelogTopic from './ChangelogTopic';
+import { fetchWithTimeout } from './fetchWithTimeout';
 import { fetchChangelogCategoryIds, fetchDiscourseTopic } from './discourse';
 import { resolveLastVisit } from './lastVisit';
 import { ALL_TAGS, buildTopicPage, parseTopicPath, renderDescriptionMeta, renderList } from './render';
@@ -24,7 +25,9 @@ const setCorsHeaders = (response) => {
 
 const fetchJson = async (url) => {
   try {
-    const response = await fetch(url, { cf: { cacheTtl: UPSTREAM_CACHE_TTL_SECONDS, cacheEverything: true } });
+    const response = await fetchWithTimeout(url, {
+      cf: { cacheTtl: UPSTREAM_CACHE_TTL_SECONDS, cacheEverything: true },
+    });
     return response.ok ? await response.json() : null;
   } catch (error) {
     return null;
@@ -41,11 +44,26 @@ const loadFullChangelog = async () => {
 
 // The generic bitrise.io 404 page, served with a real 404 status.
 const notFoundResponse = async () => {
-  const response = await fetch(`https://${ORIGIN_HOST}/404`);
-  return new Response(response.body, {
+  let body = 'Not found';
+  try {
+    body = (await fetchWithTimeout(`https://${ORIGIN_HOST}/404`)).body;
+  } catch (error) {
+    // the generic page is unavailable; a plain 404 is still correct
+  }
+  return new Response(body, {
     status: 404,
     headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
   });
+};
+
+// The page template from the origin; null when it cannot be loaded in time.
+const fetchTemplate = async (url) => {
+  try {
+    return await fetchWithTimeout(url);
+  } catch (error) {
+    console.log('template fetch failed', String(error)); // eslint-disable-line no-console
+    return null;
+  }
 };
 
 const isHtml = (response) => (response.headers.get('Content-Type') || '').includes('text/html');
@@ -70,10 +88,11 @@ const templateUrl = (urlObject, pathname) => {
  */
 const renderListPage = async (request, urlObject) => {
   const [template, latest] = await Promise.all([
-    fetch(templateUrl(urlObject, '/changelog')),
+    fetchTemplate(templateUrl(urlObject, '/changelog')),
     fetchJson(`https://${CDN_HOST}/changelog_latest.json`),
   ]);
   // Without the data the browser script loads the list itself, as before.
+  if (!template) return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
   if (!template.ok || !isHtml(template) || !latest) return template;
 
   const { lastVisitDate } = resolveLastVisit({
@@ -176,10 +195,12 @@ const handleTopic = async (urlObject, env, ctx) => {
   };
 
   const [template, { topic, cacheStatus }, categoryIds] = await Promise.all([
-    fetch(templateUrl(urlObject, '/changelog/topic')),
+    fetchTemplate(templateUrl(urlObject, '/changelog/topic')),
     loadTopic(),
     parsed.kind === 'discourse' ? fetchChangelogCategoryIds(env, ctx) : null,
   ]);
+  // The template or the topic timed out: an error, not a missing page, so it is not cached as a 404.
+  if (!template) return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
   if (!topic || !template.ok || !isHtml(template)) return notFoundResponse();
   // Any Discourse topic can be asked for by id; only changelog posts are pages here.
   if (categoryIds && !categoryIds.has(topic.category_id)) return notFoundResponse();
@@ -205,7 +226,12 @@ export default {
     const staticFile = staticFiles[urlObject.pathname];
     if (staticFile) {
       // The query string (clients add a cache buster) is passed on, as it always was
-      const upstream = await fetch(`https://${CDN_HOST}/${staticFile.file}${urlObject.search}`);
+      let upstream;
+      try {
+        upstream = await fetchWithTimeout(`https://${CDN_HOST}/${staticFile.file}${urlObject.search}`);
+      } catch (error) {
+        return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
+      }
       const response = new Response(upstream.body, upstream);
       return staticFile.cors ? setCorsHeaders(response) : response;
     }
