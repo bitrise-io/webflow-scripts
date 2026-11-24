@@ -43,7 +43,8 @@ const loadFullChangelog = async () => {
 };
 
 // The generic bitrise.io 404 page, served with a real 404 status.
-const notFoundResponse = async () => {
+// reason is sent as X-Proxy-404-Reason, so a 404 can be traced without the worker's logs.
+const notFoundResponse = async (reason) => {
   let body = 'Not found';
   try {
     body = (await fetchWithTimeout(`https://${ORIGIN_HOST}/404`)).body;
@@ -52,7 +53,7 @@ const notFoundResponse = async () => {
   }
   return new Response(body, {
     status: 404,
-    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Proxy-404-Reason': reason },
   });
 };
 
@@ -183,7 +184,7 @@ const handleTopic = async (urlObject, env, ctx) => {
   if (topicPath === 'topic') topicPath = urlObject.searchParams.get('topic') || '';
 
   const parsed = parseTopicPath(topicPath);
-  if (!parsed) return notFoundResponse();
+  if (!parsed) return notFoundResponse('bad-path');
 
   const loadTopic = async () => {
     if (parsed.kind === 'api') {
@@ -201,9 +202,12 @@ const handleTopic = async (urlObject, env, ctx) => {
   ]);
   // The template or the topic timed out: an error, not a missing page, so it is not cached as a 404.
   if (!template) return new Response('Upstream timeout', { status: 504, headers: { 'Cache-Control': 'no-store' } });
-  if (!topic || !template.ok || !isHtml(template)) return notFoundResponse();
+  if (!topic) return notFoundResponse('topic-not-found');
+  if (!template.ok || !isHtml(template)) return notFoundResponse(`template-${template.status}`);
   // Any Discourse topic can be asked for by id; only changelog posts are pages here.
-  if (categoryIds && !(await isChangelogCategory(topic.category_id, categoryIds, env, ctx))) return notFoundResponse();
+  if (categoryIds && !(await isChangelogCategory(topic.category_id, categoryIds, env, ctx))) {
+    return notFoundResponse(`category-${topic.category_id}`);
+  }
 
   return renderTopicPage(template, new ChangelogTopic(topic), cacheStatus);
 };
