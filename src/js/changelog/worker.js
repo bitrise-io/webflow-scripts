@@ -205,8 +205,9 @@ const handleTopic = async (urlObject, env, ctx) => {
   if (!topic) return notFoundResponse('topic-not-found');
   if (!template.ok || !isHtml(template)) return notFoundResponse(`template-${template.status}`);
   // Any Discourse topic can be asked for by id; only changelog posts are pages here.
-  if (categoryIds && !(await isChangelogCategory(topic.category_id, categoryIds, env, ctx))) {
-    return notFoundResponse(`category-${topic.category_id}`);
+  if (categoryIds) {
+    const { allowed, detail } = await isChangelogCategory(topic.category_id, categoryIds, env, ctx);
+    if (!allowed) return notFoundResponse(`category-${topic.category_id}-${detail}`);
   }
 
   return renderTopicPage(template, new ChangelogTopic(topic), cacheStatus);
