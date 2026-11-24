@@ -1,37 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchChangelogCategoryIds } from '../../../src/js/changelog/discourse';
+import { describe, it, expect } from 'vitest';
+import { isListedInChangelog } from '../../../src/js/changelog/discourse';
 
-const ctx = { waitUntil: vi.fn() };
-const mockFetch = vi.fn();
-vi.stubGlobal('fetch', mockFetch);
-vi.stubGlobal('caches', { default: { match: async () => undefined, put: async () => {} } });
+const changelog = { topic_list: { topics: [{ id: 26571 }, { id: 26570 }] } };
 
-beforeEach(() => mockFetch.mockReset());
-
-describe('fetchChangelogCategoryIds', () => {
-  it('allows the changelog category and its public subcategories', async () => {
-    mockFetch.mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          category_list: {
-            categories: [
-              { id: 48, parent_category_id: 6, read_restricted: false },
-              { id: 74, parent_category_id: 6, read_restricted: false },
-              { id: 90, parent_category_id: 6, read_restricted: true },
-              { id: 12, parent_category_id: 3, read_restricted: false },
-            ],
-          },
-        }),
-        { headers: { 'Content-Type': 'application/json' } },
-      ),
-    );
-    const ids = await fetchChangelogCategoryIds({}, ctx);
-    expect([...ids].sort((a, b) => a - b)).toEqual([6, 48, 74]);
-    expect(String(mockFetch.mock.calls[0][0])).toBe('https://discuss.bitrise.io/categories.json?parent_category_id=6');
+describe('isListedInChangelog', () => {
+  it('finds a topic that is in the generated changelog', () => {
+    expect(isListedInChangelog({ id: 26571 }, changelog)).toBe(true);
   });
 
-  it('falls back to the changelog category alone when the list cannot be loaded', async () => {
-    mockFetch.mockResolvedValue(new Response('down', { status: 503 }));
-    expect([...(await fetchChangelogCategoryIds({}, ctx))]).toEqual([6]);
+  it('does not find a topic that is not in it', () => {
+    expect(isListedInChangelog({ id: 99 }, changelog)).toBe(false);
   });
 });
