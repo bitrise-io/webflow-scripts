@@ -333,12 +333,15 @@ workflows:
 
             cd "$BITRISE_SOURCE_DIR"
             CHART=/tmp/sitemap_breakdown.png
+            # one image per build, so earlier Slack posts keep showing their own stats
+            CHART_NAME="sitemap_breakdown_$(date -u +%Y%m%d-%H%M%S)_${BITRISE_BUILD_NUMBER}.png"
+            CHART_GCS="gs://web-cdn.bitrise.io/sitemap_stats/${CHART_NAME}"
 
             npm install --no-save --no-package-lock --ignore-scripts sharp@0.34.5 \
               && node src/js/tools/sitemap-chart.mjs /bitrise/src/sitemap.xml "$CHART" \
-              && gcloud storage cp "$CHART" gs://web-cdn.bitrise.io/sitemap_stats/sitemap_breakdown.png \
-                   --cache-control="public, max-age=300" \
-              && envman add --key SITEMAP_CHART_URL --value "https://web-cdn.bitrise.io/sitemap_stats/sitemap_breakdown.png?v=${BITRISE_BUILD_NUMBER}"
+              && gcloud storage cp "$CHART" "$CHART_GCS" \
+                   --cache-control="public, max-age=31536000, immutable" \
+              && envman add --key SITEMAP_CHART_URL --value "https://web-cdn.bitrise.io/sitemap_stats/${CHART_NAME}"
 
             exit 0
     - script@1:
