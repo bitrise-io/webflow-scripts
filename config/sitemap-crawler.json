@@ -1,0 +1,14 @@
+{
+  "startUrl": "https://bitrise.io",
+  "concurrency": 10,
+  "maxSeconds": 1200,
+  "rewrites": [
+    { "pattern": "\\?[^#]*_page=\\d+", "replace": "" },
+    { "pattern": "^https?://www\\.bitrise\\.io/", "replace": "https://bitrise.io/" },
+    { "pattern": "^https?://blog\\.bitrise\\.io/", "replace": "https://bitrise.io/blog/" }
+  ],
+  "jsonSeeds": [
+    { "url": "https://bitrise.io/data/blog-list.json", "template": "https://bitrise.io/blog/post/{slug}" }
+  ],
+  "exclude": ["^https://bitrise\\.io/blog/tags/"]
+}
